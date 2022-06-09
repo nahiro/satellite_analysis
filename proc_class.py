@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkfilebrowser
 from subprocess import call
+from custom_calendar import CustomDateEntry
 from proc_func import *
 
 HOME = os.environ.get('USERPROFILE')
@@ -45,6 +46,7 @@ class Process:
 
         self.python_path = sys.executable
         self.scr_dir = os.path.join(HOME,'Script')
+        self.date_format = 'yyyy-mm&mmm-dd'
         self.current_block = None
         self.current_date = None
         self.field_data = None
@@ -210,9 +212,9 @@ class Process:
             return check_folder(self.params[pnam],t)
         elif self.input_types[pnam] == 'ask_folders':
             return check_folders(self.params[pnam],t)
-        elif self.input_types[pnam] == 'boolean':
+        elif self.input_types[pnam] in ['date','date_list']:
             return True
-        elif self.input_types[pnam] == 'boolean_list':
+        elif self.input_types[pnam] in ['boolean','boolean_list']:
             return True
         elif 'int_list' in self.input_types[pnam]:
             return check_int(self.params[pnam],t,self.param_range[pnam][0],self.param_range[pnam][1])
@@ -415,6 +417,8 @@ class Process:
                 self.center_var[pnam] = tk.DoubleVar()
             elif self.param_types[pnam] == 'boolean':
                 self.center_var[pnam] = tk.BooleanVar()
+            elif self.param_types[pnam] == 'date':
+                self.center_var[pnam] = tk.StringVar()
             elif self.param_types[pnam] == 'string_select':
                 self.center_var[pnam] = tk.StringVar()
             elif self.param_types[pnam] == 'int_select':
@@ -437,6 +441,10 @@ class Process:
                 self.center_var[pnam] = []
                 for j in range(self.list_sizes[pnam]):
                     self.center_var[pnam].append(tk.BooleanVar())
+            elif self.param_types[pnam] == 'date_list':
+                self.center_var[pnam] = []
+                for j in range(self.list_sizes[pnam]):
+                    self.center_var[pnam].append(tk.StringVar())
             elif self.param_types[pnam] == 'string_select_list':
                 self.center_var[pnam] = []
                 for j in range(self.list_sizes[pnam]):
@@ -489,6 +497,18 @@ class Process:
                 self.center_btn[pnam] = tk.Button(self.center_cnv[pnam],image=browse_img,width=self.center_btn_width,bg='white',bd=1,command=eval('lambda self=self:self.ask_folders("{}")'.format(pnam)))
                 self.center_btn[pnam].image = browse_img
                 self.center_btn[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.N,side=tk.LEFT)
+            elif self.input_types[pnam] == 'date':
+                self.center_inp[pnam] = CustomDateEntry(self.center_cnv[pnam],width=10,date_pattern=self.date_format,textvariable=self.center_var[pnam])
+                self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
+            elif self.input_types[pnam] == 'date_list':
+                self.center_inp[pnam] = []
+                self.center_lbl[pnam] = []
+                for j in range(self.list_sizes[pnam]):
+                    if self.list_labels[pnam][j] != '':
+                        self.center_lbl[pnam].append(ttk.Label(self.center_cnv[pnam],text=self.list_labels[pnam][j]))
+                        self.center_lbl[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
+                    self.center_inp[pnam].append(CustomDateEntry(self.center_cnv[pnam],width=1,date_pattern=self.date_format,textvariable=self.center_var[pnam][j]))
+                    self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             elif self.input_types[pnam] == 'boolean':
                 self.center_inp[pnam] = tk.Checkbutton(self.center_cnv[pnam],background=bgs[i%2],variable=self.center_var[pnam])
                 if pnam in self.flag_fill and self.flag_fill[pnam]:
@@ -553,7 +573,9 @@ class Process:
             self.right_cnv[pnam].pack_propagate(False)
             self.right_lbl[pnam] = ttk.Label(self.right_cnv[pnam],text='ERROR',foreground='red')
         for pnam in self.pnams:
-            if self.param_types[pnam] == 'boolean' or self.param_types[pnam] == 'boolean_list':
+            if self.input_types[pnam] in ['date','date_list']:
+                pass
+            elif self.input_types[pnam] in ['boolean','boolean_list']:
                 pass
             elif self.input_types[pnam] in ['ask_files','ask_folders']:
                 pass

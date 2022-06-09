@@ -61,6 +61,7 @@ config_defaults.update({
 'extract.i_sheet'                     : 1,
 'extract.epsg'                        : 32748,
 'extract.gps_fnam'                    : os.path.join(main_drone_analysis,'Current','identify','orthomosaic_identify.csv'),
+'extract.event_dates'                 : ['','',''],
 'extract.python_path'                 : python_path,
 'extract.scr_dir'                     : scr_dir,
 'extract.middle_left_frame_width'     : 1000,
