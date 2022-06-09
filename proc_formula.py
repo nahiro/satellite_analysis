@@ -5,10 +5,8 @@ proc_formula = Formula()
 proc_formula.proc_name = 'formula'
 proc_formula.proc_title = 'Make Formula'
 proc_formula.pnams.append('inp_fnams')
-proc_formula.pnams.append('assess_day')
-proc_formula.pnams.append('atc_params')
-proc_formula.pnams.append('atc_ithrs')
-proc_formula.pnams.append('atc_nthrs')
+proc_formula.pnams.append('data_select')
+proc_formula.pnams.append('assess_range')
 proc_formula.pnams.append('mature_range')
 proc_formula.pnams.append('age_range')
 proc_formula.pnams.append('n_x')
@@ -31,10 +29,8 @@ proc_formula.pnams.append('vif_max')
 proc_formula.pnams.append('n_cros')
 proc_formula.pnams.append('n_formula')
 proc_formula.params['inp_fnams'] = 'Input Files'
-proc_formula.params['assess_day'] = 'Assessment Timing Estimation'
-proc_formula.params['atc_params'] = 'Parameter for ATC'
-proc_formula.params['atc_ithrs'] = 'Id Threshold for ATC'
-proc_formula.params['atc_nthrs'] = '\u03B4NDVI Threshold for ATC'
+proc_formula.params['data_select'] = 'Data Selection Criteria'
+proc_formula.params['assess_range'] = 'Days from Assessment'
 proc_formula.params['mature_range'] = 'Days from Heading'
 proc_formula.params['age_range'] = 'Days from Planting'
 proc_formula.params['n_x'] = 'Explanatory Variable Number'
@@ -51,16 +47,14 @@ proc_formula.params['yfac4'] = 'Conversion Factor for Rat'
 proc_formula.params['yfac5'] = 'Conversion Factor for Hopper'
 proc_formula.params['yfac6'] = 'Conversion Factor for Drought'
 proc_formula.params['mean_fitting'] = 'Score-mean Fitting'
-proc_formula.params['criteria'] = 'Selection Criteria'
+proc_formula.params['criteria'] = 'Formula Selection Criteria'
 proc_formula.params['n_multi'] = 'Min Multicollinearity Number'
 proc_formula.params['vif_max'] = 'Max Variance Inflation Factor'
 proc_formula.params['n_cros'] = 'Cross Validation Number'
 proc_formula.params['n_formula'] = 'Max Formula Number'
 proc_formula.param_types['inp_fnams'] = 'string'
-proc_formula.param_types['assess_day'] = 'string_select'
-proc_formula.param_types['atc_params'] = 'float_list'
-proc_formula.param_types['atc_ithrs'] = 'int_list'
-proc_formula.param_types['atc_nthrs'] = 'float_list'
+proc_formula.param_types['data_select'] = 'string_select'
+proc_formula.param_types['assess_range'] = 'float_list'
 proc_formula.param_types['mature_range'] = 'float_list'
 proc_formula.param_types['age_range'] = 'float_list'
 proc_formula.param_types['n_x'] = 'int_select_list'
@@ -82,9 +76,7 @@ proc_formula.param_types['n_multi'] = 'int'
 proc_formula.param_types['vif_max'] = 'float'
 proc_formula.param_types['n_cros'] = 'int'
 proc_formula.param_types['n_formula'] = 'int'
-proc_formula.param_range['atc_params'] = (-1000.0,1000.0)
-proc_formula.param_range['atc_ithrs'] = (0,1000)
-proc_formula.param_range['atc_nthrs'] = (-1.0,1.0)
+proc_formula.param_range['assess_range'] = (-1000.0,1000.0)
 proc_formula.param_range['mature_range'] = (-1000.0,1000.0)
 proc_formula.param_range['age_range'] = (-1000.0,1000.0)
 proc_formula.param_range['score_max'] = (1,65535)
@@ -101,10 +93,8 @@ proc_formula.param_range['vif_max'] = (0.0,1.0e5)
 proc_formula.param_range['n_cros'] = (2,1000)
 proc_formula.param_range['n_formula'] = (1,1000)
 proc_formula.defaults['inp_fnams'] = 'input.csv'
-proc_formula.defaults['assess_day'] = 'Assessment Timing Coefficient'
-proc_formula.defaults['atc_params'] = [90.0,10.0]
-proc_formula.defaults['atc_ithrs'] = [30,35]
-proc_formula.defaults['atc_nthrs'] = [-0.0005,-0.0005,-0.0003]
+proc_formula.defaults['data_select'] = 'Days from Assessment'
+proc_formula.defaults['assess_range'] = [-5.0,5.0]
 proc_formula.defaults['mature_range'] = [30.0,40.0]
 proc_formula.defaults['age_range'] = [90.0,100.0]
 proc_formula.defaults['n_x'] = [1,2]
@@ -126,10 +116,8 @@ proc_formula.defaults['n_multi'] = 1
 proc_formula.defaults['vif_max'] = 5.0
 proc_formula.defaults['n_cros'] = 5
 proc_formula.defaults['n_formula'] = 3
-proc_formula.list_sizes['assess_day'] = 3
-proc_formula.list_sizes['atc_params'] = 2
-proc_formula.list_sizes['atc_ithrs'] = 2
-proc_formula.list_sizes['atc_nthrs'] = 3
+proc_formula.list_sizes['data_select'] = 3
+proc_formula.list_sizes['assess_range'] = 2
 proc_formula.list_sizes['mature_range'] = 2
 proc_formula.list_sizes['age_range'] = 2
 proc_formula.list_sizes['n_x'] = 2
@@ -146,10 +134,8 @@ proc_formula.list_sizes['yfac4'] = 6
 proc_formula.list_sizes['yfac5'] = 6
 proc_formula.list_sizes['yfac6'] = 6
 proc_formula.list_sizes['criteria'] = 7
-proc_formula.list_labels['assess_day'] = ['Assessment Timing Coefficient','Days from Heading','Days from Planting']
-proc_formula.list_labels['atc_params'] = ['Ratio (%) :',' Offset :']
-proc_formula.list_labels['atc_ithrs'] = ['T1 :',' T2 :']
-proc_formula.list_labels['atc_nthrs'] = ['T1 :',' T2 :',' T3 :']
+proc_formula.list_labels['data_select'] = ['Days from Assessment','Days from Heading','Days from Planting']
+proc_formula.list_labels['assess_range'] = ['Min :',' Max :']
 proc_formula.list_labels['mature_range'] = ['Min :',' Max :']
 proc_formula.list_labels['age_range'] = ['Min :',' Max :']
 proc_formula.list_labels['n_x'] = [('Min :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14]),(' Max :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14])]
@@ -167,10 +153,8 @@ proc_formula.list_labels['yfac5'] = ['','','','','','']
 proc_formula.list_labels['yfac6'] = ['','','','','','']
 proc_formula.list_labels['criteria'] = ['RMSE_test','R2_test','AIC_test','RMSE_train','R2_train','AIC_train','BIC_train']
 proc_formula.input_types['inp_fnams'] = 'ask_files'
-proc_formula.input_types['assess_day'] = 'string_select'
-proc_formula.input_types['atc_params'] = 'float_list'
-proc_formula.input_types['atc_ithrs'] = 'int_list'
-proc_formula.input_types['atc_nthrs'] = 'float_list'
+proc_formula.input_types['data_select'] = 'string_select'
+proc_formula.input_types['assess_range'] = 'float_list'
 proc_formula.input_types['mature_range'] = 'float_list'
 proc_formula.input_types['age_range'] = 'float_list'
 proc_formula.input_types['n_x'] = 'int_select_list'

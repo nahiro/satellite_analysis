@@ -54,8 +54,6 @@ def set_title(pnam):
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
     # change color
     root.focus_set()
-    if proc_estimate.center_var is not None:
-        proc_estimate.center_var[proc_pnam].set(proc_estimate.values[proc_pnam])
     if pnam == 'end_date':
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='black')

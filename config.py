@@ -2,9 +2,9 @@ import os
 import sys
 import numpy as np
 import configparser
+from proc_phenology import proc_phenology
 from proc_extract import proc_extract
 from proc_formula import proc_formula
-from proc_phenology import proc_phenology
 from proc_estimate import proc_estimate
 
 # Set folder&file names
@@ -52,6 +52,9 @@ config_defaults.update({
 'main.center_btn_width'               : 20,
 #----------- phenology -----------
 'phenology.inp_fnam'                   : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
+'phenology.atc_params'                 : [90.0,10.0],
+'phenology.atc_ithrs'                  : [30,35],
+'phenology.atc_nthrs'                  : [-0.0005,-0.0005,-0.0003],
 'phenology.middle_left_frame_width'    : 1000,
 #----------- extract -----------
 'extract.obs_fnam'                    : os.path.join(main_field_data,'Current','observation.xls'),
@@ -63,10 +66,8 @@ config_defaults.update({
 'extract.middle_left_frame_width'     : 1000,
 #----------- formula -----------
 'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'Current','extract','s2_indices.csv'),
-'formula.assess_day'                  : 'Assessment Timing Coefficient',
-'formula.atc_params'                  : [90.0,10.0],
-'formula.atc_ithrs'                   : [30,35],
-'formula.atc_nthrs'                   : [-0.0005,-0.0005,-0.0003],
+'formula.data_select'                 : 'Days from Assessment',
+'formula.assess_range'                : [-5.0,5.0],
 'formula.mature_range'                : [30.0,40.0],
 'formula.age_range'                   : [90.0,100.0],
 'formula.n_x'                         : [1,2],
@@ -92,6 +93,10 @@ config_defaults.update({
 'formula.scr_dir'                     : scr_dir,
 'formula.middle_left_frame_width'     : 1000,
 #----------- estimate -----------
+'estimate.data_select'                : 'Days from Assessment',
+'estimate.assess_value'               : 0.0,
+'estimate.mature_value'               : 35.0,
+'estimate.age_value'                  : 95.0,
 'estimate.intensity_fnam'             : os.path.join(main_s2_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
 'estimate.intensity_number'           : 1,
 'estimate.digitize'                   : False,
