@@ -60,6 +60,7 @@ config_defaults.update({
 'extract.middle_left_frame_width'     : 1000,
 #----------- formula -----------
 'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'Current','extract','s2_indices.csv'),
+'formula.assess_day'                  : 'Assessment Timing Coefficient',
 'formula.age_range'                   : [-100.0,150.0],
 'formula.n_x'                         : [1,2],
 'formula.x_params'                    : [False,False,False,False,False,True,True,True,True,True,True,True,False,True],
