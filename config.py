@@ -43,8 +43,8 @@ config_defaults.update({
 'main.extract'                        : False,
 'main.formula'                        : False,
 'main.estimate'                       : True,
-'main.window_width'                   : 600,
-'main.top_frame_height'               : 120,
+'main.window_width'                   : 650,
+'main.top_frame_height'               : 140,
 'main.left_frame_width'               : 30,
 'main.right_frame_width'              : 100,
 'main.left_cnv_height'                : 21,
@@ -123,6 +123,8 @@ current_block = config['main'].get('main.current_block')
 current_date = config['main'].get('main.current_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
 drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
+s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
+s2_analysis = os.path.normpath(config['main'].get('main.s2_analysis'))
 browse_image = os.path.normpath(config['main'].get('main.browse_image'))
 window_width = config['main'].getint('main.window_width')
 top_frame_height = config['main'].getint('main.top_frame_height')
@@ -180,7 +182,6 @@ for proc in pnams:
     modules[proc].current_block = config['main'].get('main.current_block')
     modules[proc].current_date = config['main'].get('main.current_date')
     modules[proc].field_data = os.path.normpath(config['main'].get('main.field_data'))
-    modules[proc].drone_data =  os.path.normpath(config['main'].get('main.drone_data'))
     modules[proc].drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
     modules[proc].browse_image = os.path.normpath(config['main'].get('main.browse_image'))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))

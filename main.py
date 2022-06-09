@@ -134,7 +134,7 @@ def exit():
 
 root = tk.Tk()
 root.title('BLB Damage Estimation')
-root.geometry('{}x{}'.format(window_width,60+40*2+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,170+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -213,10 +213,10 @@ top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['field_data','drone_analysis','s1_analysis','s2_analysis'],['Field Data','Drone Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
+for pnam,title in zip(['field_data','drone_analysis','s1_analysis','s2_analysis'],['Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
-    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=100,height=25)
+    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=120,height=25)
     top_center_left_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.LEFT)
     top_center_left_cnv[pnam].pack_propagate(False)
     top_center_right_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=10,height=25)
@@ -283,7 +283,7 @@ for i,pnam in enumerate(pnams):
     right_btn[pnam] = tk.Button(right_cnv[pnam],text='Set',width=4,command=eval('lambda:set_child("{}")'.format(pnam)))
     right_btn[pnam].pack(side=tk.LEFT)
     right_lbl[pnam] = ttk.Label(right_cnv[pnam],text='ERROR',foreground='red')
-set_title('block')
+#set_title('block')
 for pnam in pnams:
     check_child(pnam)
 root.mainloop()
