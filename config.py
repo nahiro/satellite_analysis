@@ -4,7 +4,7 @@ import numpy as np
 import configparser
 from proc_extract import proc_extract
 from proc_formula import proc_formula
-from proc_planting import proc_planting
+from proc_phenology import proc_phenology
 from proc_estimate import proc_estimate
 
 # Set folder&file names
@@ -39,9 +39,9 @@ config_defaults.update({
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.browse_image'                   : main_browse_image,
+'main.phenology'                      : True,
 'main.extract'                        : False,
 'main.formula'                        : False,
-'main.planting'                       : True,
 'main.estimate'                       : True,
 'main.window_width'                   : 650,
 'main.top_frame_height'               : 169,
@@ -50,6 +50,9 @@ config_defaults.update({
 'main.left_cnv_height'                : 21,
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
+#----------- phenology -----------
+'phenology.inp_fnam'                   : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
+'phenology.middle_left_frame_width'    : 1000,
 #----------- extract -----------
 'extract.obs_fnam'                    : os.path.join(main_field_data,'Current','observation.xls'),
 'extract.i_sheet'                     : 1,
@@ -88,9 +91,6 @@ config_defaults.update({
 'formula.python_path'                 : python_path,
 'formula.scr_dir'                     : scr_dir,
 'formula.middle_left_frame_width'     : 1000,
-#----------- planting -----------
-'planting.inp_fnam'                   : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
-'planting.middle_left_frame_width'    : 1000,
 #----------- estimate -----------
 'estimate.intensity_fnam'             : os.path.join(main_s2_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
 'estimate.intensity_number'           : 1,
@@ -138,9 +138,9 @@ right_cnv_height = config['main'].getint('main.right_cnv_height')
 center_btn_width = config['main'].getint('main.center_btn_width')
 #----------- subprocess -----------
 pnams = []
+pnams.append('phenology')
 pnams.append('extract')
 pnams.append('formula')
-pnams.append('planting')
 pnams.append('estimate')
 modules = {}
 titles = {}
