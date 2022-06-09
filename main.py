@@ -25,8 +25,6 @@ def set_title(pnam):
         modules[proc].s1_analysis = s1_analysis
         modules[proc].s2_analysis = s2_analysis
     # extract
-    proc_pnam = 'inp_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(s2_analysis,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
     proc_pnam = 'obs_fnam'
     proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
     proc_pnam = 'gps_fnam'
@@ -37,7 +35,7 @@ def set_title(pnam):
     else:
         proc_extract.values[proc_pnam] = os.path.join(dnam,'{}_{}_identify.csv'.format(block,dstr))
     if proc_extract.center_var is not None:
-        for proc_pnam in ['inp_fnam','obs_fnam','gps_fnam']:
+        for proc_pnam in ['obs_fnam','gps_fnam']:
             proc_extract.center_var[proc_pnam].set(proc_extract.values[proc_pnam])
     # formula
     proc_pnam = 'inp_fnams'
