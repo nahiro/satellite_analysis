@@ -9,8 +9,10 @@ from custom_calendar import CustomDateEntry
 from config import *
 
 def set_title(pnam):
-    block = top_start.get()
-    dstr = top_end.get()
+    start_date = top_start.get()
+    end_date = top_end.get()
+    block = top_cmb.get()
+    dstr = top_cde.get()
     field_data = top_var['field_data'].get()
     drone_analysis = top_var['drone_analysis'].get()
     s1_analysis = top_var['s1_analysis'].get()
@@ -143,7 +145,7 @@ def exit():
     return
 
 root = tk.Tk()
-root.title('BLB Damage Estimation - satellite version')
+root.title('BLB Damage Estimation - Satellite version')
 root.geometry('{}x{}'.format(window_width,195+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
@@ -317,7 +319,7 @@ for i,pnam in enumerate(pnams):
     right_btn[pnam] = tk.Button(right_cnv[pnam],text='Set',width=4,command=eval('lambda:set_child("{}")'.format(pnam)))
     right_btn[pnam].pack(side=tk.LEFT)
     right_lbl[pnam] = ttk.Label(right_cnv[pnam],text='ERROR',foreground='red')
-#set_title('block')
+set_title('block')
 for pnam in pnams:
     check_child(pnam)
 root.mainloop()
