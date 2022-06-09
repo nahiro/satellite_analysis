@@ -59,7 +59,7 @@ config_defaults.update({
 'extract.scr_dir'                     : scr_dir,
 'extract.middle_left_frame_width'     : 1000,
 #----------- formula -----------
-'formula.inp_fnams'                   : os.path.join(main_drone_analysis,'Current','extract','orthomosaic_indices.csv'),
+'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'Current','extract','s2_indices.csv'),
 'formula.age_range'                   : [-100.0,150.0],
 'formula.n_x'                         : [1,2],
 'formula.x_params'                    : [False,False,False,False,False,True,True,True,True,True,True,True,False,True],
@@ -84,10 +84,10 @@ config_defaults.update({
 'formula.scr_dir'                     : scr_dir,
 'formula.middle_left_frame_width'     : 1000,
 #----------- planting -----------
-'planting.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
+'planting.inp_fnam'                   : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
 'planting.middle_left_frame_width'    : 1000,
 #----------- estimate -----------
-'estimate.intensity_fnam'             : os.path.join(main_drone_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
+'estimate.intensity_fnam'             : os.path.join(main_s2_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
 'estimate.intensity_number'           : 1,
 'estimate.digitize'                   : True,
 'estimate.y_params'                   : [True,False,False,False,False,False],
