@@ -64,6 +64,7 @@ config_defaults.update({
 'formula.atc_params'                  : [90.0,10.0],
 'formula.atc_ithrs'                   : [30,35],
 'formula.atc_nthrs'                   : [-0.0005,-0.0005,-0.0003],
+'formula.mature_range'                : [30.0,40.0],
 'formula.age_range'                   : [90.0,100.0],
 'formula.n_x'                         : [1,2],
 'formula.x_params'                    : [False,False,False,False,False,True,True,True,True,True,True,True,False,True],
