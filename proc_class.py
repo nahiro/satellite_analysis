@@ -75,13 +75,13 @@ class Process:
             dnam = self.inidir
         files = list(tkfilebrowser.askopenfilenames(initialdir=dnam))
         if len(files) > 0:
-            lines = self.center_inp[pnam].get(1.0,tk.END)
+            lines = self.center_inp[pnam].get('1.0',tk.END)
             if (len(lines) > 1) and (lines[-2] != '\n'):
                 path = '\n'+'\n'.join(files)+'\n'
             else:
                 path = '\n'.join(files)+'\n'
             self.center_inp[pnam].insert(tk.END,path)
-            lines = self.center_inp[pnam].get(1.0,tk.END)
+            lines = self.center_inp[pnam].get('1.0',tk.END)
             if self.check_err(pnam,lines):
                 self.center_var[pnam].set(lines)
         return
@@ -99,13 +99,13 @@ class Process:
             dnam = self.inidir
         dirs = list(tkfilebrowser.askopendirnames(initialdir=dnam))
         if len(dirs) > 0:
-            lines = self.center_inp[pnam].get(1.0,tk.END)
+            lines = self.center_inp[pnam].get('1.0',tk.END)
             if (len(lines) > 1) and (lines[-2] != '\n'):
                 path = '\n'+'\n'.join(dirs)+'\n'
             else:
                 path = '\n'.join(dirs)+'\n'
             self.center_inp[pnam].insert(tk.END,path)
-            lines = self.center_inp[pnam].get(1.0,tk.END)
+            lines = self.center_inp[pnam].get('1.0',tk.END)
             if self.check_err(pnam,lines):
                 self.center_var[pnam].set(lines)
         return
@@ -130,8 +130,8 @@ class Process:
                         self.center_var[pnam][j].set(self.values[pnam][j])
             elif self.input_types[pnam] in ['ask_files','ask_folders']:
                 if self.values[pnam] is not None:
-                    self.center_inp[pnam].delete(1.0,tk.END)
-                    self.center_inp[pnam].insert(1.0,self.values[pnam])
+                    self.center_inp[pnam].delete('1.0',tk.END)
+                    self.center_inp[pnam].insert('1.0',self.values[pnam])
                     self.center_var[pnam].set(self.values[pnam])
             else:
                 if self.values[pnam] is not None:
@@ -480,7 +480,7 @@ class Process:
             elif self.input_types[pnam] == 'ask_files':
                 self.center_inp[pnam] = tk.Text(self.center_cnv[pnam],background=bgs[i%2],width=1)
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
-                self.center_inp[pnam].insert(1.0,self.center_var[pnam].get())
+                self.center_inp[pnam].insert('1.0',self.center_var[pnam].get())
                 self.center_btn[pnam] = tk.Button(self.center_cnv[pnam],image=browse_img,width=self.center_btn_width,bg='white',bd=1,command=eval('lambda self=self:self.ask_files("{}")'.format(pnam)))
                 self.center_btn[pnam].image = browse_img
                 self.center_btn[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.N,side=tk.LEFT)
@@ -493,13 +493,16 @@ class Process:
             elif self.input_types[pnam] == 'ask_folders':
                 self.center_inp[pnam] = tk.Text(self.center_cnv[pnam],background=bgs[i%2],width=1)
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
-                self.center_inp[pnam].insert(1.0,self.center_var[pnam].get())
+                self.center_inp[pnam].insert('1.0',self.center_var[pnam].get())
                 self.center_btn[pnam] = tk.Button(self.center_cnv[pnam],image=browse_img,width=self.center_btn_width,bg='white',bd=1,command=eval('lambda self=self:self.ask_folders("{}")'.format(pnam)))
                 self.center_btn[pnam].image = browse_img
                 self.center_btn[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.N,side=tk.LEFT)
             elif self.input_types[pnam] == 'date':
                 self.center_inp[pnam] = CustomDateEntry(self.center_cnv[pnam],width=10,date_pattern=self.date_format,textvariable=self.center_var[pnam])
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
+                self.center_inp[pnam].delete(0,tk.END)
+                if self.values[pnam] != '':
+                    self.center_inp[pnam].insert(0,self.values[pnam])
             elif self.input_types[pnam] == 'date_list':
                 self.center_inp[pnam] = []
                 self.center_lbl[pnam] = []
@@ -509,6 +512,9 @@ class Process:
                         self.center_lbl[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
                     self.center_inp[pnam].append(CustomDateEntry(self.center_cnv[pnam],width=1,date_pattern=self.date_format,textvariable=self.center_var[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
+                    self.center_inp[pnam][j].delete(0,tk.END)
+                    if self.values[pnam][j] != '':
+                        self.center_inp[pnam][j].insert(0,self.values[pnam][j])
             elif self.input_types[pnam] == 'boolean':
                 self.center_inp[pnam] = tk.Checkbutton(self.center_cnv[pnam],background=bgs[i%2],variable=self.center_var[pnam])
                 if pnam in self.flag_fill and self.flag_fill[pnam]:
