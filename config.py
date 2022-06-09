@@ -4,6 +4,7 @@ import numpy as np
 import configparser
 from proc_extract import proc_extract
 from proc_formula import proc_formula
+from proc_planting import proc_planting
 from proc_estimate import proc_estimate
 
 # Set folder&file names
@@ -29,15 +30,15 @@ gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_are
 config_defaults = dict(os.environ)
 config_defaults.update({
 #----------- main -----------
-'main.blocks'                         : ['1A','1B','2A','2B','3A','3B','4A','4B','5','6','7A','7B','8A','8B','9A','9B','10A','10B','11A','11B','12','13','14A','14B','15'],
 'main.date_format'                    : 'yyyy-mm&mmm-dd',
-'main.current_block'                  : '',
-'main.current_date'                   : '',
+'main.start_date'                     : '',
+'main.end_date'                       : '',
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.browse_image'                   : main_browse_image,
 'main.extract'                        : False,
 'main.formula'                        : False,
+'main.planting'                       : True,
 'main.estimate'                       : True,
 'main.window_width'                   : 650,
 #'main.top_frame_height'               : 140,
@@ -82,6 +83,8 @@ config_defaults.update({
 'formula.python_path'                 : python_path,
 'formula.scr_dir'                     : scr_dir,
 'formula.middle_left_frame_width'     : 1000,
+#----------- planting -----------
+'planting.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
 #----------- estimate -----------
 'estimate.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
 'estimate.score_fnam'                 : os.path.join(main_drone_analysis,'Current','formula','score_formula_age_90_110.csv'),
@@ -114,10 +117,9 @@ else:
 #----------- main -----------
 if not 'main' in config:
     config['main'] = {}
-blocks = eval(config['main'].get('main.blocks'))
 date_format = config['main'].get('main.date_format')
-current_block = config['main'].get('main.current_block')
-current_date = config['main'].get('main.current_date')
+start_date = config['main'].get('main.start_date')
+end_date = config['main'].get('main.end_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
 drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
 s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
@@ -134,6 +136,7 @@ center_btn_width = config['main'].getint('main.center_btn_width')
 pnams = []
 pnams.append('extract')
 pnams.append('formula')
+pnams.append('planting')
 pnams.append('estimate')
 modules = {}
 titles = {}
@@ -176,8 +179,8 @@ for proc in pnams:
             modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)))
     modules[proc].python_path = config[proc].get('{}.python_path'.format(proc))
     modules[proc].scr_dir = config[proc].get('{}.scr_dir'.format(proc))
-    modules[proc].current_block = config['main'].get('main.current_block')
-    modules[proc].current_date = config['main'].get('main.current_date')
+    modules[proc].start_date = config['main'].get('main.start_date')
+    modules[proc].end_date = config['main'].get('main.end_date')
     modules[proc].field_data = os.path.normpath(config['main'].get('main.field_data'))
     modules[proc].drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
     modules[proc].browse_image = os.path.normpath(config['main'].get('main.browse_image'))
