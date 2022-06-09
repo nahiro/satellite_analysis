@@ -89,7 +89,7 @@ config_defaults.update({
 #----------- estimate -----------
 'estimate.intensity_fnam'             : os.path.join(main_s2_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
 'estimate.intensity_number'           : 1,
-'estimate.digitize'                   : True,
+'estimate.digitize'                   : False,
 'estimate.y_params'                   : [True,False,False,False,False,False],
 'estimate.score_max'                  : [9,9,1,1,1,9],
 'estimate.score_step'                 : [2,2,1,1,1,2],
