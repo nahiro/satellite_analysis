@@ -4,8 +4,6 @@ proc_estimate = Estimate()
 proc_estimate.proc_name = 'estimate'
 proc_estimate.proc_title = 'Estimate Damage'
 proc_estimate.pnams.append('inp_fnam')
-proc_estimate.pnams.append('score_fnam')
-proc_estimate.pnams.append('score_number')
 proc_estimate.pnams.append('intensity_fnam')
 proc_estimate.pnams.append('intensity_number')
 proc_estimate.pnams.append('digitize')
@@ -14,18 +12,14 @@ proc_estimate.pnams.append('score_max')
 proc_estimate.pnams.append('score_step')
 proc_estimate.pnams.append('gis_fnam')
 proc_estimate.params['inp_fnam'] = 'Input File'
-proc_estimate.params['score_fnam'] = 'Point-value/Score-mean Formula'
-proc_estimate.params['score_number'] = 'P-v/S-m Formula Number'
-proc_estimate.params['intensity_fnam'] = 'Plot-mean Formula'
-proc_estimate.params['intensity_number'] = 'Plot-mean Formula Number'
+proc_estimate.params['intensity_fnam'] = 'Plot-mean/Score-mean Formula'
+proc_estimate.params['intensity_number'] = 'P-m/S-m Formula Number'
 proc_estimate.params['digitize'] = 'Digitize Score'
 proc_estimate.params['y_params'] = 'Output Variable'
 proc_estimate.params['score_max'] = 'Max Output Score'
 proc_estimate.params['score_step'] = 'Score Step for Digitization'
 proc_estimate.params['gis_fnam'] = 'Polygon File'
 proc_estimate.param_types['inp_fnam'] = 'string'
-proc_estimate.param_types['score_fnam'] = 'string'
-proc_estimate.param_types['score_number'] = 'int'
 proc_estimate.param_types['intensity_fnam'] = 'string'
 proc_estimate.param_types['intensity_number'] = 'int'
 proc_estimate.param_types['digitize'] = 'boolean'
@@ -38,8 +32,6 @@ proc_estimate.param_range['intensity_number'] = (1,10000)
 proc_estimate.param_range['score_max'] = (1,65535)
 proc_estimate.param_range['score_step'] = (1,65535)
 proc_estimate.defaults['inp_fnam'] = 'input.tif'
-proc_estimate.defaults['score_fnam'] = 'score_formula.csv'
-proc_estimate.defaults['score_number'] = 1
 proc_estimate.defaults['intensity_fnam'] = 'intensity_formula.csv'
 proc_estimate.defaults['intensity_number'] = 1
 proc_estimate.defaults['digitize'] = True
@@ -54,8 +46,6 @@ proc_estimate.list_labels['y_params'] = ['BLB','Blast','Borer','Rat','Hopper','D
 proc_estimate.list_labels['score_max'] = ['BLB :',' Blast :',' Borer :',' Rat :',' Hopper :',' Drought :']
 proc_estimate.list_labels['score_step'] = ['BLB :',' Blast :',' Borer :',' Rat :',' Hopper :',' Drought :']
 proc_estimate.input_types['inp_fnam'] = 'ask_file'
-proc_estimate.input_types['score_fnam'] = 'ask_file'
-proc_estimate.input_types['score_number'] = 'box'
 proc_estimate.input_types['intensity_fnam'] = 'ask_file'
 proc_estimate.input_types['intensity_number'] = 'box'
 proc_estimate.input_types['digitize'] = 'boolean'

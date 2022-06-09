@@ -88,8 +88,6 @@ config_defaults.update({
 'planting.middle_left_frame_width'    : 1000,
 #----------- estimate -----------
 'estimate.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
-'estimate.score_fnam'                 : os.path.join(main_drone_analysis,'Current','formula','score_formula_age_90_110.csv'),
-'estimate.score_number'               : 1,
 'estimate.intensity_fnam'             : os.path.join(main_drone_analysis,'Current','formula','intensity_formula_age_90_110.csv'),
 'estimate.intensity_number'           : 1,
 'estimate.digitize'                   : True,
