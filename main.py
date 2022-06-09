@@ -26,7 +26,7 @@ def set_title(pnam):
     proc_pnam = 'inp_fnam'
     proc_extract.values[proc_pnam] = os.path.join(s2_analysis,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
     proc_pnam = 'obs_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(field_dir,block,'Excel_File','{}_{}.xls'.format(block,dstr))
+    proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
     proc_pnam = 'gps_fnam'
     dnam = os.path.join(drone_analysis,block,'identify')
     fnams = glob(os.path.join(dnam,'*_identify.csv'))
