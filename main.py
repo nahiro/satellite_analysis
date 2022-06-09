@@ -63,6 +63,12 @@ def set_title(pnam):
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='black')
         style.configure('top_end.DateEntry',foreground='black')
+    elif pnam == 'date':
+        style = ttk.Style()
+        style.map('top_cmb.TCombobox',
+                  foreground=[('!readonly','!focus','black'),('!readonly','focus','black')],
+                  selectforeground=[('!readonly','!focus','black'),('!readonly','focus','black')],)
+        style.configure('top_cde.DateEntry',foreground='black')
     elif pnam in top_box:
         top_box[pnam].config(foreground='black')
     #top_err[pnam].pack(pady=(0,3),side=tk.LEFT)
@@ -75,6 +81,14 @@ def change_color(pnam):
     elif pnam == 'end_date':
         style = ttk.Style()
         style.configure('top_end.DateEntry',foreground='red')
+    elif pnam == 'block':
+        style = ttk.Style()
+        style.map('top_cmb.TCombobox',
+                  foreground=[('!readonly','!focus','red'),('!readonly','focus','red')],
+                  selectforeground=[('!readonly','!focus','red'),('!readonly','focus','red')],)
+    elif pnam == 'date':
+        style = ttk.Style()
+        style.configure('top_cde.DateEntry',foreground='red')
     elif pnam in top_box:
         top_box[pnam].config(foreground='red')
     return True
@@ -130,7 +144,7 @@ def exit():
 
 root = tk.Tk()
 root.title('BLB Damage Estimation - satellite version')
-root.geometry('{}x{}'.format(window_width,172+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,195+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -161,15 +175,20 @@ top_center_frame.pack_propagate(False)
 top_right_frame.pack_propagate(False)
 
 top_center_top_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
+top_center_middle_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
 top_center_bottom_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
 top_center_top_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
+top_center_middle_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 top_center_bottom_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 
 top_right_top_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
+top_right_middle_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
 top_right_bottom_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
 top_right_top_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
+top_right_middle_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 top_right_bottom_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.TOP)
 top_right_top_frame.pack_propagate(False)
+top_right_middle_frame.pack_propagate(False)
 
 top_lbl = {}
 top_btn = {}
@@ -180,7 +199,7 @@ top_box = {}
 top_var = {}
 btn_pnam = 'set'
 pnam = 'start_date'
-top_lbl[pnam] = tk.Label(top_center_top_frame,text='Start/End')
+top_lbl[pnam] = tk.Label(top_center_top_frame,text='Start/End',width=9,anchor='w')
 top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(2,0),anchor=tk.W,side=tk.LEFT)
 myfont = font.Font(root,family='',size=9,weight='normal')
 top_start = CustomDateEntry(top_center_top_frame,width=10,date_pattern=date_format,style='top_start.DateEntry')
@@ -197,6 +216,32 @@ top_end.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),va
 top_btn[pnam] = tk.Button(top_right_top_frame,text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
 top_btn[pnam].pack(padx=(1,0),pady=(2,0),side=tk.LEFT)
 top_err[pnam] = ttk.Label(top_right_top_frame,text='ERROR',foreground='red')
+pnam = 'block'
+top_lbl[pnam] = tk.Label(top_center_middle_frame,text='Block/Date',width=9,anchor='w')
+top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(2,0),anchor=tk.W,side=tk.LEFT)
+myfont = font.Font(root,family='',size=9,weight='normal')
+#top_cmb = ttk.Combobox(top_center_middle_frame,width=10,style='top_cmb.TCombobox',font=myfont,values=['Block-'+block for block in blocks])
+top_cmb = ttk.Combobox(top_center_middle_frame,width=10,style='top_cmb.TCombobox',values=['Block-'+block for block in blocks])
+style = ttk.Style()
+style.map('top_cmb.TCombobox',
+          fieldbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],
+          selectbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],)
+if current_block != '':
+    top_cmb.set(current_block)
+else:
+    top_cmb.current(0)
+top_cmb.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
+top_cmb.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
+pnam = 'date'
+top_cde = CustomDateEntry(top_center_middle_frame,width=10,date_pattern=date_format,style='top_cde.DateEntry')
+if current_date != '':
+    top_cde.set_date(current_date)
+top_cde.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
+top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
+top_btn[pnam] = tk.Button(top_right_middle_frame,text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
+top_btn[pnam].pack(padx=(1,0),pady=(2,0),side=tk.LEFT)
+top_err[pnam] = ttk.Label(top_right_middle_frame,text='ERROR',foreground='red')
+
 top_center_bottom_cnv = {}
 top_center_left_cnv = {}
 top_center_right_cnv = {}
