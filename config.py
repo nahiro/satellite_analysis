@@ -85,6 +85,7 @@ config_defaults.update({
 'formula.middle_left_frame_width'     : 1000,
 #----------- planting -----------
 'planting.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
+'planting.middle_left_frame_width'    : 1000,
 #----------- estimate -----------
 'estimate.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
 'estimate.score_fnam'                 : os.path.join(main_drone_analysis,'Current','formula','score_formula_age_90_110.csv'),
@@ -183,5 +184,7 @@ for proc in pnams:
     modules[proc].end_date = config['main'].get('main.end_date')
     modules[proc].field_data = os.path.normpath(config['main'].get('main.field_data'))
     modules[proc].drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
+    modules[proc].s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
+    modules[proc].s2_analysis = os.path.normpath(config['main'].get('main.s2_analysis'))
     modules[proc].browse_image = os.path.normpath(config['main'].get('main.browse_image'))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))
