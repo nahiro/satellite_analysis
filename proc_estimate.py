@@ -13,8 +13,6 @@ proc_estimate.pnams.append('y_params')
 proc_estimate.pnams.append('score_max')
 proc_estimate.pnams.append('score_step')
 proc_estimate.pnams.append('gis_fnam')
-proc_estimate.pnams.append('buffer')
-proc_estimate.pnams.append('region_size')
 proc_estimate.params['inp_fnam'] = 'Input File'
 proc_estimate.params['score_fnam'] = 'Point-value/Score-mean Formula'
 proc_estimate.params['score_number'] = 'P-v/S-m Formula Number'
@@ -25,8 +23,6 @@ proc_estimate.params['y_params'] = 'Output Variable'
 proc_estimate.params['score_max'] = 'Max Output Score'
 proc_estimate.params['score_step'] = 'Score Step for Digitization'
 proc_estimate.params['gis_fnam'] = 'Polygon File'
-proc_estimate.params['buffer'] = 'Buffer Radius (m)'
-proc_estimate.params['region_size'] = 'Average Region Size (m)'
 proc_estimate.param_types['inp_fnam'] = 'string'
 proc_estimate.param_types['score_fnam'] = 'string'
 proc_estimate.param_types['score_number'] = 'int'
@@ -37,14 +33,10 @@ proc_estimate.param_types['y_params'] = 'boolean_list'
 proc_estimate.param_types['score_max'] = 'int_list'
 proc_estimate.param_types['score_step'] = 'int_list'
 proc_estimate.param_types['gis_fnam'] = 'string'
-proc_estimate.param_types['buffer'] = 'float'
-proc_estimate.param_types['region_size'] = 'float'
 proc_estimate.param_range['score_number'] = (1,10000)
 proc_estimate.param_range['intensity_number'] = (1,10000)
 proc_estimate.param_range['score_max'] = (1,65535)
 proc_estimate.param_range['score_step'] = (1,65535)
-proc_estimate.param_range['buffer'] = (0.0,10.0e3)
-proc_estimate.param_range['region_size'] = (0.0,1.0e3)
 proc_estimate.defaults['inp_fnam'] = 'input.tif'
 proc_estimate.defaults['score_fnam'] = 'score_formula.csv'
 proc_estimate.defaults['score_number'] = 1
@@ -55,8 +47,6 @@ proc_estimate.defaults['y_params'] = [True,False,False,False,False,False]
 proc_estimate.defaults['score_max'] = [9,9,1,1,1,9]
 proc_estimate.defaults['score_step'] = [2,2,1,1,1,2]
 proc_estimate.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
-proc_estimate.defaults['buffer'] = 1.0
-proc_estimate.defaults['region_size'] = 1.0
 proc_estimate.list_sizes['y_params'] = 6
 proc_estimate.list_sizes['score_max'] = 6
 proc_estimate.list_sizes['score_step'] = 6
@@ -73,8 +63,6 @@ proc_estimate.input_types['y_params'] = 'boolean_list'
 proc_estimate.input_types['score_max'] = 'int_list'
 proc_estimate.input_types['score_step'] = 'int_list'
 proc_estimate.input_types['gis_fnam'] = 'ask_file'
-proc_estimate.input_types['buffer'] = 'box'
-proc_estimate.input_types['region_size'] = 'box'
 for pnam in proc_estimate.pnams:
     proc_estimate.values[pnam] = proc_estimate.defaults[pnam]
 proc_estimate.left_frame_width = 210
