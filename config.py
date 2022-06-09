@@ -2,10 +2,6 @@ import os
 import sys
 import numpy as np
 import configparser
-from proc_orthomosaic import proc_orthomosaic
-from proc_geocor import proc_geocor
-from proc_indices import proc_indices
-from proc_identify import proc_identify
 from proc_extract import proc_extract
 from proc_formula import proc_formula
 from proc_estimate import proc_estimate
@@ -21,13 +17,13 @@ python_path = sys.executable
 scr_dir = os.path.join(HOME,'Script')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 main_field_data = os.path.join(top_dir,'Field_Data')
-main_drone_data = os.path.join(top_dir,'Drone_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
+main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
+main_s2_analysis = os.path.join(top_dir,'Sentinel-2_Analysis')
 main_browse_image = os.path.join(cnf_dir,'browse.png')
 if not os.path.exists(main_browse_image):
     main_browse_image = os.path.join(HOME,'Pictures','browse.png')
 gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_area_polygon_20210914.shp')
-ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_pan.tif')
 
 # Set defaults
 config_defaults = dict(os.environ)
@@ -38,7 +34,6 @@ config_defaults.update({
 'main.current_block'                  : '',
 'main.current_date'                   : '',
 'main.field_data'                     : main_field_data,
-'main.drone_data'                     : main_drone_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.browse_image'                   : main_browse_image,
 'main.orthomosaic'                    : True,
@@ -55,87 +50,6 @@ config_defaults.update({
 'main.left_cnv_height'                : 21,
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
-#----------- orthomosaic -----------
-'orthomosaic.metashape_path'          : os.path.join(os.environ.get('PROGRAMFILES'),'Agisoft','Metashape Pro','metashape.exe'),
-'orthomosaic.inpdirs'                 : os.path.join(main_drone_data,'Current'),
-'orthomosaic.qmin'                    : 0.5,
-'orthomosaic.xmp_flag'                : [True,True,True,True],
-'orthomosaic.calib_flag'              : [False,True],
-'orthomosaic.panel_fnam'              : '',
-'orthomosaic.align_level'             : 'High',
-'orthomosaic.preselect'               : [True,True],
-'orthomosaic.point_limit'             : [40000,4000],
-'orthomosaic.cam_flags'               : [False,False],
-'orthomosaic.optimize_flag'           : True,
-'orthomosaic.cam_params'              : [True,True,True,True,False,True,True,True,True,False,False,True],
-'orthomosaic.depth_map'               : ['Medium','Aggressive'],
-'orthomosaic.epsg'                    : 32748,
-'orthomosaic.pixel_size'              : 0.025,
-'orthomosaic.output_type'             : 'Float32',
-'orthomosaic.python_path'             : python_path,
-'orthomosaic.scr_dir'                 : scr_dir,
-'orthomosaic.middle_left_frame_width' : 1000,
-#----------- geocor -----------
-'geocor.gis_fnam'                     : gis_fnam,
-'geocor.ref_fnam'                     : ref_fnam,
-'geocor.ref_band'                     : -1,
-'geocor.ref_pixel'                    : 0.2,
-'geocor.ref_margin'                   : 10.0,
-'geocor.ref_range'                    : [np.nan,np.nan],
-'geocor.trg_fnam'                     : os.path.join(main_drone_analysis,'Current','orthomosaic','orthomosaic.tif'),
-'geocor.trg_bands'                    : [2,4],
-'geocor.trg_ndvi'                     : True,
-'geocor.trg_binning'                  : 0.2,
-'geocor.trg_range'                    : [-10000.0,32767.0],
-'geocor.init_shifts'                  : [0.0,0.0],
-'geocor.part_sizes'                   : [50.0,50.0,25.0,25.0,15.0],
-'geocor.gcp_intervals'                : [25.0,25.0,12.5,12.5,7.5],
-'geocor.max_shifts'                   : [8.0,5.0,2.5,1.5,1.5],
-'geocor.margins'                      : [12.0,7.5,3.75,2.25,2.25],
-'geocor.scan_steps'                   : [2,2,1,1,1],
-'geocor.resized_flags'                : [True,True,True,True],
-'geocor.geocor_order'                 : '2nd',
-'geocor.boundary_width'               : 0.6,
-'geocor.boundary_nmin'                : 0.1,
-'geocor.boundary_cmins'               : [0.01,1.3],
-'geocor.boundary_rmax'                : 1.0,
-'geocor.boundary_emaxs'               : [3.0,2.0,1.5],
-'geocor.python_path'                  : python_path,
-'geocor.scr_dir'                      : scr_dir,
-'geocor.middle_left_frame_width'      : 1000,
-#----------- indices -----------
-'indices.inp_fnam'                    : os.path.join(main_drone_analysis,'Current','geocor','orthomosaic_geocor_np2.tif'),
-'indices.out_params'                  : [False,False,False,False,False,True,True,True,True,True,True,True,False,True],
-'indices.norm_bands'                  : [True,True,True,True,True],
-'indices.rgi_red_band'                : 'e',
-'indices.data_range'                  : [np.nan,np.nan],
-'indices.python_path'                 : python_path,
-'indices.scr_dir'                     : scr_dir,
-'indices.middle_left_frame_width'     : 1000,
-#----------- identify -----------
-'identify.inp_fnam'                   : os.path.join(main_drone_analysis,'Current','geocor','orthomosaic_geocor_np2.tif'),
-'identify.gcp_fnam'                   : os.path.join(main_drone_analysis,'Current','geocor','orthomosaic_resized_geocor_utm2utm.dat'),
-'identify.geocor_order'               : '2nd',
-'identify.epsg'                       : 32748,
-'identify.obs_fnam'                   : os.path.join(main_field_data,'Current','observation.xls'),
-'identify.i_sheet'                    : 1,
-'identify.buffer'                     : 5.0,
-'identify.bunch_nmin'                 : 5,
-'identify.bunch_rmax'                 : 10.0,
-'identify.bunch_emax'                 : 2.0,
-'identify.point_nmin'                 : 5,
-'identify.point_rmax'                 : 1.0,
-'identify.point_dmax'                 : [1.0,0.5],
-'identify.point_area'                 : [0.015,0.105,0.05],
-'identify.criteria'                   : 'Distance from Line',
-'identify.rr_param'                   : ['Lrg','S/N'],
-'identify.rthr'                       : [0.0,1.0,0.01],
-'identify.sthr'                       : 1.0,
-'identify.data_range'                 : [np.nan,np.nan],
-'identify.neighbor_size'              : [0.78,0.95],
-'identify.python_path'                : python_path,
-'identify.scr_dir'                    : scr_dir,
-'identify.middle_left_frame_width'    : 1000,
 #----------- extract -----------
 'extract.inp_fnam'                    : os.path.join(main_drone_analysis,'Current','indices','orthomosaic_indices.tif'),
 'extract.obs_fnam'                    : os.path.join(main_field_data,'Current','observation.xls'),
@@ -208,7 +122,6 @@ date_format = config['main'].get('main.date_format')
 current_block = config['main'].get('main.current_block')
 current_date = config['main'].get('main.current_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
-drone_data = os.path.normpath( config['main'].get('main.drone_data'))
 drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
 browse_image = os.path.normpath(config['main'].get('main.browse_image'))
 window_width = config['main'].getint('main.window_width')
@@ -220,10 +133,6 @@ right_cnv_height = config['main'].getint('main.right_cnv_height')
 center_btn_width = config['main'].getint('main.center_btn_width')
 #----------- subprocess -----------
 pnams = []
-pnams.append('orthomosaic')
-pnams.append('geocor')
-pnams.append('indices')
-pnams.append('identify')
 pnams.append('extract')
 pnams.append('formula')
 pnams.append('estimate')

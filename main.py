@@ -11,59 +11,24 @@ from config import *
 def set_title(pnam):
     block = top_cmb.get()
     dstr = top_cde.get()
-    field_dir = top_var['field_data'].get()
-    drone_dir = top_var['drone_data'].get()
-    analysis_dir = top_var['drone_analysis'].get()
+    field_data = top_var['field_data'].get()
+    drone_analysis = top_var['drone_analysis'].get()
+    s1_analysis = top_var['s1_analysis'].get()
+    s2_analysis = top_var['s2_analysis'].get()
     for proc in pnams:
         modules[proc].current_block = block
         modules[proc].current_date = dstr
-        modules[proc].field_data = field_dir
-        modules[proc].drone_data =  drone_dir
-        modules[proc].drone_analysis = analysis_dir
-    # orthomosaic
-    proc_pnam = 'inpdirs'
-    dnam = os.path.join(drone_dir,block,dstr)
-    dnams = glob(os.path.join(dnam,'*FPLAN'))
-    if proc_orthomosaic.values['calib_flag'][0]:
-        dnams.extend(glob(os.path.join(dnam,'*MEDIA')))
-    if len(dnams) > 0:
-        proc_orthomosaic.values[proc_pnam] = '\n'.join(sorted(dnams))
-    else:
-        proc_orthomosaic.values[proc_pnam] = dnam
-    if proc_orthomosaic.center_var is not None:
-        try:
-            proc_orthomosaic.center_inp[proc_pnam].delete(1.0,tk.END)
-            proc_orthomosaic.center_inp[proc_pnam].insert(1.0,proc_orthomosaic.values[proc_pnam])
-        except Exception:
-            pass
-        proc_orthomosaic.center_var[proc_pnam].set(proc_orthomosaic.values[proc_pnam])
-    # geocor
-    proc_pnam = 'trg_fnam'
-    proc_geocor.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'orthomosaic','{}_{}.tif'.format(block,dstr))
-    if proc_geocor.center_var is not None:
-        proc_geocor.center_var[proc_pnam].set(proc_geocor.values[proc_pnam])
-    # indices
-    proc_pnam = 'inp_fnam'
-    proc_indices.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'geocor','{}_{}_geocor_{}.tif'.format(block,dstr,proc_geocor.values['geocor_order']))
-    if proc_indices.center_var is not None:
-        proc_indices.center_var[proc_pnam].set(proc_indices.values[proc_pnam])
-    # identify
-    proc_pnam = 'inp_fnam'
-    proc_identify.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'geocor','{}_{}_geocor_{}.tif'.format(block,dstr,proc_geocor.values['geocor_order']))
-    proc_pnam = 'gcp_fnam'
-    proc_identify.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'geocor','{}_{}_geocor_utm2utm.dat'.format(block,dstr))
-    proc_pnam = 'obs_fnam'
-    proc_identify.values[proc_pnam] = os.path.join(field_dir,block,'Excel_File','{}_{}.xls'.format(block,dstr))
-    if proc_identify.center_var is not None:
-        for proc_pnam in ['inp_fnam','gcp_fnam','obs_fnam']:
-            proc_identify.center_var[proc_pnam].set(proc_identify.values[proc_pnam])
+        modules[proc].field_data = field_data
+        modules[proc].drone_analysis = drone_analysis
+        modules[proc].s1_analysis = s1_analysis
+        modules[proc].s2_analysis = s2_analysis
     # extract
     proc_pnam = 'inp_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
+    proc_extract.values[proc_pnam] = os.path.join(s2_analysis,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
     proc_pnam = 'obs_fnam'
     proc_extract.values[proc_pnam] = os.path.join(field_dir,block,'Excel_File','{}_{}.xls'.format(block,dstr))
     proc_pnam = 'gps_fnam'
-    dnam = os.path.join(analysis_dir,block,'identify')
+    dnam = os.path.join(drone_analysis,block,'identify')
     fnams = glob(os.path.join(dnam,'*_identify.csv'))
     if len(fnams) > 0:
         proc_extract.values[proc_pnam] = fnams[0]
@@ -74,7 +39,7 @@ def set_title(pnam):
             proc_extract.center_var[proc_pnam].set(proc_extract.values[proc_pnam])
     # formula
     proc_pnam = 'inp_fnams'
-    dnam = os.path.join(analysis_dir,'extract')
+    dnam = os.path.join(s2_analysis,'extract')
     fnams = glob(os.path.join(dnam,'*_extract.csv'))
     if len(fnams) > 0:
         proc_formula.values[proc_pnam] = '\n'.join(sorted(fnams))
@@ -89,7 +54,7 @@ def set_title(pnam):
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
     # estimate
     proc_pnam = 'inp_fnam'
-    proc_estimate.values[proc_pnam] = os.path.join(analysis_dir,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
+    proc_estimate.values[proc_pnam] = os.path.join(s2_analysis,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
     # change color
     root.focus_set()
     if proc_estimate.center_var is not None:
@@ -248,7 +213,7 @@ top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['field_data','drone_data','drone_analysis'],['Field Data','Drone Data','Drone Analysis']):
+for pnam,title in zip(['field_data','drone_analysis','s1_analysis','s2_analysis'],['Field Data','Drone Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
     top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=100,height=25)
