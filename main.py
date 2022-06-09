@@ -52,9 +52,6 @@ def set_title(pnam):
         except Exception:
             pass
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
-    # estimate
-    proc_pnam = 'inp_fnam'
-    proc_estimate.values[proc_pnam] = os.path.join(s2_analysis,block,dstr,'indices','{}_{}_indices.tif'.format(block,dstr))
     # change color
     root.focus_set()
     if proc_estimate.center_var is not None:
