@@ -2,7 +2,7 @@ from run_phenology import Phenology
 
 proc_phenology = Phenology()
 proc_phenology.proc_name = 'phenology'
-proc_phenology.proc_title = 'Estimate Growth Stage'
+proc_phenology.proc_title = 'Estimate Event Dates'
 proc_phenology.pnams.append('inp_fnam')
 proc_phenology.pnams.append('atc_params')
 proc_phenology.pnams.append('atc_ithrs')
@@ -25,7 +25,7 @@ proc_phenology.defaults['atc_nthrs'] = [-0.0005,-0.0005,-0.0003]
 proc_phenology.list_sizes['atc_params'] = 2
 proc_phenology.list_sizes['atc_ithrs'] = 2
 proc_phenology.list_sizes['atc_nthrs'] = 3
-proc_phenology.list_labels['atc_params'] = ['Ratio (%) :',' Offset :']
+proc_phenology.list_labels['atc_params'] = ['Ratio (%) :',' Offset (day) :']
 proc_phenology.list_labels['atc_ithrs'] = ['T1 :',' T2 :']
 proc_phenology.list_labels['atc_nthrs'] = ['T1 :',' T2 :',' T3 :']
 proc_phenology.input_types['inp_fnam'] = 'ask_file'

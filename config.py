@@ -51,11 +51,11 @@ config_defaults.update({
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
 #----------- phenology -----------
-'phenology.inp_fnam'                   : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
-'phenology.atc_params'                 : [90.0,10.0],
-'phenology.atc_ithrs'                  : [30,35],
-'phenology.atc_nthrs'                  : [-0.0005,-0.0005,-0.0003],
-'phenology.middle_left_frame_width'    : 1000,
+'phenology.inp_fnam'                  : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
+'phenology.atc_params'                : [90.0,10.0],
+'phenology.atc_ithrs'                 : [30,35],
+'phenology.atc_nthrs'                 : [-0.0005,-0.0005,-0.0003],
+'phenology.middle_left_frame_width'   : 1000,
 #----------- extract -----------
 'extract.obs_fnam'                    : os.path.join(main_field_data,'Current','observation.xls'),
 'extract.i_sheet'                     : 1,
