@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 import configparser
+from proc_geocor import proc_geocor
+from proc_interp import proc_interp
 from proc_phenology import proc_phenology
 from proc_extract import proc_extract
 from proc_formula import proc_formula
@@ -39,6 +41,8 @@ config_defaults.update({
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.browse_image'                   : main_browse_image,
+'main.geocor'                         : False,
+'main.interp'                         : True,
 'main.phenology'                      : True,
 'main.extract'                        : False,
 'main.formula'                        : False,
@@ -50,6 +54,33 @@ config_defaults.update({
 'main.left_cnv_height'                : 21,
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
+#----------- geocor -----------
+'geocor.gis_fnam'                     : gis_fnam,
+'geocor.ref_fnam'                     : ref_fnam,
+'geocor.ref_bands'                    : [4,-1,-1],
+'geocor.ref_factors',                 : [np.nan,np.nan,np.nan],
+'geocor.ref_range'                    : [np.nan,np.nan],
+'geocor.trg_fnam'                     : os.path.join(main_drone_analysis,'Current','orthomosaic','orthomosaic.tif'),
+'geocor.trg_bands'                    : [3,-1,-1],
+'geocor.trg_factors',                 : [np.nan,np.nan,np.nan],
+'geocor.trg_flags'                    : [16,-1,-1,-1,-1],
+'geocor.trg_range'                    : [np.nan,np.nan],
+'geocor.pixel_size'                   : 10.0,
+'geocor.init_shifts'                  : [0.0,0.0],
+'geocor.part_size'                    : 1000.0,
+'geocor.gcp_interval'                 : 500.0,
+'geocor.max_shift'                    : 30.0,
+'geocor.margin'                       : 50.0,
+'geocor.scan_step'                    : 1,
+'geocor.geocor_order'                 : 'Auto',
+'geocor.nmin'                         : 20,
+'geocor.cmin'                         : 0.3,
+'geocor.emaxs'                        : [3.0,2.0,2.0],
+'geocor.smooth_fact'                  : [1.0e4,1.0e4],
+'geocor.smooth_dmax'                  : [4.0,4.0],
+'geocor.python_path'                  : python_path,
+'geocor.scr_dir'                      : scr_dir,
+'geocor.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
 'phenology.inp_fnam'                  : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
 'phenology.atc_params'                : [90.0,10.0],
