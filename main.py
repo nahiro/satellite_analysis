@@ -54,11 +54,11 @@ def set_title(pnam):
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
     # change color
     root.focus_set()
-    if pnam == 'end_date':
+    if pnam == 'planting':
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='black')
         style.configure('top_end.DateEntry',foreground='black')
-    elif pnam == 'date':
+    elif pnam == 'observation':
         style = ttk.Style()
         style.map('top_cmb.TCombobox',
                   foreground=[('!readonly','!focus','black'),('!readonly','focus','black')],
@@ -139,7 +139,8 @@ def exit():
 
 root = tk.Tk()
 root.title('BLB Damage Estimation - Satellite version')
-root.geometry('{}x{}'.format(window_width,195+30*len(pnams)))
+#root.geometry('{}x{}'.format(window_width,195+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,210+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -193,59 +194,17 @@ top_sep = {}
 top_box = {}
 top_var = {}
 btn_pnam = 'set'
-pnam = 'start_date'
-top_lbl[pnam] = tk.Label(top_center_top_frame,text='Start/End',width=9,anchor='w')
-top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(2,0),anchor=tk.W,side=tk.LEFT)
-myfont = font.Font(root,family='',size=9,weight='normal')
-top_start = CustomDateEntry(top_center_top_frame,width=10,date_pattern=date_format,style='top_start.DateEntry')
-if start_date != '':
-    top_start.set(start_date)
-top_start.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
-top_start.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
-pnam = 'end_date'
-top_end = CustomDateEntry(top_center_top_frame,width=10,date_pattern=date_format,style='top_end.DateEntry')
-if end_date != '':
-    top_end.set_date(end_date)
-top_end.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
-top_end.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
-top_btn[pnam] = tk.Button(top_right_top_frame,text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
-top_btn[pnam].pack(padx=(1,0),pady=(2,0),side=tk.LEFT)
-top_err[pnam] = ttk.Label(top_right_top_frame,text='ERROR',foreground='red')
-pnam = 'block'
-top_lbl[pnam] = tk.Label(top_center_middle_frame,text='Block/Date',width=9,anchor='w')
-top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(2,0),anchor=tk.W,side=tk.LEFT)
-myfont = font.Font(root,family='',size=9,weight='normal')
-#top_cmb = ttk.Combobox(top_center_middle_frame,width=10,style='top_cmb.TCombobox',font=myfont,values=['Block-'+block for block in blocks])
-top_cmb = ttk.Combobox(top_center_middle_frame,width=10,style='top_cmb.TCombobox',values=['Block-'+block for block in blocks])
-style = ttk.Style()
-style.map('top_cmb.TCombobox',
-          fieldbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],
-          selectbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],)
-if current_block != '':
-    top_cmb.set(current_block)
-else:
-    top_cmb.current(0)
-top_cmb.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
-top_cmb.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
-pnam = 'date'
-top_cde = CustomDateEntry(top_center_middle_frame,width=10,date_pattern=date_format,style='top_cde.DateEntry')
-if current_date != '':
-    top_cde.set_date(current_date)
-top_cde.pack(ipadx=0,ipady=0,padx=(0,1),pady=(5,0),fill=tk.X,side=tk.LEFT,expand=True)
-top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
-top_btn[pnam] = tk.Button(top_right_middle_frame,text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
-top_btn[pnam].pack(padx=(1,0),pady=(2,0),side=tk.LEFT)
-top_err[pnam] = ttk.Label(top_right_middle_frame,text='ERROR',foreground='red')
 
 top_center_bottom_cnv = {}
 top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['field_data','drone_analysis','s1_analysis','s2_analysis'],['Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
+for pnam,title in zip(['planting','observation','field_data','drone_analysis','s1_analysis','s2_analysis'],
+                      ['Planting Start/End','Observation Block/Date','Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
-    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=120,height=25)
+    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=150,height=25)
     top_center_left_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.LEFT)
     top_center_left_cnv[pnam].pack_propagate(False)
     top_center_right_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=10,height=25)
@@ -254,14 +213,50 @@ for pnam,title in zip(['field_data','drone_analysis','s1_analysis','s2_analysis'
     top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(3,3),anchor=tk.W,side=tk.LEFT,expand=False)
     top_sep[pnam] = ttk.Separator(top_center_left_cnv[pnam],orient='horizontal')
     top_sep[pnam].pack(ipadx=0,ipady=0,padx=(0,2),pady=0,fill=tk.X,side=tk.LEFT,expand=True)
-    top_var[pnam] = tk.StringVar()
-    top_var[pnam].set(os.path.join(eval(pnam),'Current'))
-    top_box[pnam] = tk.Entry(top_center_right_cnv[pnam],textvariable=top_var[pnam])
-    top_box[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=(3,0),anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
-    top_box[pnam].config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
-    top_img[pnam] = tk.Button(top_center_right_cnv[pnam],image=browse_img,width=center_btn_width,bg='white',bd=1,command=eval('lambda:ask_folder("{}")'.format(pnam)))
-    top_img[pnam].image = browse_img
-    top_img[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=0,anchor=tk.W,side=tk.LEFT)
+    if pnam == 'planting':
+        box_pnam = 'start_date'
+        myfont = font.Font(root,family='',size=9,weight='normal')
+        top_start = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_start.DateEntry')
+        if start_date != '':
+            top_start.set(start_date)
+        top_start.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_start.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+        box_pnam = 'end_date'
+        top_end = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_end.DateEntry')
+        if end_date != '':
+            top_end.set_date(end_date)
+        top_end.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_end.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+    elif pnam == 'observation':
+        box_pnam = 'block'
+        myfont = font.Font(root,family='',size=9,weight='normal')
+        #top_cmb = ttk.Combobox(top_center_right_cnv[pnam],width=10,style='top_cmb.TCombobox',font=myfont,values=['Block-'+block for block in blocks])
+        top_cmb = ttk.Combobox(top_center_right_cnv[pnam],width=10,style='top_cmb.TCombobox',values=['Block-'+block for block in blocks])
+        style = ttk.Style()
+        style.map('top_cmb.TCombobox',
+                  fieldbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],
+                  selectbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],)
+        if current_block != '':
+            top_cmb.set(current_block)
+        else:
+            top_cmb.current(0)
+        top_cmb.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_cmb.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+        box_pnam = 'date'
+        top_cde = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_cde.DateEntry')
+        if current_date != '':
+            top_cde.set_date(current_date)
+        top_cde.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+    else:
+        top_var[pnam] = tk.StringVar()
+        top_var[pnam].set(os.path.join(eval(pnam),'Current'))
+        top_box[pnam] = tk.Entry(top_center_right_cnv[pnam],textvariable=top_var[pnam])
+        top_box[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=(3,0),anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
+        top_box[pnam].config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
+        top_img[pnam] = tk.Button(top_center_right_cnv[pnam],image=browse_img,width=center_btn_width,bg='white',bd=1,command=eval('lambda:ask_folder("{}")'.format(pnam)))
+        top_img[pnam].image = browse_img
+        top_img[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=0,anchor=tk.W,side=tk.LEFT)
     top_right_bottom_cnv[pnam] = tk.Canvas(top_right_bottom_frame,width=10,height=25)
     top_right_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
     top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
