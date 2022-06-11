@@ -92,7 +92,7 @@ config_defaults.update({
 'interp.scr_dir'                      : scr_dir,
 'interp.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
-'phenology.inp_fnam'                  : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
+'phenology.trans_select'              : 'Around Plausible Planting Date',
 'phenology.atc_params'                : [90.0,10.0],
 'phenology.atc_ithrs'                 : [30,35],
 'phenology.atc_nthrs'                 : [-0.0005,-0.0005,-0.0003],
