@@ -27,6 +27,7 @@ main_browse_image = os.path.join(cnf_dir,'browse.png')
 if not os.path.exists(main_browse_image):
     main_browse_image = os.path.join(HOME,'Pictures','browse.png')
 gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_area_polygon_20210914.shp')
+ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_mul.tif')
 
 # Set defaults
 config_defaults = dict(os.environ)
@@ -41,7 +42,7 @@ config_defaults.update({
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.browse_image'                   : main_browse_image,
-'main.geocor'                         : False,
+'main.geocor'                         : True,
 'main.interp'                         : True,
 'main.phenology'                      : True,
 'main.extract'                        : False,
@@ -55,12 +56,12 @@ config_defaults.update({
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
 #----------- geocor -----------
-'geocor.gis_fnam'                     : gis_fnam,
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [4,-1,-1],
 'geocor.ref_factors'                  : [np.nan,np.nan,np.nan],
 'geocor.ref_range'                    : [np.nan,np.nan],
-'geocor.trg_fnam'                     : os.path.join(main_drone_analysis,'Current','orthomosaic','orthomosaic.tif'),
+'geocor.trg_subset'                   : [107.201,107.367,-6.910,-6.750],
+'geocor.trg_resample'                 : [743805.0,757295.0,9235815.0,9251805.0],
 'geocor.trg_bands'                    : [3,-1,-1],
 'geocor.trg_factors'                  : [np.nan,np.nan,np.nan],
 'geocor.trg_flags'                    : [16,-1,-1,-1,-1],
@@ -81,6 +82,11 @@ config_defaults.update({
 'geocor.python_path'                  : python_path,
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
+#----------- interp -----------
+'interp.gis_fnam'                     : gis_fnam,
+'interp.python_path'                  : python_path,
+'interp.scr_dir'                      : scr_dir,
+'interp.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
 'phenology.inp_fnam'                  : os.path.join(main_s1_analysis,'Current','indices','orthomosaic_indices.tif'),
 'phenology.atc_params'                : [90.0,10.0],
@@ -175,6 +181,8 @@ right_cnv_height = config['main'].getint('main.right_cnv_height')
 center_btn_width = config['main'].getint('main.center_btn_width')
 #----------- subprocess -----------
 pnams = []
+pnams.append('geocor')
+pnams.append('interp')
 pnams.append('phenology')
 pnams.append('extract')
 pnams.append('formula')
