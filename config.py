@@ -84,6 +84,9 @@ config_defaults.update({
 'geocor.middle_left_frame_width'      : 1000,
 #----------- interp -----------
 'interp.gis_fnam'                     : gis_fnam,
+'interp.calib_params'                 : [False,False,False,False,False,False,False,False,False,False,False,False,False,False],
+'interp.cloud_removal'                : 'SC Flag',
+'interp.p_smooth'                     : 2.0e-3,
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
 'interp.middle_left_frame_width'      : 1000,
