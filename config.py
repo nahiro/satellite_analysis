@@ -48,7 +48,7 @@ config_defaults.update({
 'main.s2_data'                        : main_s2_data,
 'main.s2_analysis'                    : main_s2_analysis,
 'main.browse_image'                   : main_browse_image,
-'main.download'                       : False,
+'main.download'                       : True,
 'main.geocor'                         : True,
 'main.interp'                         : True,
 'main.phenology'                      : True,
