@@ -10,7 +10,9 @@ proc_formula.pnams.append('assess_range')
 proc_formula.pnams.append('mature_range')
 proc_formula.pnams.append('age_range')
 proc_formula.pnams.append('n_x')
-proc_formula.pnams.append('x_params')
+proc_formula.pnams.append('x1_params')
+proc_formula.pnams.append('x2_params')
+proc_formula.pnams.append('x3_params')
 proc_formula.pnams.append('q_params')
 proc_formula.pnams.append('y_params')
 proc_formula.pnams.append('score_max')
@@ -34,7 +36,9 @@ proc_formula.params['assess_range'] = 'Days from Assessment'
 proc_formula.params['mature_range'] = 'Days from Heading'
 proc_formula.params['age_range'] = 'Days from Planting'
 proc_formula.params['n_x'] = 'Explanatory Variable Number'
-proc_formula.params['x_params'] = 'Explanatory Variable Candidate'
+proc_formula.params['x1_params'] = 'Explanatory Ref. Candidate'
+proc_formula.params['x2_params'] = 'Explanatory NRef. Candidate'
+proc_formula.params['x3_params'] = 'Explanatory Index Candidate'
 proc_formula.params['q_params'] = 'Parameter for Plot-mean'
 proc_formula.params['y_params'] = 'Objective Variable'
 proc_formula.params['score_max'] = 'Max Input Score'
@@ -58,7 +62,9 @@ proc_formula.param_types['assess_range'] = 'float_list'
 proc_formula.param_types['mature_range'] = 'float_list'
 proc_formula.param_types['age_range'] = 'float_list'
 proc_formula.param_types['n_x'] = 'int_select_list'
-proc_formula.param_types['x_params'] = 'boolean_list'
+proc_formula.param_types['x1_params'] = 'boolean_list'
+proc_formula.param_types['x2_params'] = 'boolean_list'
+proc_formula.param_types['x3_params'] = 'boolean_list'
 proc_formula.param_types['q_params'] = 'boolean_list'
 proc_formula.param_types['y_params'] = 'boolean_list'
 proc_formula.param_types['score_max'] = 'int_list'
@@ -98,7 +104,9 @@ proc_formula.defaults['assess_range'] = [-5.0,5.0]
 proc_formula.defaults['mature_range'] = [30.0,40.0]
 proc_formula.defaults['age_range'] = [90.0,100.0]
 proc_formula.defaults['n_x'] = [1,2]
-proc_formula.defaults['x_params'] = [False,False,False,False,False,True,True,True,True,True,True,True,False,True]
+proc_formula.defaults['x1_params'] = [True,True,True,True,True,True,True,True,True,True]
+proc_formula.defaults['x2_params'] = [True,True,True,True,True,True,True,True,True,True]
+proc_formula.defaults['x3_params'] = [True,True,True,True]
 proc_formula.defaults['q_params'] = [True,True,True,True]
 proc_formula.defaults['y_params'] = [True,False,False,False,False,False]
 proc_formula.defaults['score_max'] = [9,9,1,1,1,9]
@@ -121,7 +129,9 @@ proc_formula.list_sizes['assess_range'] = 2
 proc_formula.list_sizes['mature_range'] = 2
 proc_formula.list_sizes['age_range'] = 2
 proc_formula.list_sizes['n_x'] = 2
-proc_formula.list_sizes['x_params'] = 14
+proc_formula.list_sizes['x1_params'] = 10
+proc_formula.list_sizes['x2_params'] = 10
+proc_formula.list_sizes['x3_params'] = 4
 proc_formula.list_sizes['q_params'] = 4
 proc_formula.list_sizes['y_params'] = 6
 proc_formula.list_sizes['score_max'] = 6
@@ -139,7 +149,9 @@ proc_formula.list_labels['assess_range'] = ['Min :',' Max :']
 proc_formula.list_labels['mature_range'] = ['Min :',' Max :']
 proc_formula.list_labels['age_range'] = ['Min :',' Max :']
 proc_formula.list_labels['n_x'] = [('Min :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14]),(' Max :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14])]
-proc_formula.list_labels['x_params'] = ['b','g','r','e','n','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
+proc_formula.list_labels['x1_params'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
+proc_formula.list_labels['x2_params'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2']
+proc_formula.list_labels['x3_params'] = ['NDVI','GNDVI','RGI','NRGI']
 proc_formula.list_labels['q_params'] = ['Location','PlotPaddy','PlantDate','Age']
 proc_formula.list_labels['y_params'] = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 proc_formula.list_labels['score_max'] = ['BLB :',' Blast :',' Borer :',' Rat :',' Hopper :',' Drought :']
@@ -158,7 +170,9 @@ proc_formula.input_types['assess_range'] = 'float_list'
 proc_formula.input_types['mature_range'] = 'float_list'
 proc_formula.input_types['age_range'] = 'float_list'
 proc_formula.input_types['n_x'] = 'int_select_list'
-proc_formula.input_types['x_params'] = 'boolean_list'
+proc_formula.input_types['x1_params'] = 'boolean_list'
+proc_formula.input_types['x2_params'] = 'boolean_list'
+proc_formula.input_types['x3_params'] = 'boolean_list'
 proc_formula.input_types['q_params'] = 'boolean_list'
 proc_formula.input_types['y_params'] = 'boolean_list'
 proc_formula.input_types['score_max'] = 'int_list'
@@ -176,7 +190,7 @@ proc_formula.input_types['n_multi'] = 'box'
 proc_formula.input_types['vif_max'] = 'box'
 proc_formula.input_types['n_cros'] = 'box'
 proc_formula.input_types['n_formula'] = 'box'
-#proc_formula.flag_fill['x_params'] = True
+#proc_formula.flag_fill['x1_params'] = True
 #proc_formula.flag_fill['q_params'] = True
 #proc_formula.flag_fill['y_params'] = True
 for pnam in proc_formula.pnams:
