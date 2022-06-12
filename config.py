@@ -97,6 +97,7 @@ config_defaults.update({
 'interp.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
 'phenology.gis_fnam'                  : gis_fnam,
+'phenology.mask_fnam'                 : '',
 'phenology.trans_fnam'                : '',
 'phenology.heading_fnam'              : '',
 'phenology.harvest_fnam'              : '',
@@ -107,6 +108,7 @@ config_defaults.update({
 'phenology.trans_thr2'                : [-13.0,np.nan,np.nan,0.0,np.nan],
 'phenology.trans_thr3'                : [4.0,30.0],
 'phenology.trans_thr4'                : [np.nan,np.nan],
+'phenology.trans_thr5'                : [2.0,30.0],
 'phenology.atc_params'                : [90.0,10.0],
 'phenology.atc_ithrs'                 : [30,35],
 'phenology.atc_nthrs'                 : [-0.0005,-0.0005,-0.0003],
