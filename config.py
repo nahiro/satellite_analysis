@@ -101,6 +101,7 @@ config_defaults.update({
 'interp.norm_bands'                   : [True,True,True,True,True,True,True,True,False,False],
 'interp.out_nrefs'                    : [True,True,True,True,True,True,True,True,True,True],
 'interp.calib_nrefs'                  : [False,False,False,False,False,False,False,False,False,False],
+'interp.rgi_red_band'                 : 'e1',
 'interp.out_inds'                     : [True,True,True,True],
 'interp.calib_inds'                   : [False,False,False,False],
 'interp.cflag'                        : [True,False,False],
