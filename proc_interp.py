@@ -5,44 +5,87 @@ proc_interp = Interp()
 proc_interp.proc_name = 'interp'
 proc_interp.proc_title = 'Interpolate Time-series Data'
 proc_interp.pnams.append('gis_fnam')
-proc_interp.pnams.append('calib_params')
-proc_interp.pnams.append('cflag_sc')
-proc_interp.pnams.append('cflag_red')
-proc_interp.pnams.append('cflag_ndvi')
+proc_interp.pnams.append('out_refs')
+proc_interp.pnams.append('calib_refs')
+proc_interp.pnams.append('out_nrefs')
+proc_interp.pnams.append('calib_nrefs')
+proc_interp.pnams.append('out_inds')
+proc_interp.pnams.append('calib_inds')
+proc_interp.pnams.append('cflag')
+proc_interp.pnams.append('cflag_ref')
+proc_interp.pnams.append('cflag_ind')
+proc_interp.pnams.append('cflag_thr')
 proc_interp.pnams.append('p_smooth')
 proc_interp.params['gis_fnam'] = 'Polygon File'
-proc_interp.params['calib_params'] = 'Calibrate Parameter'
-proc_interp.params['cflag_sc'] = 'Cloud Removal by SC'
-proc_interp.params['cflag_red'] = 'Cloud Removal by Red'
-proc_interp.params['cflag_ndvi'] = 'Cloud Removal by NDVI'
+proc_interp.params['out_refs'] = 'Output Reflectance'
+proc_interp.params['calib_refs'] = 'Calibrate Reflectance'
+proc_interp.params['out_nrefs'] = 'Output Normalized Ref.'
+proc_interp.params['calib_nrefs'] = 'Calibrate Normalized Ref.'
+proc_interp.params['out_inds'] = 'Output Index'
+proc_interp.params['calib_inds'] = 'Calibrate Index'
+proc_interp.params['cflag'] = 'Cloud Removal Source'
+proc_interp.params['cflag_ref'] = 'Reflectance for Cloud Rem.'
+proc_interp.params['cflag_ind'] = 'Index for Cloud Removal'
+proc_interp.params['cflag_thr'] = 'Thres. for Cloud Removal'
 proc_interp.params['p_smooth'] = 'Smoothing Parameter'
 proc_interp.param_types['gis_fnam'] = 'string'
-proc_interp.param_types['calib_params'] = 'boolean_list'
-proc_interp.param_types['cflag_sc'] = 'boolean_list'
-proc_interp.param_types['cflag_red'] = 'boolean_list'
-proc_interp.param_types['cflag_ndvi'] = 'boolean_list'
+proc_interp.param_types['out_refs'] = 'boolean_list'
+proc_interp.param_types['calib_refs'] = 'boolean_list'
+proc_interp.param_types['out_nrefs'] = 'boolean_list'
+proc_interp.param_types['calib_nrefs'] = 'boolean_list'
+proc_interp.param_types['out_inds'] = 'boolean_list'
+proc_interp.param_types['calib_inds'] = 'boolean_list'
+proc_interp.param_types['cflag'] = 'boolean_list'
+proc_interp.param_types['cflag_ref'] = 'string_select'
+proc_interp.param_types['cflag_ind'] = 'string_select'
+proc_interp.param_types['cflag_thr'] = 'float_list'
 proc_interp.param_types['p_smooth'] = 'float'
+proc_interp.param_range['cflag_thr'] = (0.0,10.0)
 proc_interp.param_range['p_smooth'] = (0.0,1.0)
 proc_interp.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
-proc_interp.defaults['calib_params'] = [False,False,False,False,False,False,False,False,False,False,False,False,False,False]
-proc_interp.defaults['cflag_sc'] = '[True,True,True,True,True,True,True,True,True,True,True,True,True,True]'
-proc_interp.defaults['cflag_red'] = '[False,False,False,False,False,False,False,False,False,False,False,False,False,False]'
-proc_interp.defaults['cflag_ndvi'] = '[False,False,False,False,False,False,False,False,False,False,False,False,False,False]'
+proc_interp.defaults['out_refs'] = [True,True,True,True,True,True,True,True]
+proc_interp.defaults['calib_refs'] = [False,False,False,False,False,False,False,False]
+proc_interp.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True]
+proc_interp.defaults['calib_nrefs'] = [False,False,False,False,False,False,False,False]
+proc_interp.defaults['out_inds'] = [True,True,True,True]
+proc_interp.defaults['calib_inds'] = [False,False,False,False]
+proc_interp.defaults['cflag'] = [True,False,False]
+proc_interp.defaults['cflag_ref'] = 'b'
+proc_interp.defaults['cflag_ind'] = 'NDVI'
+proc_interp.defaults['cflag_thr'] = [0.01,0.01]
 proc_interp.defaults['p_smooth'] = 2.0e-3
-proc_interp.list_sizes['calib_params'] = 14
-proc_interp.list_sizes['cflag_sc'] = 14 
-proc_interp.list_sizes['cflag_red'] = 14 
-proc_interp.list_sizes['cflag_ndvi'] = 14 
-proc_interp.list_labels['calib_params'] = ['b','g','r','e','n','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
-proc_interp.list_labels['cflag_sc'] = ['b','g','r','e','n','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
-proc_interp.list_labels['cflag_red'] = ['b','g','r','e','n','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
-proc_interp.list_labels['cflag_ndvi'] = ['b','g','r','e','n','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
-#proc_interp.list_labels['cflag_sc'] = ['SC Flag','Time-series Smoothong']
+proc_interp.list_sizes['out_refs'] = 8
+proc_interp.list_sizes['calib_refs'] = 8
+proc_interp.list_sizes['out_nrefs'] = 8
+proc_interp.list_sizes['calib_nrefs'] = 8
+proc_interp.list_sizes['out_inds'] = 4
+proc_interp.list_sizes['calib_inds'] = 4
+proc_interp.list_sizes['cflag'] = 3
+proc_interp.list_sizes['cflag_ref'] = 8
+proc_interp.list_sizes['cflag_ind'] = 12
+proc_interp.list_sizes['cflag_thr'] = 2
+proc_interp.list_labels['out_refs'] = ['b','g','r','e1','e2','e3','n1','n2']
+proc_interp.list_labels['calib_refs'] = ['b','g','r','e1','e2','e3','n1','n2']
+proc_interp.list_labels['out_nrefs'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2']
+proc_interp.list_labels['calib_nrefs'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2']
+proc_interp.list_labels['out_inds'] = ['NDVI','GNDVI','RGI','NRGI']
+proc_interp.list_labels['calib_inds'] = ['NDVI','GNDVI','RGI','NRGI']
+proc_interp.list_labels['cflag'] = ['SC Flag','Reflactance','Index']
+proc_interp.list_labels['cflag_ref'] = ['b','g','r','e1','e2','e3','n1','n2']
+proc_interp.list_labels['cflag_ind'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','NDVI','GNDVI','RGI','NRGI']
+proc_interp.list_labels['cflag_thr'] = ['Reflectance :',' Index :']
+#proc_interp.list_labels['cflag'] = ['SC Flag','Time-series Smoothong']
 proc_interp.input_types['gis_fnam'] = 'ask_file'
-proc_interp.input_types['calib_params'] = 'boolean_list'
-proc_interp.input_types['cflag_sc'] = 'boolean_list'
-proc_interp.input_types['cflag_red'] = 'boolean_list'
-proc_interp.input_types['cflag_ndvi'] = 'boolean_list'
+proc_interp.input_types['out_refs'] = 'boolean_list'
+proc_interp.input_types['calib_refs'] = 'boolean_list'
+proc_interp.input_types['out_nrefs'] = 'boolean_list'
+proc_interp.input_types['calib_nrefs'] = 'boolean_list'
+proc_interp.input_types['out_inds'] = 'boolean_list'
+proc_interp.input_types['calib_inds'] = 'boolean_list'
+proc_interp.input_types['cflag'] = 'boolean_list'
+proc_interp.input_types['cflag_ref'] = 'string_select'
+proc_interp.input_types['cflag_ind'] = 'string_select'
+proc_interp.input_types['cflag_thr'] = 'float_list'
 proc_interp.input_types['p_smooth'] = 'box'
 for pnam in proc_interp.pnams:
     proc_interp.values[pnam] = proc_interp.defaults[pnam]
