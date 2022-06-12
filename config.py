@@ -67,6 +67,7 @@ config_defaults.update({
 'download.drv_dir'                    : drv_dir,
 'download.s2_path'                    : '/Spatial-information/Sentinel-2/L2A/Cihea',
 'download.trans_path'                 : '/Spatial-information/Transplanting_date/Cihea/final/v1.4',
+'download.dflag'                      : [True,True,True],
 'download.python_path'                : python_path,
 'download.scr_dir'                    : scr_dir,
 'download.middle_left_frame_width'    : 1000,
