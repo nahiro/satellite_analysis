@@ -19,6 +19,7 @@ if not os.path.isdir(top_dir):
     top_dir = os.path.join(HOME,'Documents')
 python_path = sys.executable
 scr_dir = os.path.join(HOME,'Script')
+drv_dir = os.path.join(top_dir,'GoogleDrive')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 main_field_data = os.path.join(top_dir,'Field_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
@@ -63,7 +64,9 @@ config_defaults.update({
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
 #----------- download -----------
-'download.gis_fnam'                   : gis_fnam,
+'download.drv_dir'                    : drv_dir,
+'download.s2_path'                    : '/Spatial-information/Sentinel-2/L2A/Cihea',
+'download.trans_path'                 : '/Spatial-information/Transplanting_date/Cihea/final/v1.4',
 'download.python_path'                : python_path,
 'download.scr_dir'                    : scr_dir,
 'download.middle_left_frame_width'    : 1000,
