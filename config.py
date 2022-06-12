@@ -100,6 +100,9 @@ config_defaults.update({
 'geocor.middle_left_frame_width'      : 1000,
 #----------- interp -----------
 'interp.gis_fnam'                     : gis_fnam,
+'interp.mask_fnam'                    : '',
+'interp.stat_fnam'                    : '',
+'interp.inds_fnam'                    : '',
 'interp.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'interp.calib_refs'                   : [False,False,False,False,False,False,False,False,False,False],
 'interp.norm_bands'                   : [True,True,True,True,True,True,True,False,False,False],

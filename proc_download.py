@@ -11,7 +11,7 @@ proc_download.pnams.append('dflag')
 proc_download.params['drv_dir'] = 'Google Drive Folder'
 proc_download.params['s2_path'] = 'Sentinel-2 Data on GD'
 proc_download.params['trans_path'] = 'Planting Data on GD'
-proc_download.params['dflag'] = 'Download Data'
+proc_download.params['dflag'] = 'Download'
 proc_download.param_types['drv_dir'] = 'string'
 proc_download.param_types['s2_path'] = 'string'
 proc_download.param_types['trans_path'] = 'string'

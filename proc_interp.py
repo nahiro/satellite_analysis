@@ -5,6 +5,9 @@ proc_interp = Interp()
 proc_interp.proc_name = 'interp'
 proc_interp.proc_title = 'Interpolate Time-series Data'
 proc_interp.pnams.append('gis_fnam')
+proc_interp.pnams.append('mask_fnam')
+proc_interp.pnams.append('stat_fnam')
+proc_interp.pnams.append('inds_fnam')
 proc_interp.pnams.append('out_refs')
 proc_interp.pnams.append('calib_refs')
 proc_interp.pnams.append('norm_bands')
@@ -19,6 +22,9 @@ proc_interp.pnams.append('cflag_ind')
 proc_interp.pnams.append('cflag_thr')
 proc_interp.pnams.append('p_smooth')
 proc_interp.params['gis_fnam'] = 'Polygon File'
+proc_interp.params['mask_fnam'] = 'Mask File'
+proc_interp.params['stat_fnam'] = 'Statistics File'
+proc_interp.params['inds_fnam'] = 'Index File'
 proc_interp.params['out_refs'] = 'Output Reflectance'
 proc_interp.params['calib_refs'] = 'Calibrate Reflectance'
 proc_interp.params['norm_bands'] = 'Bands for Normalization'
@@ -33,6 +39,9 @@ proc_interp.params['cflag_ind'] = 'Index for Cloud Removal'
 proc_interp.params['cflag_thr'] = 'Thres. for Cloud Removal'
 proc_interp.params['p_smooth'] = 'Smoothing Parameter'
 proc_interp.param_types['gis_fnam'] = 'string'
+proc_interp.param_types['mask_fnam'] = 'string'
+proc_interp.param_types['stat_fnam'] = 'string'
+proc_interp.param_types['inds_fnam'] = 'string'
 proc_interp.param_types['out_refs'] = 'boolean_list'
 proc_interp.param_types['calib_refs'] = 'boolean_list'
 proc_interp.param_types['norm_bands'] = 'boolean_list'
@@ -49,6 +58,9 @@ proc_interp.param_types['p_smooth'] = 'float'
 proc_interp.param_range['cflag_thr'] = (0.0,10.0)
 proc_interp.param_range['p_smooth'] = (0.0,1.0)
 proc_interp.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
+proc_interp.defaults['mask_fnam'] = 'mask.tif'
+proc_interp.defaults['stat_fnam'] = 'stat.npz'
+proc_interp.defaults['inds_fnam'] = 'inds.npy'
 proc_interp.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_interp.defaults['calib_refs'] = [False,False,False,False,False,False,False,False,False,False]
 proc_interp.defaults['norm_bands'] = [True,True,True,True,True,True,True,False,False,False]
@@ -88,6 +100,9 @@ proc_interp.list_labels['cflag_ind'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','
 proc_interp.list_labels['cflag_thr'] = ['Reflectance :',' Index :']
 #proc_interp.list_labels['cflag'] = ['SC Flag','Time-series Smoothong']
 proc_interp.input_types['gis_fnam'] = 'ask_file'
+proc_interp.input_types['mask_fnam'] = 'ask_file'
+proc_interp.input_types['stat_fnam'] = 'ask_file'
+proc_interp.input_types['inds_fnam'] = 'ask_file'
 proc_interp.input_types['out_refs'] = 'boolean_list'
 proc_interp.input_types['calib_refs'] = 'boolean_list'
 proc_interp.input_types['norm_bands'] = 'boolean_list'
