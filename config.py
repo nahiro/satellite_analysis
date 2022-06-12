@@ -22,6 +22,7 @@ cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 main_field_data = os.path.join(top_dir,'Field_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
+main_s2_data = os.path.join(top_dir,'Sentinel-2_Data')
 main_s2_analysis = os.path.join(top_dir,'Sentinel-2_Analysis')
 main_browse_image = os.path.join(cnf_dir,'browse.png')
 if not os.path.exists(main_browse_image):
@@ -41,6 +42,9 @@ config_defaults.update({
 'main.current_date'                   : '',
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
+'main.s1_analysis'                    : main_s1_analysis,
+'main.s2_data'                        : main_s2_data,
+'main.s2_analysis'                    : main_s2_analysis,
 'main.browse_image'                   : main_browse_image,
 'main.geocor'                         : True,
 'main.interp'                         : True,
@@ -49,8 +53,8 @@ config_defaults.update({
 'main.formula'                        : False,
 'main.estimate'                       : True,
 'main.window_width'                   : 650,
-#'main.top_frame_height'               : 169,
-'main.top_frame_height'               : 190,
+#'main.top_frame_height'               : 190,
+'main.top_frame_height'               : 215,
 'main.left_frame_width'               : 30,
 'main.right_frame_width'              : 100,
 'main.left_cnv_height'                : 21,
@@ -184,6 +188,7 @@ current_date = config['main'].get('main.current_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
 drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
 s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
+s2_data = os.path.normpath(config['main'].get('main.s2_data'))
 s2_analysis = os.path.normpath(config['main'].get('main.s2_analysis'))
 browse_image = os.path.normpath(config['main'].get('main.browse_image'))
 window_width = config['main'].getint('main.window_width')
@@ -249,6 +254,7 @@ for proc in pnams:
     modules[proc].field_data = os.path.normpath(config['main'].get('main.field_data'))
     modules[proc].drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
     modules[proc].s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
+    modules[proc].s2_data = os.path.normpath(config['main'].get('main.s2_data'))
     modules[proc].s2_analysis = os.path.normpath(config['main'].get('main.s2_analysis'))
     modules[proc].browse_image = os.path.normpath(config['main'].get('main.browse_image'))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))

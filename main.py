@@ -16,6 +16,7 @@ def set_title(pnam):
     field_data = top_var['field_data'].get()
     drone_analysis = top_var['drone_analysis'].get()
     s1_analysis = top_var['s1_analysis'].get()
+    s2_data = top_var['s2_data'].get()
     s2_analysis = top_var['s2_analysis'].get()
     for proc in pnams:
         modules[proc].current_block = block
@@ -23,6 +24,7 @@ def set_title(pnam):
         modules[proc].field_data = field_data
         modules[proc].drone_analysis = drone_analysis
         modules[proc].s1_analysis = s1_analysis
+        modules[proc].s2_data = s2_data
         modules[proc].s2_analysis = s2_analysis
     # extract
     proc_pnam = 'obs_fnam'
@@ -139,8 +141,8 @@ def exit():
 
 root = tk.Tk()
 root.title('BLB Damage Estimation - Satellite version')
-#root.geometry('{}x{}'.format(window_width,195+30*len(pnams)))
-root.geometry('{}x{}'.format(window_width,210+30*len(pnams)))
+#root.geometry('{}x{}'.format(window_width,210+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,238+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -200,8 +202,9 @@ top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['planting','observation','field_data','drone_analysis','s1_analysis','s2_analysis'],
-                      ['Planting Start/End','Observation Block/Date','Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Analysis']):
+for pnam,title in zip(['planting','observation','field_data','drone_analysis','s1_analysis','s2_data','s2_analysis'],
+                      ['Planting Start/End','Observation Block/Date',
+                       'Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Data','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
     top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=150,height=25)
@@ -250,7 +253,10 @@ for pnam,title in zip(['planting','observation','field_data','drone_analysis','s
         top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
     else:
         top_var[pnam] = tk.StringVar()
-        top_var[pnam].set(os.path.join(eval(pnam),'Current'))
+        if pnam in ['s1_analysis','s2_data','s2_analysis']:
+            top_var[pnam].set(os.path.join(eval(pnam)))
+        else:
+            top_var[pnam].set(os.path.join(eval(pnam),'Current'))
         top_box[pnam] = tk.Entry(top_center_right_cnv[pnam],textvariable=top_var[pnam])
         top_box[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=(3,0),anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
         top_box[pnam].config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
