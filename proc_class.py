@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from datetime import datetime
 import numpy as np
 import tkinter as tk
@@ -551,7 +552,18 @@ class Process:
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             elif '_select' in self.input_types[pnam]:
                 self.center_inp[pnam] = ttk.Combobox(self.center_cnv[pnam],background=bgs[i%2],values=self.list_labels[pnam],state='readonly',textvariable=self.center_var[pnam])
-                self.center_inp[pnam].current(self.list_labels[pnam].index(self.values[pnam]))
+                if re.search(r'\\u',self.values[pnam]):
+                    v = re.sub(r'\\u(\S\S\S\S)',lambda m:chr(int('0x'+m.group(1),16)),self.values[pnam])
+                else:
+                    v = self.values[pnam]
+                if re.search(r'\\U',v):
+                    v = re.sub(r'\\U(\S\S\S\S\S\S\S\S)',lambda m:chr(int('0x'+m.group(1),16)),v)
+                else:
+                    v = self.values[pnam]
+                if v in self.center_inp[pnam]['values']:
+                    self.center_inp[pnam].current(self.list_labels[pnam].index(v))
+                else:
+                    self.center_inp[pnam].current(self.list_labels[pnam].index(self.values[pnam]))
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             else:
                 raise ValueError('Error, unsupported input type ({}) >>> {}'.format(pnam,self.input_types[pnam]))
