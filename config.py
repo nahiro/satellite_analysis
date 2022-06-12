@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import configparser
+from proc_download import proc_download
 from proc_geocor import proc_geocor
 from proc_interp import proc_interp
 from proc_phenology import proc_phenology
@@ -46,6 +47,7 @@ config_defaults.update({
 'main.s2_data'                        : main_s2_data,
 'main.s2_analysis'                    : main_s2_analysis,
 'main.browse_image'                   : main_browse_image,
+'main.download'                       : False,
 'main.geocor'                         : True,
 'main.interp'                         : True,
 'main.phenology'                      : True,
@@ -60,6 +62,11 @@ config_defaults.update({
 'main.left_cnv_height'                : 21,
 'main.right_cnv_height'               : 21,
 'main.center_btn_width'               : 20,
+#----------- download -----------
+'download.gis_fnam'                   : gis_fnam,
+'download.python_path'                : python_path,
+'download.scr_dir'                    : scr_dir,
+'download.middle_left_frame_width'    : 1000,
 #----------- geocor -----------
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [4,-1,-1],
@@ -202,6 +209,7 @@ right_cnv_height = config['main'].getint('main.right_cnv_height')
 center_btn_width = config['main'].getint('main.center_btn_width')
 #----------- subprocess -----------
 pnams = []
+pnams.append('download')
 pnams.append('geocor')
 pnams.append('interp')
 pnams.append('phenology')
