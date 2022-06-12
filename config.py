@@ -97,7 +97,9 @@ config_defaults.update({
 #----------- interp -----------
 'interp.gis_fnam'                     : gis_fnam,
 'interp.calib_params'                 : [False,False,False,False,False,False,False,False,False,False,False,False,False,False],
-'interp.cloud_removal'                : 'SC Flag',
+'interp.cflag_sc'                     : [True,True,True,True,True,True,True,True,True,True,True,True,True,True],
+'interp.cflag_red'                    : [False,False,False,False,False,False,False,False,False,False,False,False,False,False],
+'interp.cflag_ndvi'                   : [False,False,False,False,False,False,False,False,False,False,False,False,False,False],
 'interp.p_smooth'                     : 2.0e-3,
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
