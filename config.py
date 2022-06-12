@@ -98,6 +98,7 @@ config_defaults.update({
 'interp.gis_fnam'                     : gis_fnam,
 'interp.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'interp.calib_refs'                   : [False,False,False,False,False,False,False,False,False,False],
+'interp.norm_bands'                   : [True,True,True,True,True,True,True,True,False,False],
 'interp.out_nrefs'                    : [True,True,True,True,True,True,True,True,True,True],
 'interp.calib_nrefs'                  : [False,False,False,False,False,False,False,False,False,False],
 'interp.out_inds'                     : [True,True,True,True],
