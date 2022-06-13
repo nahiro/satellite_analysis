@@ -3,7 +3,7 @@ from run_interp import Interp
 
 proc_interp = Interp()
 proc_interp.proc_name = 'interp'
-proc_interp.proc_title = 'Interpolate Time-series Data'
+proc_interp.proc_title = 'Interpolate Data'
 proc_interp.pnams.append('gis_fnam')
 proc_interp.pnams.append('mask_fnam')
 proc_interp.pnams.append('stat_fnam')

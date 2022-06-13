@@ -4,6 +4,8 @@ import numpy as np
 import configparser
 from proc_download import proc_download
 from proc_geocor import proc_geocor
+from proc_parcel import proc_parcel
+from proc_atcor import proc_atcor
 from proc_interp import proc_interp
 from proc_phenology import proc_phenology
 from proc_extract import proc_extract
@@ -50,6 +52,8 @@ config_defaults.update({
 'main.browse_image'                   : main_browse_image,
 'main.download'                       : True,
 'main.geocor'                         : True,
+'main.parcel'                         : True,
+'main.atcor'                          : False,
 'main.interp'                         : True,
 'main.phenology'                      : True,
 'main.extract'                        : False,
@@ -98,6 +102,16 @@ config_defaults.update({
 'geocor.python_path'                  : python_path,
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
+#----------- parcel -----------
+'parcel.gis_fnam'                     : gis_fnam,
+'parcel.python_path'                  : python_path,
+'parcel.scr_dir'                      : scr_dir,
+'parcel.middle_left_frame_width'      : 1000,
+#----------- atcor -----------
+'atcor.gis_fnam'                      : gis_fnam,
+'atcor.python_path'                   : python_path,
+'atcor.scr_dir'                       : scr_dir,
+'atcor.middle_left_frame_width'       : 1000,
 #----------- interp -----------
 'interp.gis_fnam'                     : gis_fnam,
 'interp.mask_fnam'                    : '',
@@ -232,6 +246,8 @@ center_btn_width = config['main'].getint('main.center_btn_width')
 pnams = []
 pnams.append('download')
 pnams.append('geocor')
+pnams.append('parcel')
+pnams.append('atcor')
 pnams.append('interp')
 pnams.append('phenology')
 pnams.append('extract')
