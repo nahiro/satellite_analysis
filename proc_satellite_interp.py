@@ -1,5 +1,5 @@
 import numpy as np
-from run_interp import Interp
+from run_satellite_interp import Interp
 
 proc_interp = Interp()
 proc_interp.proc_name = 'interp'

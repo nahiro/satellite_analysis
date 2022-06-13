@@ -1,5 +1,5 @@
 import numpy as np
-from run_parcel import Parcel
+from run_satellite_parcel import Parcel
 
 proc_parcel = Parcel()
 proc_parcel.proc_name = 'parcel'

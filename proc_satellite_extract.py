@@ -1,4 +1,4 @@
-from run_extract import Extract
+from run_satellite_extract import Extract
 
 proc_extract = Extract()
 proc_extract.proc_name = 'extract'

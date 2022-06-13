@@ -1,5 +1,5 @@
 import numpy as np
-from run_download import Download
+from run_satellite_download import Download
 
 proc_download = Download()
 proc_download.proc_name = 'download'

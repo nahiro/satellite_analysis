@@ -1,5 +1,5 @@
 import numpy as np
-from run_atcor import Atcor
+from run_satellite_atcor import Atcor
 
 proc_atcor = Atcor()
 proc_atcor.proc_name = 'atcor'

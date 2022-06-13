@@ -6,7 +6,7 @@ from tkinter import ttk
 import tkinter.font as font
 import tkfilebrowser
 from custom_calendar import CustomDateEntry
-from config import *
+from satellite_config import *
 
 def set_title(pnam):
     start_date = top_start.get()

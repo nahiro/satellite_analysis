@@ -1,5 +1,5 @@
 import numpy as np
-from run_geocor import Geocor
+from run_satellite_geocor import Geocor
 
 proc_geocor = Geocor()
 proc_geocor.proc_name = 'geocor'

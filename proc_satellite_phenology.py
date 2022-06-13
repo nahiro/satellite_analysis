@@ -1,5 +1,5 @@
 import numpy as np
-from run_phenology import Phenology
+from run_satellite_phenology import Phenology
 
 proc_phenology = Phenology()
 proc_phenology.proc_name = 'phenology'

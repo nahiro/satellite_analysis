@@ -1,5 +1,5 @@
 import numpy as np
-from run_formula import Formula
+from run_satellite_formula import Formula
 
 proc_formula = Formula()
 proc_formula.proc_name = 'formula'

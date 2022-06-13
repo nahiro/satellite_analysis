@@ -2,15 +2,15 @@ import os
 import sys
 import numpy as np
 import configparser
-from proc_download import proc_download
-from proc_geocor import proc_geocor
-from proc_parcel import proc_parcel
-from proc_atcor import proc_atcor
-from proc_interp import proc_interp
-from proc_phenology import proc_phenology
-from proc_extract import proc_extract
-from proc_formula import proc_formula
-from proc_estimate import proc_estimate
+from proc_satellite_download import proc_download
+from proc_satellite_geocor import proc_geocor
+from proc_satellite_parcel import proc_parcel
+from proc_satellite_atcor import proc_atcor
+from proc_satellite_interp import proc_interp
+from proc_satellite_phenology import proc_phenology
+from proc_satellite_extract import proc_extract
+from proc_satellite_formula import proc_formula
+from proc_satellite_estimate import proc_estimate
 
 # Set folder&file names
 HOME = os.environ.get('USERPROFILE')
@@ -233,7 +233,7 @@ if (len(sys.argv) > 1) and os.path.exists(sys.argv[1]):
     fnam = sys.argv[1]
     config.read(fnam,encoding='utf-8')
 else:
-    fnam = os.path.join(cnf_dir,'config.ini')
+    fnam = os.path.join(cnf_dir,'satellite_config.ini')
     if os.path.exists(fnam):
         config.read(fnam,encoding='utf-8')
 

@@ -1,4 +1,4 @@
-from run_estimate import Estimate
+from run_satellite_estimate import Estimate
 
 proc_estimate = Estimate()
 proc_estimate.proc_name = 'estimate'
