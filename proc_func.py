@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 
-def check_file(s,t):
+def check_file(s,t,quiet=False):
     try:
         fnam = t.strip()
         if os.path.isdir(fnam):
@@ -11,10 +11,11 @@ def check_file(s,t):
             raise IOError('Error in {}, no such file >>> {}'.format(s,fnam))
         return True
     except Exception as e:
-        sys.stderr.write(str(e)+'\n')
+        if not quiet:
+            sys.stderr.write(str(e)+'\n')
         return False
 
-def check_files(s,t):
+def check_files(s,t,quiet=False):
     try:
         for item in t.split('\n'):
             fnam = item.strip()
@@ -26,10 +27,11 @@ def check_files(s,t):
                 raise IOError('Error in {}, no such file >>> {}'.format(s,fnam))
         return True
     except Exception as e:
-        sys.stderr.write(str(e)+'\n')
+        if not quiet:
+            sys.stderr.write(str(e)+'\n')
         return False
 
-def check_folder(s,t,make=False):
+def check_folder(s,t,make=False,quiet=False):
     try:
         dnam = t.strip()
         if make and not os.path.exists(dnam):
@@ -38,10 +40,11 @@ def check_folder(s,t,make=False):
             raise IOError('Error in {}, no such folder >>> {}'.format(s,dnam))
         return True
     except Exception as e:
-        sys.stderr.write(str(e)+'\n')
+        if not quiet:
+            sys.stderr.write(str(e)+'\n')
         return False
 
-def check_folders(s,t,make=False):
+def check_folders(s,t,make=False,quiet=False):
     try:
         for item in t.split('\n'):
             dnam = item.strip()
@@ -53,7 +56,8 @@ def check_folders(s,t,make=False):
                 raise IOError('Error in {}, no such folder >>> {}'.format(s,dnam))
         return True
     except Exception as e:
-        sys.stderr.write(str(e)+'\n')
+        if not quiet:
+            sys.stderr.write(str(e)+'\n')
         return False
 
 def check_int(s,t,vmin=-sys.maxsize,vmax=sys.maxsize):

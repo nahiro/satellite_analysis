@@ -207,13 +207,13 @@ class Process:
             elif self.param_types[pnam] == 'float':
                 return check_float(self.params[pnam],t,self.param_range[pnam][0],self.param_range[pnam][1])
         elif self.input_types[pnam] == 'ask_file':
-            return check_file(self.params[pnam],t)
+            return check_file(self.params[pnam],t,quiet=((pnam in self.flag_check) and (not self.flag_check[pnam])))
         elif self.input_types[pnam] == 'ask_files':
-            return check_files(self.params[pnam],t)
+            return check_files(self.params[pnam],t,quiet=((pnam in self.flag_check) and (not self.flag_check[pnam])))
         elif self.input_types[pnam] == 'ask_folder':
-            return check_folder(self.params[pnam],t)
+            return check_folder(self.params[pnam],t,quiet=((pnam in self.flag_check) and (not self.flag_check[pnam])))
         elif self.input_types[pnam] == 'ask_folders':
-            return check_folders(self.params[pnam],t)
+            return check_folders(self.params[pnam],t,quiet=((pnam in self.flag_check) and (not self.flag_check[pnam])))
         elif self.input_types[pnam] in ['date','date_list']:
             return True
         elif self.input_types[pnam] in ['boolean','boolean_list']:
