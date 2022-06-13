@@ -513,7 +513,7 @@ class Process:
                 for j in range(self.list_sizes[pnam]):
                     if self.list_labels[pnam][j] != '':
                         self.center_lbl[pnam].append(ttk.Label(self.center_cnv[pnam],text=self.list_labels[pnam][j]))
-                        self.center_lbl[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
+                        self.center_lbl[pnam][-1].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
                     self.center_inp[pnam].append(CustomDateEntry(self.center_cnv[pnam],width=1,date_pattern=self.date_format,textvariable=self.center_var[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
                     self.center_inp[pnam][j].delete(0,tk.END)
@@ -540,7 +540,7 @@ class Process:
                 for j in range(self.list_sizes[pnam]):
                     if self.list_labels[pnam][j] != '':
                         self.center_lbl[pnam].append(ttk.Label(self.center_cnv[pnam],text=self.list_labels[pnam][j][0]))
-                        self.center_lbl[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
+                        self.center_lbl[pnam][-1].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
                     self.center_inp[pnam].append(ttk.Combobox(self.center_cnv[pnam],width=1,background=bgs[i%2],values=self.list_labels[pnam][j][1],state='readonly',textvariable=self.center_var[pnam][j]))
                     self.center_inp[pnam][j].current(self.list_labels[pnam][j][1].index(self.values[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
@@ -550,7 +550,7 @@ class Process:
                 for j in range(self.list_sizes[pnam]):
                     if self.list_labels[pnam][j] != '':
                         self.center_lbl[pnam].append(ttk.Label(self.center_cnv[pnam],text=self.list_labels[pnam][j]))
-                        self.center_lbl[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
+                        self.center_lbl[pnam][-1].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
                     self.center_inp[pnam].append(tk.Entry(self.center_cnv[pnam],width=1,background=bgs[i%2],textvariable=self.center_var[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             elif '_select' in self.input_types[pnam]:

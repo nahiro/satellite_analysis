@@ -116,7 +116,7 @@ config_defaults.update({
 'interp.cflag'                        : [True,False,False],
 'interp.cflag_ref'                    : 'b',
 'interp.cflag_ind'                    : 'NDVI',
-'interp.cflag_thr'                    : [0.01,0.01],
+'interp.cflag_thr'                    : [0.06,0.1,0.06,0.1],
 'interp.p_smooth'                     : 2.0e-3,
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
