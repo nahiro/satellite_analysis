@@ -53,9 +53,6 @@ class Process:
         self.field_data = None
         self.drone_data = None
         self.drone_analysis = None
-        self.s1_analysis = None
-        self.s2_data = None
-        self.s2_analysis = None
         self.browse_image = os.path.join(HOME,'Pictures','browse.png')
         self.root = None
         self.chk_btn = None

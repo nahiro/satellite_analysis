@@ -5,9 +5,9 @@ try:
 except Exception:
     from osgeo import gdal
 from subprocess import call
-from proc_class import Process
+from proc_satellite_class import Satellite_Process
 
-class Estimate(Process):
+class Estimate(Satellite_Process):
 
     def run(self):
         # Start process

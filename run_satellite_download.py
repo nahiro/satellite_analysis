@@ -5,9 +5,9 @@ from datetime import datetime
 from glob import glob
 import numpy as np
 from subprocess import call
-from proc_class import Process
+from proc_satellite_class import Satellite_Process
 
-class Download(Process):
+class Download(Satellite_Process):
 
     def run(self):
         # Start process

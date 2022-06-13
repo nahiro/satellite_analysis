@@ -9,7 +9,7 @@ except Exception:
 from glob import glob
 import numpy as np
 from subprocess import call
-from proc_class import Process
+from proc_satellite_class import Satellite_Process
 
 def calc_mean(x,y,emax=2.0,nrpt=10,nmin=1,selected=None):
     if selected is not None:
@@ -30,7 +30,7 @@ def calc_mean(x,y,emax=2.0,nrpt=10,nmin=1,selected=None):
             break
     return x_center,y_center,rmse,x_selected.size,i_selected
 
-class Geocor(Process):
+class Geocor(Satellite_Process):
 
     def run(self):
         # Start process
