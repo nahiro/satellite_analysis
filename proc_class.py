@@ -230,10 +230,28 @@ class Process:
         ret = self.check_par(pnam,t)
         if self.right_lbl[pnam] is not None:
             if ret:
-                self.right_lbl[pnam].pack_forget()
+                if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
+                    self.right_lbl[pnam].config(text='\U00002B55',foreground='green')
+                    if self.input_types[pnam] in ['ask_files','ask_folders']:
+                        self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                    else:
+                        self.right_lbl[pnam].pack(side=tk.LEFT)
+                else:
+                    self.right_lbl[pnam].pack_forget()
             else:
-                if self.input_types[pnam] in ['ask_files','ask_folders']:
-                    self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
+                    if (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                        self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                        ret = True
+                    else:
+                        self.right_lbl[pnam].config(text='ERROR',foreground='red')
+                    if self.input_types[pnam] in ['ask_files','ask_folders']:
+                        self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                    else:
+                        self.right_lbl[pnam].pack(side=tk.LEFT)
+                elif (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                    ret = True
+                    self.right_lbl[pnam].pack_forget()
                 else:
                     self.right_lbl[pnam].pack(side=tk.LEFT)
         return ret
@@ -307,6 +325,9 @@ class Process:
                                 self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
                             else:
                                 self.right_lbl[pnam].pack(side=tk.LEFT)
+                        elif (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                            check_errors[pnam] = False
+                            self.right_lbl[pnam].pack_forget()
                         else:
                             self.right_lbl[pnam].pack(side=tk.LEFT)
                     else:
