@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+from datetime import datetime,timedelta
 import configparser
 from proc_satellite_download import proc_download
 from proc_satellite_geocor import proc_geocor
@@ -23,6 +24,8 @@ python_path = sys.executable
 scr_dir = os.path.join(HOME,'Script')
 drv_dir = os.path.join(top_dir,'GoogleDrive')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+main_start_date = (datetime.now()-timedelta(days=210)).strftime('%Y-%m%b-%d')
+main_end_date = (datetime.now()-timedelta(days=120)).strftime('%Y-%m%b-%d')
 main_field_data = os.path.join(top_dir,'Field_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
@@ -40,8 +43,8 @@ config_defaults.update({
 #----------- main -----------
 'main.blocks'                         : ['1A','1B','2A','2B','3A','3B','4A','4B','5','6','7A','7B','8A','8B','9A','9B','10A','10B','11A','11B','12','13','14A','14B','15'],
 'main.date_format'                    : 'yyyy-mm&mmm-dd',
-'main.start_date'                     : '',
-'main.end_date'                       : '',
+'main.start_date'                     : main_start_date,
+'main.end_date'                       : main_end_date,
 'main.current_block'                  : '',
 'main.current_date'                   : '',
 'main.field_data'                     : main_field_data,

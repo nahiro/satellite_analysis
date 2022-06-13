@@ -49,8 +49,8 @@ def set_title(pnam):
         proc_formula.values[proc_pnam] = os.path.join(dnam,'{}_{}_extract.csv'.format(block,dstr))
     if proc_formula.center_var is not None:
         try:
-            proc_formula.center_inp[proc_pnam].delete(1.0,tk.END)
-            proc_formula.center_inp[proc_pnam].insert(1.0,proc_formula.values[proc_pnam])
+            proc_formula.center_inp[proc_pnam].delete('1.0',tk.END)
+            proc_formula.center_inp[proc_pnam].insert('1.0',proc_formula.values[proc_pnam])
         except Exception:
             pass
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
@@ -221,7 +221,7 @@ for pnam,title in zip(['planting','observation','field_data','drone_analysis','s
         myfont = font.Font(root,family='',size=9,weight='normal')
         top_start = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_start.DateEntry')
         if start_date != '':
-            top_start.set(start_date)
+            top_start.set_date(start_date)
         top_start.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
         top_start.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
         box_pnam = 'end_date'
