@@ -336,6 +336,11 @@ class Process:
                                 self.right_lbl[pnam].pack(side=tk.LEFT)
                         else:
                             self.right_lbl[pnam].pack_forget()
+        else:
+            for pnam in self.pnams:
+                if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
+                    if (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                        check_errors[pnam] = False
         return check_values,check_errors
 
     def print_message(self,message):
