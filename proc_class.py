@@ -303,7 +303,10 @@ class Process:
                         raise ValueError('ERROR')
                     check_errors[pnam] = False
                 except Exception as e:
-                    sys.stderr.write(str(e)+'\n')
+                    if (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                        pass
+                    else:
+                        sys.stderr.write(str(e)+'\n')
         if source == 'input':
             for pnam in self.pnams:
                 if not pnam in check_errors or not pnam in self.right_lbl:
