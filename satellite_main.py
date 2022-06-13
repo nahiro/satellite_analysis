@@ -11,6 +11,8 @@ from satellite_config import *
 def set_title(pnam):
     start_date = top_start.get()
     end_date = top_end.get()
+    first_date = top_first.get()
+    last_date = top_last.get()
     block = top_cmb.get()
     dstr = top_cde.get()
     field_data = top_var['field_data'].get()
@@ -19,6 +21,10 @@ def set_title(pnam):
     s2_data = top_var['s2_data'].get()
     s2_analysis = top_var['s2_analysis'].get()
     for proc in pnams:
+        modules[proc].start_date = start_date
+        modules[proc].end_date = end_date
+        modules[proc].first_date = first_date
+        modules[proc].last_date = last_date
         modules[proc].current_block = block
         modules[proc].current_date = dstr
         modules[proc].field_data = field_data
@@ -60,6 +66,10 @@ def set_title(pnam):
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='black')
         style.configure('top_end.DateEntry',foreground='black')
+    elif pnam == 'download':
+        style = ttk.Style()
+        style.configure('top_first.DateEntry',foreground='black')
+        style.configure('top_last.DateEntry',foreground='black')
     elif pnam == 'observation':
         style = ttk.Style()
         style.map('top_cmb.TCombobox',
@@ -78,6 +88,12 @@ def change_color(pnam):
     elif pnam == 'end_date':
         style = ttk.Style()
         style.configure('top_end.DateEntry',foreground='red')
+    elif pnam == 'first_date':
+        style = ttk.Style()
+        style.configure('top_first.DateEntry',foreground='red')
+    elif pnam == 'last_date':
+        style = ttk.Style()
+        style.configure('top_last.DateEntry',foreground='red')
     elif pnam == 'block':
         style = ttk.Style()
         style.map('top_cmb.TCombobox',
@@ -141,8 +157,7 @@ def exit():
 
 root = tk.Tk()
 root.title('BLB Damage Estimation - Satellite version')
-#root.geometry('{}x{}'.format(window_width,210+30*len(pnams)))
-root.geometry('{}x{}'.format(window_width,238+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,275+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -202,8 +217,8 @@ top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['planting','observation','field_data','drone_analysis','s1_analysis','s2_data','s2_analysis'],
-                      ['Planting Start/End','Observation Block/Date',
+for pnam,title in zip(['planting','download','observation','field_data','drone_analysis','s1_analysis','s2_data','s2_analysis'],
+                      ['Planting Start/End','Data First/Last','Observation Block/Date',
                        'Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Data','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
@@ -230,6 +245,20 @@ for pnam,title in zip(['planting','observation','field_data','drone_analysis','s
             top_end.set_date(end_date)
         top_end.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
         top_end.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+    elif pnam == 'download':
+        box_pnam = 'first_date'
+        myfont = font.Font(root,family='',size=9,weight='normal')
+        top_first = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_first.DateEntry')
+        if first_date != '':
+            top_first.set_date(first_date)
+        top_first.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_first.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
+        box_pnam = 'last_date'
+        top_last = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_last.DateEntry')
+        if last_date != '':
+            top_last.set_date(last_date)
+        top_last.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
+        top_last.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
     elif pnam == 'observation':
         box_pnam = 'block'
         myfont = font.Font(root,family='',size=9,weight='normal')

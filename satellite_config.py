@@ -24,8 +24,11 @@ python_path = sys.executable
 scr_dir = os.path.join(HOME,'Script')
 drv_dir = os.path.join(top_dir,'GoogleDrive')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-main_start_date = (datetime.now()-timedelta(days=210)).strftime('%Y-%m%b-%d')
-main_end_date = (datetime.now()-timedelta(days=120)).strftime('%Y-%m%b-%d')
+now_date = datetime.now()
+main_start_date = (now_date-timedelta(days=230)).strftime('%Y-%m%b-%d')
+main_end_date = (now_date-timedelta(days=140)).strftime('%Y-%m%b-%d')
+main_first_date = (now_date-timedelta(days=260)).strftime('%Y-%m%b-%d')
+main_last_date = now_date.strftime('%Y-%m%b-%d')
 main_field_data = os.path.join(top_dir,'Field_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
@@ -45,6 +48,8 @@ config_defaults.update({
 'main.date_format'                    : 'yyyy-mm&mmm-dd',
 'main.start_date'                     : main_start_date,
 'main.end_date'                       : main_end_date,
+'main.first_date'                     : main_first_date,
+'main.last_date'                      : main_last_date,
 'main.current_block'                  : '',
 'main.current_date'                   : '',
 'main.field_data'                     : main_field_data,
@@ -63,8 +68,7 @@ config_defaults.update({
 'main.formula'                        : False,
 'main.estimate'                       : True,
 'main.window_width'                   : 650,
-#'main.top_frame_height'               : 190,
-'main.top_frame_height'               : 215,
+'main.top_frame_height'               : 248,
 'main.left_frame_width'               : 30,
 'main.right_frame_width'              : 100,
 'main.left_cnv_height'                : 21,
@@ -248,6 +252,8 @@ blocks = eval(config['main'].get('main.blocks'))
 date_format = config['main'].get('main.date_format')
 start_date = config['main'].get('main.start_date')
 end_date = config['main'].get('main.end_date')
+first_date = config['main'].get('main.first_date')
+last_date = config['main'].get('main.last_date')
 current_block = config['main'].get('main.current_block')
 current_date = config['main'].get('main.current_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
@@ -317,6 +323,8 @@ for proc in pnams:
     modules[proc].scr_dir = config[proc].get('{}.scr_dir'.format(proc))
     modules[proc].start_date = config['main'].get('main.start_date')
     modules[proc].end_date = config['main'].get('main.end_date')
+    modules[proc].first_date = config['main'].get('main.first_date')
+    modules[proc].last_date = config['main'].get('main.last_date')
     modules[proc].current_block = config['main'].get('main.current_block')
     modules[proc].current_date = config['main'].get('main.current_date')
     modules[proc].field_data = os.path.normpath(config['main'].get('main.field_data'))
