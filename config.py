@@ -111,6 +111,8 @@ config_defaults.update({
 'interp.rgi_red_band'                 : 'e1',
 'interp.out_inds'                     : [True,True,True,True],
 'interp.calib_inds'                   : [False,False,False,False],
+'interp.stat_period'                  : ['',''],
+'interp.n_ref'                        : 1000,
 'interp.cflag'                        : [True,False,False],
 'interp.cflag_ref'                    : 'b',
 'interp.cflag_ind'                    : 'NDVI',

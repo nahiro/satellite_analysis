@@ -16,6 +16,8 @@ proc_interp.pnams.append('calib_nrefs')
 proc_interp.pnams.append('rgi_red_band')
 proc_interp.pnams.append('out_inds')
 proc_interp.pnams.append('calib_inds')
+proc_interp.pnams.append('stat_period')
+proc_interp.pnams.append('n_ref')
 proc_interp.pnams.append('cflag')
 proc_interp.pnams.append('cflag_ref')
 proc_interp.pnams.append('cflag_ind')
@@ -23,7 +25,7 @@ proc_interp.pnams.append('cflag_thr')
 proc_interp.pnams.append('p_smooth')
 proc_interp.params['gis_fnam'] = 'Polygon File'
 proc_interp.params['mask_fnam'] = 'Mask File'
-proc_interp.params['stat_fnam'] = 'Statistics File'
+proc_interp.params['stat_fnam'] = 'Stats File'
 proc_interp.params['inds_fnam'] = 'Index File'
 proc_interp.params['out_refs'] = 'Output Reflectance'
 proc_interp.params['calib_refs'] = 'Calibrate Reflectance'
@@ -33,6 +35,10 @@ proc_interp.params['calib_nrefs'] = 'Calibrate Norm. Reflectance'
 proc_interp.params['rgi_red_band'] = 'Band for RGI'
 proc_interp.params['out_inds'] = 'Output Index'
 proc_interp.params['calib_inds'] = 'Calibrate Index'
+proc_interp.params['stat_period'] = 'Stats Calculation Period'
+proc_interp.params['n_ref'] = 'Reference Number'
+###########proc_interp.params['calib_band'] = 'Band for Calibration'
+###########proc_interp.params['calib_thr'] = 'Thres. for Calibration'
 proc_interp.params['cflag'] = 'Cloud Removal Source'
 proc_interp.params['cflag_ref'] = 'Reflectance for Cloud Rem.'
 proc_interp.params['cflag_ind'] = 'Index for Cloud Removal'
@@ -50,11 +56,14 @@ proc_interp.param_types['calib_nrefs'] = 'boolean_list'
 proc_interp.param_types['rgi_red_band'] = 'string'
 proc_interp.param_types['out_inds'] = 'boolean_list'
 proc_interp.param_types['calib_inds'] = 'boolean_list'
+proc_interp.param_types['stat_period'] = 'date_list'
+proc_interp.param_types['n_ref'] = 'int'
 proc_interp.param_types['cflag'] = 'boolean_list'
 proc_interp.param_types['cflag_ref'] = 'string_select'
 proc_interp.param_types['cflag_ind'] = 'string_select'
 proc_interp.param_types['cflag_thr'] = 'float_list'
 proc_interp.param_types['p_smooth'] = 'float'
+proc_interp.param_range['n_ref'] = (10,1000000)
 proc_interp.param_range['cflag_thr'] = (0.0,10.0)
 proc_interp.param_range['p_smooth'] = (0.0,1.0)
 proc_interp.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
@@ -69,6 +78,8 @@ proc_interp.defaults['calib_nrefs'] = [False,False,False,False,False,False,False
 proc_interp.defaults['rgi_red_band'] = 'e1'
 proc_interp.defaults['out_inds'] = [True,True,True,True]
 proc_interp.defaults['calib_inds'] = [False,False,False,False]
+proc_interp.defaults['stat_period'] = ['','']
+proc_interp.defaults['n_ref'] = 1000
 proc_interp.defaults['cflag'] = [True,False,False]
 proc_interp.defaults['cflag_ref'] = 'b'
 proc_interp.defaults['cflag_ind'] = 'NDVI'
@@ -82,6 +93,7 @@ proc_interp.list_sizes['calib_nrefs'] = 10
 proc_interp.list_sizes['rgi_red_band'] = 10
 proc_interp.list_sizes['out_inds'] = 4
 proc_interp.list_sizes['calib_inds'] = 4
+proc_interp.list_sizes['stat_period'] = 2
 proc_interp.list_sizes['cflag'] = 3
 proc_interp.list_sizes['cflag_ref'] = 10
 proc_interp.list_sizes['cflag_ind'] = 14
@@ -94,6 +106,7 @@ proc_interp.list_labels['calib_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','
 proc_interp.list_labels['rgi_red_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_interp.list_labels['out_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_interp.list_labels['calib_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
+proc_interp.list_labels['stat_period'] = ['Start :',' End :']
 proc_interp.list_labels['cflag'] = ['SC Flag','Reflactance','Index']
 proc_interp.list_labels['cflag_ref'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_interp.list_labels['cflag_ind'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
@@ -111,6 +124,8 @@ proc_interp.input_types['calib_nrefs'] = 'boolean_list'
 proc_interp.input_types['rgi_red_band'] = 'string_select'
 proc_interp.input_types['out_inds'] = 'boolean_list'
 proc_interp.input_types['calib_inds'] = 'boolean_list'
+proc_interp.input_types['stat_period'] = 'date_list'
+proc_interp.input_types['n_ref'] = 'box'
 proc_interp.input_types['cflag'] = 'boolean_list'
 proc_interp.input_types['cflag_ref'] = 'string_select'
 proc_interp.input_types['cflag_ind'] = 'string_select'
