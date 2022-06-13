@@ -300,6 +300,7 @@ class Process:
                         if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
                             if (pnam in self.flag_check) and (not self.flag_check[pnam]):
                                 self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                                check_errors[pnam] = False
                             else:
                                 self.right_lbl[pnam].config(text='ERROR',foreground='red')
                             if self.input_types[pnam] in ['ask_files','ask_folders']:
