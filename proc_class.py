@@ -555,7 +555,10 @@ class Process:
                     if self.values[pnam][j] != '':
                         self.center_inp[pnam][j].insert(0,self.values[pnam][j])
             elif self.input_types[pnam] == 'boolean':
-                self.center_inp[pnam] = tk.Checkbutton(self.center_cnv[pnam],background=bgs[i%2],variable=self.center_var[pnam])
+                if pnam in self.list_labels:
+                    self.center_inp[pnam] = tk.Checkbutton(self.center_cnv[pnam],background=bgs[i%2],variable=self.center_var[pnam],text=self.list_labels[pnam][0])
+                else:
+                    self.center_inp[pnam] = tk.Checkbutton(self.center_cnv[pnam],background=bgs[i%2],variable=self.center_var[pnam])
                 if pnam in self.flag_fill and self.flag_fill[pnam]:
                     self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
                 else:
