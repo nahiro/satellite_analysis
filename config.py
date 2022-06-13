@@ -127,6 +127,8 @@ config_defaults.update({
 'atcor.n_ref'                         : 1000,
 'atcor.ref_band'                      : [True,True,True,False,False,False,True,False,False,False],
 'atcor.ref_thr'                       : 0.035,
+'atcor.clean_band'                    : 'r',
+'atcor.clean_thr'                     : [0.06,0.05],
 'atcor.cloud_flag'                    : True,
 'atcor.cloud_band'                    : 'r',
 'atcor.cloud_thr'                     : 0.35,
