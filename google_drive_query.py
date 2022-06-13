@@ -20,6 +20,7 @@ parser.add_argument('-S','--srcdir',default=None,help='GoogleDrive source direct
 parser.add_argument('--drvdir',default=DRVDIR,help='GoogleDrive directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-N','--max_layer',default=None,type=int,help='Maximum layer number (%(default)s)')
+parser.add_argument('-A','--append',default=False,action='store_true',help='Append csv file (%(default)s)')
 args = parser.parse_args()
 
 if args.out_csv is not None:
@@ -76,8 +77,13 @@ ns = [0]
 if args.out_csv is None:
     sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
 else:
-    with open(args.out_csv,'w') as fp:
-        fp.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
+    if args.append:
+        with open(args.out_csv,'a') as fp:
+            fp.write('# {}\n'.format(args.srcdir))
+    else:
+        with open(args.out_csv,'w') as fp:
+            fp.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
+            fp.write('# {}\n'.format(args.srcdir))
 while len(qs) != 0:
     src_id = qs.pop(0)
     srcdir = ds.pop(0)
