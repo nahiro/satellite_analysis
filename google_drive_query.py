@@ -85,6 +85,8 @@ while len(qs) != 0:
     fs = drive.ListFile({'q':'"{}" in parents and trashed = false'.format(src_id)}).GetList()
     for f in fs:
         if f['mimeType'] == 'application/vnd.google-apps.folder':
+            if args.max_layer is not None and nlayer >= args.max_layer:
+                continue
             qs.append(f['id'])
             if srcdir == '':
                 ds.append(f['title'])
