@@ -196,7 +196,10 @@ class Process:
             return self.values[pnam]
 
     def check_par(self,pnam,t):
-        if self.input_types[pnam] == 'box':
+        if ((pnam in self.flag_check) and (not self.flag_check[pnam]) and
+            (not self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders'])):
+            return True
+        elif self.input_types[pnam] == 'box':
             if self.param_types[pnam] == 'string':
                 return True
             elif self.param_types[pnam] == 'int':
@@ -249,9 +252,6 @@ class Process:
                         self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
                     else:
                         self.right_lbl[pnam].pack(side=tk.LEFT)
-                elif (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                    ret = True
-                    self.right_lbl[pnam].pack_forget()
                 else:
                     self.right_lbl[pnam].pack(side=tk.LEFT)
         return ret
@@ -325,9 +325,6 @@ class Process:
                                 self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
                             else:
                                 self.right_lbl[pnam].pack(side=tk.LEFT)
-                        elif (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                            check_errors[pnam] = False
-                            self.right_lbl[pnam].pack_forget()
                         else:
                             self.right_lbl[pnam].pack(side=tk.LEFT)
                     else:
