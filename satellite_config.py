@@ -250,6 +250,7 @@ if not 'main' in config:
     config['main'] = {}
 blocks = eval(config['main'].get('main.blocks'))
 date_format = config['main'].get('main.date_format')
+date_fmt = date_format.replace('yyyy','%Y').replace('yy','%y').replace('mmm','%b').replace('mm','%m').replace('dd','%d').replace('&','')
 start_date = config['main'].get('main.start_date')
 end_date = config['main'].get('main.end_date')
 first_date = config['main'].get('main.first_date')

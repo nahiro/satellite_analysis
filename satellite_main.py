@@ -1,6 +1,7 @@
 import os
 import sys
 from glob import glob
+from datetime import datetime,timedelta
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as font
@@ -83,11 +84,19 @@ def set_title(pnam):
 
 def change_color(pnam):
     if pnam == 'start_date':
+        start_date = datetime.strptime(top_start.get(),date_fmt)
+        first_date = start_date-timedelta(days=30)
+        top_first.set_date(first_date)
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='red')
+        style.configure('top_first.DateEntry',foreground='red')
     elif pnam == 'end_date':
+        end_date = datetime.strptime(top_end.get(),date_fmt)
+        last_date = end_date+timedelta(days=140)
+        top_last.set_date(last_date)
         style = ttk.Style()
         style.configure('top_end.DateEntry',foreground='red')
+        style.configure('top_last.DateEntry',foreground='red')
     elif pnam == 'first_date':
         style = ttk.Style()
         style.configure('top_first.DateEntry',foreground='red')
