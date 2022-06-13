@@ -196,9 +196,7 @@ class Process:
             return self.values[pnam]
 
     def check_par(self,pnam,t):
-        if (pnam in self.flag_check) and (not self.flag_check[pnam]):
-            return True
-        elif self.input_types[pnam] == 'box':
+        if self.input_types[pnam] == 'box':
             if self.param_types[pnam] == 'string':
                 return True
             elif self.param_types[pnam] == 'int':
@@ -292,7 +290,6 @@ class Process:
             for pnam in self.pnams:
                 if not pnam in check_errors or not pnam in self.right_lbl:
                     continue
-
                 if '_list' in self.param_types[pnam]:
                     if True in check_errors[pnam]:
                         self.right_lbl[pnam].pack(side=tk.LEFT)
@@ -300,12 +297,26 @@ class Process:
                         self.right_lbl[pnam].pack_forget()
                 else:
                     if check_errors[pnam]:
-                        if self.input_types[pnam] in ['ask_files','ask_folders']:
-                            self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                        if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
+                            if (pnam in self.flag_check) and (not self.flag_check[pnam]):
+                                self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                            else:
+                                self.right_lbl[pnam].config(text='ERROR',foreground='red')
+                            if self.input_types[pnam] in ['ask_files','ask_folders']:
+                                self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                            else:
+                                self.right_lbl[pnam].pack(side=tk.LEFT)
                         else:
                             self.right_lbl[pnam].pack(side=tk.LEFT)
                     else:
-                        self.right_lbl[pnam].pack_forget()
+                        if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
+                            self.right_lbl[pnam].config(text='\U00002B55',foreground='green')
+                            if self.input_types[pnam] in ['ask_files','ask_folders']:
+                                self.right_lbl[pnam].pack(anchor=tk.N,side=tk.LEFT)
+                            else:
+                                self.right_lbl[pnam].pack(side=tk.LEFT)
+                        else:
+                            self.right_lbl[pnam].pack_forget()
         return check_values,check_errors
 
     def print_message(self,message):
