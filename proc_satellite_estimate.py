@@ -16,9 +16,9 @@ proc_estimate.pnams.append('score_max')
 proc_estimate.pnams.append('score_step')
 proc_estimate.params['gis_fnam'] = 'Polygon File'
 proc_estimate.params['data_select'] = 'Data Selection Criteria'
-proc_estimate.params['assess_value'] = 'Days from Assessment'
-proc_estimate.params['mature_value'] = 'Days from Heading'
-proc_estimate.params['age_value'] = 'Days from Planting'
+proc_estimate.params['assess_value'] = 'Days from Assessment (day)'
+proc_estimate.params['mature_value'] = 'Days from Heading (day)'
+proc_estimate.params['age_value'] = 'Days from Planting (day)'
 proc_estimate.params['intens_fnam'] = 'Plot-mean/Score-mean Formula'
 proc_estimate.params['intens_number'] = 'P-m/S-m Formula Number'
 proc_estimate.params['digitize'] = 'Digitize Score'
