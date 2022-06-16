@@ -40,7 +40,14 @@ def set_title(pnam):
     first_dtim = datetime.strptime(first_date,date_fmt)
     last_dtim = datetime.strptime(last_date,date_fmt)
     # atcor
-    #if proc_atcor.center_var is not None:
+    proc_pnam = 'stat_period'
+    data_tmin = (first_dtim+relativedelta(years=-2)).strftime(date_fmt)
+    data_tmax = last_dtim.strftime(date_fmt)
+    proc_atcor.values[proc_pnam][0] = data_tmin
+    proc_atcor.values[proc_pnam][1] = data_tmax
+    if proc_atcor.center_var is not None:
+        proc_atcor.center_var[proc_pnam][0].set(data_tmin)
+        proc_atcor.center_var[proc_pnam][1].set(data_tmax)
     # interp
     proc_pnam = 'cflag_period'
     data_tmin = first_dtim+relativedelta(months=-6)
