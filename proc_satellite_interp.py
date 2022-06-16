@@ -31,7 +31,6 @@ proc_interp.param_types['cflag_thr'] = 'float_list'
 proc_interp.param_types['cflag_period'] = 'date_list'
 proc_interp.param_types['cflag_smooth'] = 'float'
 proc_interp.param_types['p_smooth'] = 'float'
-proc_interp.param_range['n_ref'] = (10,1000000)
 proc_interp.param_range['cflag_thr'] = (0.0,10.0)
 proc_interp.param_range['cflag_smooth'] = (0.0,1.0)
 proc_interp.param_range['p_smooth'] = (0.0,1.0)
