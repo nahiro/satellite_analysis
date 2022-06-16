@@ -32,9 +32,9 @@ proc_formula.pnams.append('n_cros')
 proc_formula.pnams.append('n_formula')
 proc_formula.params['inp_fnams'] = 'Input Files'
 proc_formula.params['data_select'] = 'Data Selection Criteria'
-proc_formula.params['assess_range'] = 'Days from Assessment'
-proc_formula.params['mature_range'] = 'Days from Heading'
-proc_formula.params['age_range'] = 'Days from Planting'
+proc_formula.params['assess_range'] = 'Days from Assessment (day)'
+proc_formula.params['mature_range'] = 'Days from Heading (day)'
+proc_formula.params['age_range'] = 'Days from Planting (day)'
 proc_formula.params['n_x'] = 'Explanatory Variable Number'
 proc_formula.params['x1_params'] = 'Explanatory Ref. Candidate'
 proc_formula.params['x2_params'] = 'Explanatory NRef. Candidate'
@@ -148,7 +148,8 @@ proc_formula.list_labels['data_select'] = ['Days from Assessment','Days from Hea
 proc_formula.list_labels['assess_range'] = ['Min :',' Max :']
 proc_formula.list_labels['mature_range'] = ['Min :',' Max :']
 proc_formula.list_labels['age_range'] = ['Min :',' Max :']
-proc_formula.list_labels['n_x'] = [('Min :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14]),(' Max :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14])]
+proc_formula.list_labels['n_x'] = [('Min :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
+                                  (' Max :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24])]
 proc_formula.list_labels['x1_params'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_formula.list_labels['x2_params'] = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2']
 proc_formula.list_labels['x3_params'] = ['NDVI','GNDVI','RGI','NRGI']
