@@ -50,6 +50,7 @@ proc_interp.list_sizes['inds_cflag'] = 3
 proc_interp.list_sizes['cflag_ref'] = 10
 proc_interp.list_sizes['cflag_ind'] = 14
 proc_interp.list_sizes['cflag_thr'] = 4
+proc_interp.list_sizes['cflag_period'] = 2
 proc_interp.list_labels['refs_cflag'] = ['SC Flag','Time-series Smoothing (Reflectance)','Time-series Smoothing (Index)']
 proc_interp.list_labels['nrefs_cflag'] = ['SC Flag','Time-series Smoothing (Reflectance)','Time-series Smoothing (Index)']
 proc_interp.list_labels['inds_cflag'] = ['SC Flag','Time-series Smoothing (Reflectance)','Time-series Smoothing (Index)']

@@ -24,11 +24,11 @@ python_path = sys.executable
 scr_dir = os.path.join(HOME,'Script')
 drv_dir = os.path.join(top_dir,'GoogleDrive')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-now_date = datetime.now()
-main_start_date = (now_date-timedelta(days=230)).strftime('%Y-%m%b-%d')
-main_end_date = (now_date-timedelta(days=140)).strftime('%Y-%m%b-%d')
-main_first_date = (now_date-timedelta(days=260)).strftime('%Y-%m%b-%d')
-main_last_date = now_date.strftime('%Y-%m%b-%d')
+now_dtim = datetime.now()
+main_start_date = (now_dtim-timedelta(days=230)).strftime('%Y-%m%b-%d')
+main_end_date = (now_dtim-timedelta(days=140)).strftime('%Y-%m%b-%d')
+main_first_date = (now_dtim-timedelta(days=260)).strftime('%Y-%m%b-%d')
+main_last_date = now_dtim.strftime('%Y-%m%b-%d')
 main_field_data = os.path.join(top_dir,'Field_Data')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
@@ -158,6 +158,8 @@ config_defaults.update({
 'interp.cflag_ref'                    : 'b',
 'interp.cflag_ind'                    : 'NDVI',
 'interp.cflag_thr'                    : [0.06,0.1,0.06,0.1],
+'interp.cflag_period'                 : ['',''],
+'interp.cflag_smooth'                 : 5.0e-3,
 'interp.p_smooth'                     : 2.0e-3,
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,

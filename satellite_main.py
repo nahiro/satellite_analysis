@@ -2,6 +2,7 @@ import os
 import sys
 from glob import glob
 from datetime import datetime,timedelta
+from dateutil.relativedelta import relativedelta
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as font
@@ -33,6 +34,26 @@ def set_title(pnam):
         modules[proc].s1_analysis = s1_analysis
         modules[proc].s2_data = s2_data
         modules[proc].s2_analysis = s2_analysis
+    now_dtim = datetime.now()
+    start_dtim = datetime.strptime(start_date,date_fmt)
+    end_dtim = datetime.strptime(end_date,date_fmt)
+    first_dtim = datetime.strptime(first_date,date_fmt)
+    last_dtim = datetime.strptime(last_date,date_fmt)
+    # atcor
+    #if proc_atcor.center_var is not None:
+    # interp
+    proc_pnam = 'cflag_period'
+    data_tmin = first_dtim+relativedelta(months=-6)
+    data_tmax = last_dtim+relativedelta(months=6)
+    if data_tmax > now_dtim:
+        data_tmax = now_dtim
+    data_tmin = data_tmin.strftime(date_fmt)
+    data_tmax = data_tmax.strftime(date_fmt)
+    proc_interp.values[proc_pnam][0] = data_tmin
+    proc_interp.values[proc_pnam][1] = data_tmax
+    if proc_interp.center_var is not None:
+        proc_interp.center_var[proc_pnam][0].set(data_tmin)
+        proc_interp.center_var[proc_pnam][1].set(data_tmax)
     # extract
     proc_pnam = 'obs_fnam'
     proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
@@ -84,16 +105,16 @@ def set_title(pnam):
 
 def change_color(pnam):
     if pnam == 'start_date':
-        start_date = datetime.strptime(top_start.get(),date_fmt)
-        first_date = start_date-timedelta(days=30)
-        top_first.set_date(first_date)
+        start_dtim = datetime.strptime(top_start.get(),date_fmt)
+        first_dtim = start_dtim-timedelta(days=30)
+        top_first.set_date(first_dtim)
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='red')
         style.configure('top_first.DateEntry',foreground='red')
     elif pnam == 'end_date':
-        end_date = datetime.strptime(top_end.get(),date_fmt)
-        last_date = end_date+timedelta(days=140)
-        top_last.set_date(last_date)
+        end_dtim = datetime.strptime(top_end.get(),date_fmt)
+        last_dtim = end_dtim+timedelta(days=140)
+        top_last.set_date(last_dtim)
         style = ttk.Style()
         style.configure('top_end.DateEntry',foreground='red')
         style.configure('top_last.DateEntry',foreground='red')
