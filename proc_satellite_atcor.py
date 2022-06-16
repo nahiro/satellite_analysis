@@ -68,7 +68,6 @@ proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['mul_thr'] = 'float'
 proc_atcor.param_types['inds_thr'] = 'float_list'
 proc_atcor.param_range['n_ref'] = (10,1000000)
-proc_atcor.param_range['p_smooth'] = (0.0,1.0)
 proc_atcor.param_range['ref_thr'] = (0.0,10.0)
 proc_atcor.param_range['clean_thr'] = (0.0,10.0)
 proc_atcor.param_range['cloud_thr'] = (0.0,10.0)
