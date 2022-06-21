@@ -76,7 +76,7 @@ for index,row in df.iterrows():
     src_fnam = row['fileName']
     src_id = row['fileId']
     #src_size = row['fileSize']
-    #src_time = row['modifiedDate']
+    #src_time = parse(row['modifiedDate']).timestamp()
     #src_md5 = row['md5Checksum']
     f = drive.CreateFile({'id':src_id})
     if f['title'] != os.path.basename(src_fnam):
