@@ -56,7 +56,8 @@ def check_folder(row):
         fid = p[0]['id']
         f = drive.CreateFile({'id':fid})
         if f['title'] != dnams[nlayer-1-n]:
-            raise ValueError('Error, f["title"]={}, dnams[{}]={}'.format(f['title'],nlayer-1-n,dnams[nlayer-1-n]))
+            sys.stderr.write('Warning, f["title"]={}, dnams[{}]={}\n'.format(f['title'],nlayer-1-n,dnams[nlayer-1-n]))
+            sys.stderr.flush()
         folders[dnam] = fid
 
 df = pd.read_csv(args.inp_list,comment='#')
