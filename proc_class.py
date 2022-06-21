@@ -65,7 +65,14 @@ class Process:
 
     def ask_file(self,pnam,dnam=None):
         if dnam is None:
-            dnam = self.inidir
+            if self.center_var is not None:
+                fnam = self.center_var[pnam].get().strip()
+                if fnam != '':
+                    dnam = os.path.dirname(fnam)
+                else:
+                    dnam = self.inidir
+            else:
+                dnam = self.inidir
         path = tkfilebrowser.askopenfilename(initialdir=dnam)
         if len(path) > 0:
             self.center_var[pnam].set(path)
@@ -73,7 +80,20 @@ class Process:
 
     def ask_files(self,pnam,dnam=None):
         if dnam is None:
-            dnam = self.inidir
+            if self.center_var is not None:
+                lines = self.center_var[pnam].get().strip().splitlines()
+                fnams = []
+                for line in lines:
+                    fnam = line.strip()
+                    if (len(fnam) < 1) or (fnam[0] == '#'):
+                        continue
+                    fnams.append(fnam)
+                if len(fnams) > 0:
+                    dnam = os.path.dirname(fnams[-1])
+                else:
+                    dnam = self.inidir
+            else:
+                dnam = self.inidir
         files = list(tkfilebrowser.askopenfilenames(initialdir=dnam))
         if len(files) > 0:
             lines = self.center_inp[pnam].get('1.0',tk.END)
@@ -89,7 +109,14 @@ class Process:
 
     def ask_folder(self,pnam,dnam=None):
         if dnam is None:
-            dnam = self.inidir
+            if self.center_var is not None:
+                fnam = self.center_var[pnam].get().strip()
+                if fnam != '':
+                    dnam = os.path.dirname(fnam)
+                else:
+                    dnam = self.inidir
+            else:
+                dnam = self.inidir
         path = tkfilebrowser.askopendirname(initialdir=dnam)
         if len(path) > 0:
             self.center_var[pnam].set(path)
@@ -97,7 +124,20 @@ class Process:
 
     def ask_folders(self,pnam,dnam=None):
         if dnam is None:
-            dnam = self.inidir
+            if self.center_var is not None:
+                lines = self.center_var[pnam].get().strip().splitlines()
+                fnams = []
+                for line in lines:
+                    fnam = line.strip()
+                    if (len(fnam) < 1) or (fnam[0] == '#'):
+                        continue
+                    fnams.append(fnam)
+                if len(fnams) > 0:
+                    dnam = os.path.dirname(fnams[-1])
+                else:
+                    dnam = self.inidir
+            else:
+                dnam = self.inidir
         dirs = list(tkfilebrowser.askopendirnames(initialdir=dnam))
         if len(dirs) > 0:
             lines = self.center_inp[pnam].get('1.0',tk.END)
