@@ -29,64 +29,69 @@ class Download(Satellite_Process):
             os.makedirs(wrk_dir)
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
-
-        # Download Sentinel-2 Data
         tmp_fnam = os.path.join(wrk_dir,'temp.csv')
-        sys.stderr.write('\nDownload Sentinel-2 Data\n')
-        sys.stderr.flush()
-        keys = []
-        for key in [s.strip() for s in self.values['search_key'].split(',')]:
-            if key:
-                keys.append(key)
-        if len(keys) < 1:
-            keys = None
-        for year in data_years:
-            # Make file list
-            command = self.python_path
-            command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
-            command += ' --drvdir {}'.format(self.values['drv_dir'])
-            command += ' --srcdir {}'.format('{}/{}'.format(self.values['s2_path'],year))
-            command += ' --out_csv {}'.format(tmp_fnam)
-            command += ' --max_layer 0'
-            sys.stderr.write(command+'\n')
+
+        # Download Sentinel-2 L2A
+        itarg = 1
+        if args.dflag[itarg]:
+            sys.stderr.write('\nDownload Sentinel-2 L2A\n')
             sys.stderr.flush()
-            ret = call(command,shell=True)
-            if ret != 0:
-                continue
-            df = pd.read_csv(tmp_fnam,comment='#')
-            df.columns = df.columns.str.strip()
-            inds = []
-            for index,row in df.iterrows():
-                #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
-                src_fnam = row['fileName']
-                m = re.search('^S2[AB]_MSIL2A_('+'\d'*8+')T\S+\.zip$',src_fnam)
-                if not m:
+            keys = []
+            for key in [s.strip() for s in self.values['search_key'].split(',')]:
+                if key:
+                    keys.append(key)
+            if len(keys) < 1:
+                keys = None
+            for year in data_years:
+                # Make file list
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
+                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' --srcdir {}'.format('{}/{}'.format(self.values['l2a_path'],year))
+                command += ' --out_csv {}'.format(tmp_fnam)
+                command += ' --max_layer 0'
+                sys.stderr.write(command+'\n')
+                sys.stderr.flush()
+                ret = call(command,shell=True)
+                if ret != 0:
                     continue
-                dstr = m.group(1)
-                d = datetime.strptime(dstr,'%Y%m%d')
-                if d < first_dtim or d > last_dtim:
-                    continue
-                if keys is not None:
-                    flag = False
-                    for key in keys:
-                        if not key in src_fnam:
-                            flag = True
-                            break
-                    if flag:
+                df = pd.read_csv(tmp_fnam,comment='#')
+                df.columns = df.columns.str.strip()
+                inds = []
+                for index,row in df.iterrows():
+                    #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                    src_fnam = row['fileName']
+                    m = re.search('^S2[AB]_MSIL2A_('+'\d'*8+')T\S+\.zip$',src_fnam)
+                    if not m:
                         continue
-                inds.append(index)
-            if len(inds) < 1:
-                continue
-            df.loc[inds].to_csv(tmp_fnam,index=False)
-            # Download Data
-            command = self.python_path
-            command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
-            command += ' --drvdir {}'.format(self.values['drv_dir'])
-            command += ' --inp_list {}'.format(tmp_fnam)
-            command += ' --dstdir {}'.format(os.path.join(self.s2_data,'{}'.format(year)))
-            sys.stderr.write(command+'\n')
-            sys.stderr.flush()
-            call(command,shell=True)
+                    dstr = m.group(1)
+                    d = datetime.strptime(dstr,'%Y%m%d')
+                    if d < first_dtim or d > last_dtim:
+                        continue
+                    if keys is not None:
+                        flag = False
+                        for key in keys:
+                            if not key in src_fnam:
+                                flag = True
+                                break
+                        if flag:
+                            continue
+                    inds.append(index)
+                if len(inds) < 1:
+                    continue
+                df.loc[inds].to_csv(tmp_fnam,index=False)
+                # Download Data
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
+                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' --inp_list {}'.format(tmp_fnam)
+                command += ' --dstdir {}'.format(os.path.join(self.s2_data,'{}'.format(year)))
+                command += ' --verbose'
+                if args.oflag[itarg]:
+                    command += ' --overwrite'
+                sys.stderr.write(command+'\n')
+                sys.stderr.flush()
+                call(command,shell=True)
 
         #if os.path.exists(tmp_fnam):
         #    os.remove(tmp_fnam)
