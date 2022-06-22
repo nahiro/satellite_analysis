@@ -32,6 +32,10 @@ def calc_mean(x,y,emax=2.0,nrpt=10,nmin=1,selected=None):
 
 class Geocor(Satellite_Process):
 
+    def __init__(self):
+        super().__init__()
+        self._freeze()
+
     def run(self):
         # Start process
         super().run()

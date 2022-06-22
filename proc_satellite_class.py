@@ -12,4 +12,3 @@ class Satellite_Process(Process):
         self.s1_analysis = None
         self.s2_data = None
         self.s2_analysis = None
-        self._freeze()

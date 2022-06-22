@@ -9,6 +9,10 @@ from proc_satellite_class import Satellite_Process
 
 class Download(Satellite_Process):
 
+    def __init__(self):
+        super().__init__()
+        self._freeze()
+
     def run(self):
         # Start process
         super().run()
@@ -18,8 +22,7 @@ class Download(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
-        years = np.arange(first_dtim.year,last_dtim.year+1,1)
-        print(years)
+        data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         wrk_dir = os.path.join(self.s2_data)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)

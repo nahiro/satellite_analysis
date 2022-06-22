@@ -13,6 +13,10 @@ from proc_satellite_class import Satellite_Process
 
 class Atcor(Satellite_Process):
 
+    def __init__(self):
+        super().__init__()
+        self._freeze()
+
     def run(self):
         # Start process
         super().run()
