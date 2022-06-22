@@ -6,59 +6,53 @@ proc_download.proc_name = 'download'
 proc_download.proc_title = 'Download Data'
 proc_download.pnams.append('drv_dir')
 proc_download.pnams.append('trans_path')
-proc_download.pnams.append('s2_path')
+proc_download.pnams.append('l2a_path')
+proc_download.pnams.append('geocor_path')
+proc_download.pnams.append('parcel_path')
+proc_download.pnams.append('atcor_path')
 proc_download.pnams.append('search_key')
-proc_download.pnams.append('dflag1')
-proc_download.pnams.append('dflag2')
-proc_download.pnams.append('dflag3')
-proc_download.pnams.append('dflag4')
-proc_download.pnams.append('dflag5')
+proc_download.pnams.append('dflag')
+proc_download.pnams.append('oflag')
 proc_download.params['drv_dir'] = 'Google Drive Folder'
-proc_download.params['trans_path'] = 'Planting Folder on GD'
-proc_download.params['s2_path'] = 'Sentinel-2 Folder on GD'
-proc_download.params['search_key'] = 'Keyword for Sentinel-2 Data'
-proc_download.params['dflag1'] = 'Download'
-proc_download.params['dflag2'] = 'Download'
-proc_download.params['dflag3'] = 'Download'
-proc_download.params['dflag4'] = 'Download'
-proc_download.params['dflag5'] = 'Download'
+proc_download.params['trans_path'] = 'Planting Data on GD'
+proc_download.params['l2a_path'] = 'Sentinel-2 L2A on GD'
+proc_download.params['geocor_path'] = 'Sentinel-2 geocor on GD'
+proc_download.params['parcel_path'] = 'Sentinel-2 parcel on GD'
+proc_download.params['atcor_path'] = 'Sentinel-2 atcor on GD'
+proc_download.params['search_key'] = 'Keyword for Sentinel-2 L2A'
+proc_download.params['dflag'] = 'Download Flag'
+proc_download.params['oflag'] = 'Overwrite Flag'
 proc_download.param_types['drv_dir'] = 'string'
 proc_download.param_types['trans_path'] = 'string'
-proc_download.param_types['s2_path'] = 'string'
+proc_download.param_types['l2a_path'] = 'string'
+proc_download.param_types['geocor_path'] = 'string'
+proc_download.param_types['parcel_path'] = 'string'
+proc_download.param_types['atcor_path'] = 'string'
 proc_download.param_types['search_key'] = 'string'
-proc_download.param_types['dflag1'] = 'boolean'
-proc_download.param_types['dflag2'] = 'boolean'
-proc_download.param_types['dflag3'] = 'boolean'
-proc_download.param_types['dflag4'] = 'boolean'
-proc_download.param_types['dflag5'] = 'boolean'
+proc_download.param_types['dflag'] = 'boolean_list'
+proc_download.param_types['oflag'] = 'boolean_list'
 proc_download.defaults['drv_dir'] = 'GoogleDrive'
 proc_download.defaults['trans_path'] = '/Spatial-Information/Transplanting_date/Cihea/final/v1.4'
-proc_download.defaults['s2_path'] = '/Spatial-Information/Sentinel-2/L2A/Cihea'
+proc_download.defaults['l2a_path'] = '/Spatial-Information/Sentinel-2/L2A/Cihea'
+proc_download.defaults['geocor_path'] = '/Spatial-Information/Sentinel-2/geocor/Cihea'
+proc_download.defaults['parcel_path'] = '/Spatial-Information/Sentinel-2/parcel/Cihea'
+proc_download.defaults['atcor_path'] = '/Spatial-Information/Sentinel-2/atcor/Cihea'
 proc_download.defaults['search_key'] = ''
-proc_download.defaults['dflag1'] = True
-proc_download.defaults['dflag2'] = True
-proc_download.defaults['dflag3'] = True
-proc_download.defaults['dflag4'] = True
-proc_download.defaults['dflag5'] = True
-proc_download.list_sizes['dflag1'] = 1
-proc_download.list_sizes['dflag2'] = 1
-proc_download.list_sizes['dflag3'] = 1
-proc_download.list_sizes['dflag4'] = 1
-proc_download.list_sizes['dflag5'] = 1
-proc_download.list_labels['dflag1'] = ['Planting Data']
-proc_download.list_labels['dflag2'] = ['Sentinel-2 L2A']
-proc_download.list_labels['dflag3'] = ['Sentinel-2 Data after Geometric Correction']
-proc_download.list_labels['dflag4'] = ['Sentinel-2 Data after Parcellate']
-proc_download.list_labels['dflag5'] = ['Sentinel-2 Data after Atmospheric Correction']
+proc_download.defaults['dflag'] = [True,True,True,True,True]
+proc_download.defaults['oflag'] = [False,False,False,False,False]
+proc_download.list_sizes['dflag'] = 5
+proc_download.list_sizes['oflag'] = 5
+proc_download.list_labels['dflag'] = ['Planting Data','Sentinel-2 L2A','Sentinel-2 geocor','Sentinel-2 parcel','Sentinel-2 atcor']
+proc_download.list_labels['oflag'] = ['Planting Data','Sentinel-2 L2A','Sentinel-2 geocor','Sentinel-2 parcel','Sentinel-2 atcor']
 proc_download.input_types['drv_dir'] = 'ask_folder'
 proc_download.input_types['trans_path'] = 'box'
-proc_download.input_types['s2_path'] = 'box'
+proc_download.input_types['l2a_path'] = 'box'
+proc_download.input_types['geocor_path'] = 'box'
+proc_download.input_types['parcel_path'] = 'box'
+proc_download.input_types['atcor_path'] = 'box'
 proc_download.input_types['search_key'] = 'box'
-proc_download.input_types['dflag1'] = 'boolean'
-proc_download.input_types['dflag2'] = 'boolean'
-proc_download.input_types['dflag3'] = 'boolean'
-proc_download.input_types['dflag4'] = 'boolean'
-proc_download.input_types['dflag5'] = 'boolean'
+proc_download.input_types['dflag'] = 'boolean_list'
+proc_download.input_types['oflag'] = 'boolean_list'
 for pnam in proc_download.pnams:
     proc_download.values[pnam] = proc_download.defaults[pnam]
 proc_download.middle_left_frame_width = 1000
