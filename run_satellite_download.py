@@ -23,7 +23,6 @@ class Download(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
-        print('first_dtim={}, last_dtim={}'.format(first_dtim,last_dtim))
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         wrk_dir = os.path.join(self.s2_data)
         if not os.path.exists(wrk_dir):
@@ -35,6 +34,12 @@ class Download(Satellite_Process):
         tmp_fnam = os.path.join(wrk_dir,'temp.csv')
         sys.stderr.write('\nMake download list\n')
         sys.stderr.flush()
+        keys = []
+        for key in [s.strip() for s in self.values['search_key'].split(',')]:
+            if key:
+                keys.append(key)
+        if len(keys) < 1:
+            keys = None
         for year in data_years:
             command = self.python_path
             command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
@@ -59,6 +64,14 @@ class Download(Satellite_Process):
                 d = datetime.strptime(dstr,'%Y%m%d')
                 if d < first_dtim or d > last_dtim:
                     continue
+                if keys is not None:
+                    flag = False
+                    for key in keys:
+                        if not key in src_fnam:
+                            flag = True
+                            break
+                    if flag:
+                        continue
                 print(src_fnam)
 
 
