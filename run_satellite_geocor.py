@@ -37,8 +37,6 @@ class Geocor(Satellite_Process):
         super().run()
 
         # Check files
-        if not os.path.exists(self.values['gis_fnam']):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gis_fnam']))
         if not os.path.exists(self.values['ref_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
         if not os.path.exists(self.values['trg_fnam']):
