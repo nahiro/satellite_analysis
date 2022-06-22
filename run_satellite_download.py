@@ -30,9 +30,9 @@ class Download(Satellite_Process):
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
-        # Make file list
+        # Download Sentinel-2 Data
         tmp_fnam = os.path.join(wrk_dir,'temp.csv')
-        sys.stderr.write('\nMake download list\n')
+        sys.stderr.write('\nDownload Sentinel-2 Data\n')
         sys.stderr.flush()
         keys = []
         for key in [s.strip() for s in self.values['search_key'].split(',')]:
@@ -41,6 +41,7 @@ class Download(Satellite_Process):
         if len(keys) < 1:
             keys = None
         for year in data_years:
+            # Make file list
             command = self.python_path
             command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
             command += ' --drvdir {}'.format(self.values['drv_dir'])
@@ -54,6 +55,7 @@ class Download(Satellite_Process):
                 continue
             df = pd.read_csv(tmp_fnam,comment='#')
             df.columns = df.columns.str.strip()
+            inds = []
             for index,row in df.iterrows():
                 #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
                 src_fnam = row['fileName']
@@ -72,8 +74,19 @@ class Download(Satellite_Process):
                             break
                     if flag:
                         continue
-                print(src_fnam)
-
+                inds.append(index)
+            if len(inds) < 1:
+                continue
+            df.loc[inds].to_csv(tmp_fnam,index=False)
+            # Download Data
+            command = self.python_path
+            command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
+            command += ' --drvdir {}'.format(self.values['drv_dir'])
+            command += ' --inp_list {}'.format(tmp_fnam)
+            command += ' --dstdir {}'.format(os.path.join(self.s2_data,'{}'.format(year)))
+            sys.stderr.write(command+'\n')
+            sys.stderr.flush()
+            call(command,shell=True)
 
         #if os.path.exists(tmp_fnam):
         #    os.remove(tmp_fnam)
