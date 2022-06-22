@@ -16,6 +16,8 @@ if HOME is None:
 
 class Process:
 
+    __isfrozen = False
+
     def __init__(self):
         self.proc_name = 'process'
         self.proc_title = 'Process Title'
@@ -31,6 +33,7 @@ class Process:
         self.flag_check = {}
         self.flag_fill = {}
 
+        self.root_width = 1000
         self.top_frame_height = 5
         self.bottom_frame_height = 40
         self.left_frame_width = 180
@@ -40,6 +43,7 @@ class Process:
         self.center_cnv_height = 25
         self.right_cnv_height = 25
         self.center_btn_width = 20
+        self.center_frame_width = 750
         self.text_height = 3
         self.inidir = os.path.join(HOME,'Work','Drone')
         if not os.path.isdir(self.inidir):
@@ -56,12 +60,35 @@ class Process:
         self.browse_image = os.path.join(HOME,'Pictures','browse.png')
         self.root = None
         self.chk_btn = None
+        self.top_frame = None
+        self.middle_frame = None
         self.middle_left_canvas = None
         self.middle_left_frame = None
+        self.middle_right_scr = None
+        self.bottom_frame = None
+        self.bottom_lbl = None
+        self.bottom_btn = None
+        self.left_frame = None
+        self.left_cnv = None
+        self.left_lbl = None
+        self.left_sep = None
+        self.center_frame = None
         self.center_var = None
         self.center_cnv = None
         self.center_inp = None
+        self.center_lbl = None
+        self.center_btn = None
+        self.right_frame = None
         self.right_lbl = None
+        self.right_cnv = None
+
+    def __setattr__(self,key,value):
+        if self.__isfrozen and not hasattr(self,key):
+            raise TypeError('Error in setting attribute, key={}, value={} ({})'.format(key,value,self.proc_name))
+        object.__setattr__(self,key,value)
+
+    def _freeze(self):
+        self.__isfrozen = True
 
     def ask_file(self,pnam,dnam=None):
         if dnam is None:

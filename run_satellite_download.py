@@ -14,6 +14,12 @@ class Download(Satellite_Process):
         super().run()
 
         # Check files/folders
+        start_dtim = datetime.strptime(self.start_date,self.date_fmt)
+        end_dtim = datetime.strptime(self.end_date,self.date_fmt)
+        first_dtim = datetime.strptime(self.first_date,self.date_fmt)
+        last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        years = np.arange(first_dtim.year,last_dtim.year+1,1)
+        print(years)
         wrk_dir = os.path.join(self.s2_data)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
