@@ -27,6 +27,7 @@ proc_geocor.pnams.append('cmin')
 proc_geocor.pnams.append('emaxs')
 proc_geocor.pnams.append('smooth_fact')
 proc_geocor.pnams.append('smooth_dmax')
+proc_geocor.pnams.append('oflag')
 proc_geocor.params['ref_fnam'] = 'Reference Image'
 proc_geocor.params['ref_bands'] = 'Reference Band'
 proc_geocor.params['ref_factors'] = 'Reference Factor'
@@ -50,6 +51,7 @@ proc_geocor.params['cmin'] = 'Min Correlation Coefficient'
 proc_geocor.params['emaxs'] = 'Max GCP Error (\u03C3)'
 proc_geocor.params['smooth_fact'] = 'Smoothing Factor'
 proc_geocor.params['smooth_dmax'] = 'Max Diff. from Smooth (m)'
+proc_geocor.params['oflag'] = 'Overwrite Flag'
 proc_geocor.param_types['ref_fnam'] = 'string'
 proc_geocor.param_types['ref_bands'] = 'int_list'
 proc_geocor.param_types['ref_factors'] = 'float_list'
@@ -73,6 +75,7 @@ proc_geocor.param_types['cmin'] = 'float'
 proc_geocor.param_types['emaxs'] = 'float_list'
 proc_geocor.param_types['smooth_fact'] = 'float_list'
 proc_geocor.param_types['smooth_dmax'] = 'float_list'
+proc_geocor.param_types['oflag'] = 'boolean_list'
 proc_geocor.param_range['ref_bands'] = (-10000,10000)
 proc_geocor.param_range['ref_factors'] = (0,1.0)
 proc_geocor.param_range['ref_range'] = (-1.0e50,1.0e50)
@@ -117,6 +120,7 @@ proc_geocor.defaults['cmin'] = 0.3
 proc_geocor.defaults['emaxs'] = [3.0,2.0,1.5]
 proc_geocor.defaults['smooth_fact'] = [1.0e4,1.0e4]
 proc_geocor.defaults['smooth_dmax'] = [4.0,4.0]
+proc_geocor.defaults['oflag'] = [False,False,False]
 proc_geocor.list_sizes['ref_bands'] = 3
 proc_geocor.list_sizes['ref_factors'] = 3
 proc_geocor.list_sizes['ref_range'] = 2
@@ -136,6 +140,7 @@ proc_geocor.list_sizes['geocor_order'] = 4
 proc_geocor.list_sizes['emaxs'] = 3
 proc_geocor.list_sizes['smooth_fact'] = 2
 proc_geocor.list_sizes['smooth_dmax'] = 2
+proc_geocor.list_sizes['oflag'] = 3
 proc_geocor.list_labels['ref_bands'] = ['','','']
 proc_geocor.list_labels['ref_factors'] = ['','','']
 proc_geocor.list_labels['ref_range'] = ['Min :',' Max :']
@@ -155,6 +160,7 @@ proc_geocor.list_labels['geocor_order'] = ['Auto','1st','2nd','3rd']
 proc_geocor.list_labels['emaxs'] = ['','','']
 proc_geocor.list_labels['smooth_fact'] = ['X :',' Y :']
 proc_geocor.list_labels['smooth_dmax'] = ['X :',' Y :']
+proc_geocor.list_labels['oflag'] = ['subset','geocor','resample']
 proc_geocor.input_types['ref_fnam'] = 'ask_file'
 proc_geocor.input_types['ref_bands'] = 'int_list'
 proc_geocor.input_types['ref_factors'] = 'float_list'
@@ -178,6 +184,7 @@ proc_geocor.input_types['cmin'] = 'box'
 proc_geocor.input_types['emaxs'] = 'float_list'
 proc_geocor.input_types['smooth_fact'] = 'float_list'
 proc_geocor.input_types['smooth_dmax'] = 'float_list'
+proc_geocor.input_types['oflag'] = 'boolean_list'
 for pnam in proc_geocor.pnams:
     proc_geocor.values[pnam] = proc_geocor.defaults[pnam]
 proc_geocor.middle_left_frame_width = 1000

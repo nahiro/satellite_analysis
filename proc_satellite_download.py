@@ -14,12 +14,12 @@ proc_download.pnams.append('search_key')
 proc_download.pnams.append('dflag')
 proc_download.pnams.append('oflag')
 proc_download.params['drv_dir'] = 'Google Drive Folder'
-proc_download.params['trans_path'] = 'Planting Data on GD'
+proc_download.params['trans_path'] = 'Planting on GD'
 proc_download.params['l2a_path'] = 'Sentinel-2 L2A on GD'
 proc_download.params['geocor_path'] = 'Sentinel-2 geocor on GD'
 proc_download.params['parcel_path'] = 'Sentinel-2 parcel on GD'
 proc_download.params['atcor_path'] = 'Sentinel-2 atcor on GD'
-proc_download.params['search_key'] = 'Keyword for Sentinel-2 L2A'
+proc_download.params['search_key'] = 'Search Keyword for L2A'
 proc_download.params['dflag'] = 'Download Flag'
 proc_download.params['oflag'] = 'Overwrite Flag'
 proc_download.param_types['drv_dir'] = 'string'
@@ -42,8 +42,8 @@ proc_download.defaults['dflag'] = [True,True,True,True,True]
 proc_download.defaults['oflag'] = [False,False,False,False,False]
 proc_download.list_sizes['dflag'] = 5
 proc_download.list_sizes['oflag'] = 5
-proc_download.list_labels['dflag'] = ['Planting Data','Sentinel-2 L2A','Sentinel-2 geocor','Sentinel-2 parcel','Sentinel-2 atcor']
-proc_download.list_labels['oflag'] = ['Planting Data','Sentinel-2 L2A','Sentinel-2 geocor','Sentinel-2 parcel','Sentinel-2 atcor']
+proc_download.list_labels['dflag'] = ['Planting','L2A','geocor','parcel','atcor']
+proc_download.list_labels['oflag'] = ['Planting','L2A','geocor','parcel','atcor']
 proc_download.input_types['drv_dir'] = 'ask_folder'
 proc_download.input_types['trans_path'] = 'box'
 proc_download.input_types['l2a_path'] = 'box'
