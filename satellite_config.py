@@ -76,8 +76,9 @@ config_defaults.update({
 'main.center_btn_width'               : 20,
 #----------- download -----------
 'download.drv_dir'                    : drv_dir,
-'download.trans_path'                 : '/Spatial-information/Transplanting_date/Cihea/final/v1.4',
-'download.s2_path'                    : '/Spatial-information/Sentinel-2/L2A/Cihea',
+'download.trans_path'                 : '/Spatial-Information/Transplanting_date/Cihea/final/v1.4',
+'download.s2_path'                    : '/Spatial-Information/Sentinel-2/L2A/Cihea',
+'download.search_key'                 : '',
 'download.dflag1'                     : True,
 'download.dflag2'                     : True,
 'download.dflag3'                     : True,

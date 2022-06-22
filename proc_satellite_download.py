@@ -7,6 +7,7 @@ proc_download.proc_title = 'Download Data'
 proc_download.pnams.append('drv_dir')
 proc_download.pnams.append('trans_path')
 proc_download.pnams.append('s2_path')
+proc_download.pnams.append('search_key')
 proc_download.pnams.append('dflag1')
 proc_download.pnams.append('dflag2')
 proc_download.pnams.append('dflag3')
@@ -15,6 +16,7 @@ proc_download.pnams.append('dflag5')
 proc_download.params['drv_dir'] = 'Google Drive Folder'
 proc_download.params['trans_path'] = 'Planting Folder on GD'
 proc_download.params['s2_path'] = 'Sentinel-2 Folder on GD'
+proc_download.params['search_key'] = 'Keyword for Sentinel-2 Data'
 proc_download.params['dflag1'] = 'Download'
 proc_download.params['dflag2'] = 'Download'
 proc_download.params['dflag3'] = 'Download'
@@ -23,14 +25,16 @@ proc_download.params['dflag5'] = 'Download'
 proc_download.param_types['drv_dir'] = 'string'
 proc_download.param_types['trans_path'] = 'string'
 proc_download.param_types['s2_path'] = 'string'
+proc_download.param_types['search_key'] = 'string'
 proc_download.param_types['dflag1'] = 'boolean'
 proc_download.param_types['dflag2'] = 'boolean'
 proc_download.param_types['dflag3'] = 'boolean'
 proc_download.param_types['dflag4'] = 'boolean'
 proc_download.param_types['dflag5'] = 'boolean'
 proc_download.defaults['drv_dir'] = 'GoogleDrive'
-proc_download.defaults['trans_path'] = '/Spatial-information/Transplanting_date/Cihea/final/v1.4'
-proc_download.defaults['s2_path'] = '/Spatial-information/Sentinel-2/L2A/Cihea'
+proc_download.defaults['trans_path'] = '/Spatial-Information/Transplanting_date/Cihea/final/v1.4'
+proc_download.defaults['s2_path'] = '/Spatial-Information/Sentinel-2/L2A/Cihea'
+proc_download.defaults['search_key'] = ''
 proc_download.defaults['dflag1'] = True
 proc_download.defaults['dflag2'] = True
 proc_download.defaults['dflag3'] = True
@@ -49,6 +53,7 @@ proc_download.list_labels['dflag5'] = ['Sentinel-2 Data after Atmospheric Correc
 proc_download.input_types['drv_dir'] = 'ask_folder'
 proc_download.input_types['trans_path'] = 'box'
 proc_download.input_types['s2_path'] = 'box'
+proc_download.input_types['search_key'] = 'box'
 proc_download.input_types['dflag1'] = 'boolean'
 proc_download.input_types['dflag2'] = 'boolean'
 proc_download.input_types['dflag3'] = 'boolean'

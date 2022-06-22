@@ -63,11 +63,11 @@ gauth = GoogleAuth()
 gauth.LocalWebserverAuth()
 drive = GoogleDrive(gauth)
 
-l = args.srcdir.split(os.sep)
+l = args.srcdir.split('/')
 for i in range(len(l)):
     if not l[i]:
         continue
-    d = os.sep.join(l[:i+1])
+    d = '/'.join(l[:i+1])
     query_folder(d)
 
 src_id = folders[args.srcdir]['id']
