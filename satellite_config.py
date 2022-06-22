@@ -125,6 +125,7 @@ config_defaults.update({
 'parcel.cloud_flag'                   : True,
 'parcel.cloud_band'                   : 'r',
 'parcel.cloud_thr'                    : 0.35,
+'parcel.oflag'                        : False,
 'parcel.python_path'                  : python_path,
 'parcel.scr_dir'                      : scr_dir,
 'parcel.middle_left_frame_width'      : 1000,
