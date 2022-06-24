@@ -24,12 +24,12 @@ class Download(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
-        wrk_dir = os.path.join(self.s2_data)
-        if not os.path.exists(wrk_dir):
-            os.makedirs(wrk_dir)
-        if not os.path.isdir(wrk_dir):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
-        tmp_fnam = os.path.join(wrk_dir,'temp.csv')
+        l2a_dir = os.path.join(self.s2_data)
+        if not os.path.exists(l2a_dir):
+            os.makedirs(l2a_dir)
+        if not os.path.isdir(l2a_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,l2a_dir))
+        tmp_fnam = os.path.join(l2a_dir,'temp.csv')
 
         # Download Sentinel-2 L2A
         itarg = 1

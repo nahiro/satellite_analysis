@@ -40,18 +40,60 @@ class Geocor(Satellite_Process):
         # Start process
         super().run()
 
-        # Check files
-        if not os.path.exists(self.values['ref_fnam']):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
-        if not os.path.exists(self.values['trg_fnam']):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['trg_fnam']))
-        ref_bnam,ref_enam = os.path.splitext(os.path.basename(self.values['ref_fnam']))
-        trg_bnam = '{}_{}'.format(self.current_block,self.current_date)
-        wrk_dir = os.path.join(self.drone_analysis,self.current_block,self.current_date,self.proc_name)
+        # Check files/folders
+        start_dtim = datetime.strptime(self.start_date,self.date_fmt)
+        end_dtim = datetime.strptime(self.end_date,self.date_fmt)
+        first_dtim = datetime.strptime(self.first_date,self.date_fmt)
+        last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
+        wrk_dir = os.path.join(self.s2_analysis)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
+        if not os.path.exists(self.values['ref_fnam']):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
+        ref_bnam,ref_enam = os.path.splitext(os.path.basename(self.values['ref_fnam']))
+
+        # Check Sentinel-2 L2A
+        l2a_fnams = []
+        l2a_dstrs = []
+        l2a_sizes = []
+        for year in data_years:
+            dnam = os.path.join(self.s2_data,'{}'.format(year))
+            if not os.path.isdir(dnam):
+                continue
+            for f in sorted(os.listdir(dnam)):
+                m = re.search('^S2[AB]_MSIL2A_('+'\d'*8+')T\S+\.zip$',f)
+                if not m:
+                    m = re.search('^S2[AB]_MSIL2A_('+'\d'*8+')T\S+\.SAFE$',f)
+                    if not m:
+                        continue
+                dstr = m.group(1)
+                d = datetime.strptime(dstr,'%Y%m%d')
+                if d < first_dtim or d > last_dtim:
+                    continue
+                fnam = os.path.join(dnam,f)
+                l2a_fnams.append(fnam)
+                l2a_dstrs.append(dstr)
+                l2a_sizes.append(os.path.getsize(fnam))
+        if len(l2a_dstrs) < 1:
+            return
+        inds = np.argsort(l2a_dstrs)#[::-1]
+        l2a_fnams = [l2a_fnams[i] for i in inds]
+        l2a_dstrs = [l2a_dstrs[i] for i in inds]
+        l2a_sizes = [l2a_sizes[i] for i in inds]
+        # Delete duplicates
+        dup = [dstr for dstr in set(l2a_dstrs) if l2a_dstrs.count(dstr) > 1]
+        for dstr in dup:
+            inds = np.array([i for i,d in enumerate(l2a_dstrs) if d == dstr])
+            fs = [l2a_fnams[j] for j in inds[np.argsort([l2a_sizes[i] for i in inds])[-2::-1]]]
+            for fnam in fs:
+                i = l2a_fnams.index(fnam)
+                del l2a_fnams[i]
+                del l2a_dstrs[i]
+                del l2a_sizes[i]
+
 
         """
         # Geometric correction
