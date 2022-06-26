@@ -149,6 +149,7 @@ class Geocor(Satellite_Process):
 
         # Geocor
         geocor_dstrs = []
+        orders = {'1st':1,'2nd':2,'3rd':3}
         for dstr in subset_dstrs:
             d = datetime.strptime(dstr,'%Y%m%d')
             dnam = os.path.join(self.s2_analysis,'geocor','{}'.format(d.year))
@@ -254,8 +255,12 @@ class Geocor(Satellite_Process):
                 command += ' "{}"'.format(fnam)
                 command += ' "{}"'.format(self.values['ref_fnam'])
                 command += ' --out_fnam "{}"'.format(gnam)
-                command += ' --tr {}'.format(self.values['trg_pixel'])
+                command += ' --scrdir "{}"'.format(self.scr_dir)
                 command += ' --use_gcps "{}"'.format(sel_fnam) # use
+                command += ' --optfile "{}"'.format(tmp_fnam)
+                command += ' --tr {}'.format(self.values['trg_pixel'])
+                if self.values['geocor_order'] != 'Auto':
+                    command += ' --npoly {}'.format(orders[self.values['geocor_order']])
                 for band in self.values['trg_flags']:
                     if band >= 0:
                         command += ' --resampling2_band {}'.format(band)
@@ -281,19 +286,6 @@ class Geocor(Satellite_Process):
         x_diff3,y_diff3,e3,n3,indx3 = calc_mean(x,y,emax=self.values['boundary_emaxs'][2],selected=indx2)
         #---------
 
-            command = self.python_path
-            command += ' {}'.format(os.path.join(self.scr_dir,'auto_geocor.py'))
-            command += ' {}'.format(os.path.join(wrk_dir,'{}_resized.tif'.format(trg_bnam)))
-            command += ' --out_fnam {}'.format(os.path.join(wrk_dir,'{}_resized_geocor_{}.tif'.format(trg_bnam,orders[order])))
-            command += ' --scrdir {}'.format(self.scr_dir)
-            command += ' --use_gcps {}'.format(gnam) # use
-            command += ' --optfile {}'.format(os.path.join(wrk_dir,'temp.dat'))
-            command += ' --npoly {}'.format(order)
-            command += ' --refine_gcps 0.1'
-            command += ' --minimum_number 3'
-            sys.stderr.write(command+'\n')
-            sys.stderr.flush()
-            call(command,shell=True)
         """
 
         # Finish process
