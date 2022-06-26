@@ -236,8 +236,10 @@ class Geocor(Satellite_Process):
                     continue
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'select_gcps.py'))
-                command += ' "{}"'.format(dat_fnam)
-                command += ' --datdir "{}"'.format(os.path.dirname(dat_fnam))
+                command += ' --inp_fnam "{}"'.format(dat_fnam)
+                command += ' --out_fnam "{}"'.format(sel_fnam)
+                command += ' --trg_indx_step {}'.format(step)
+                command += ' --trg_indy_step {}'.format(step)
                 command += ' --replace'
                 command += ' --exp'
                 ret = call(command,shell=True)
@@ -248,12 +250,14 @@ class Geocor(Satellite_Process):
                 command += ' "{}"'.format(fnam)
                 command += ' "{}"'.format(self.values['ref_fnam'])
                 command += ' --out_fnam "{}"'.format(gnam)
-                command += ' --tr 10.0'
+                command += ' --tr {}'.format(self.values['trg_pixel'])
                 command += ' --use_gcps "{}"'.format(sel_fnam) # use
-                command += ' --resampling2_band 16'
-                try:
-                    call(command,shell=True)
-                except Exception:
+                for band in self.values['trg_flags']:
+                    if band >= 0:
+                        command += ' --resampling2_band {}'.format(band)
+                command += ' --minimum_number {}'.format(self.values['nmin'])
+                ret = call(command,shell=True)
+                if ret != 0:
                     continue
             #if os.path.exists(sel_fnam):
             #    os.rename(sel_fnam,dat_fnam)
