@@ -240,6 +240,10 @@ class Geocor(Satellite_Process):
                 command += ' --out_fnam "{}"'.format(sel_fnam)
                 command += ' --trg_indx_step {}'.format(step)
                 command += ' --trg_indy_step {}'.format(step)
+                command += ' --smooth_x="{}"'.format(self.values['smooth_fact'][0])
+                command += ' --smooth_y="{}"'.format(self.values['smooth_fact'][1])
+                command += ' --xthr {}'.format(self.values['smooth_dmax'][0])
+                command += ' --ythr {}'.format(self.values['smooth_dmax'][1])
                 command += ' --replace'
                 command += ' --exp'
                 ret = call(command,shell=True)
@@ -289,18 +293,6 @@ class Geocor(Satellite_Process):
             command += ' --minimum_number 3'
             sys.stderr.write(command+'\n')
             sys.stderr.flush()
-            call(command,shell=True)
-            figure_orders.append(order)
-        if len(figure_orders) > 0:
-            command = self.python_path
-            command += ' {}'.format(os.path.join(self.scr_dir,'draw_resized_geocor.py'))
-            command += ' --shp_fnam {}'.format(self.values['gis_fnam'])
-            command += ' --img_fnam {}'.format(os.path.join(wrk_dir,'{}_resized_geocor.tif'.format(trg_bnam)))
-            for order in figure_orders:
-                command += ' --order {}'.format(order)
-            command += ' --title {}'.format(trg_bnam)
-            command += ' --fignam {}'.format(os.path.join(wrk_dir,'{}_resized.pdf'.format(trg_bnam)))
-            command += ' --batch'
             call(command,shell=True)
         """
 
