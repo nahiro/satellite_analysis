@@ -91,7 +91,7 @@ config_defaults.update({
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [4,-1,-1],
 'geocor.ref_factors'                  : [np.nan,np.nan,np.nan],
-'geocor.ref_range'                    : [np.nan,np.nan],
+'geocor.ref_range'                    : [1.0e-5,np.nan],
 'geocor.trg_subset'                   : [107.201,107.367,-6.910,-6.750],
 'geocor.trg_resample'                 : [743805.0,757295.0,9235815.0,9251805.0],
 'geocor.trg_bands'                    : [3,-1,-1],

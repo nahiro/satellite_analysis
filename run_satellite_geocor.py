@@ -150,13 +150,13 @@ class Geocor(Satellite_Process):
         # Geocor
         geocor_dstrs = []
         for dstr in subset_dstrs:
-
             d = datetime.strptime(dstr,'%Y%m%d')
             dnam = os.path.join(self.s2_analysis,'geocor','{}'.format(d.year))
             gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
             dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
-            if os.path.exists(gnam) and self.values['oflag'][1]:
-                os.remove(gnam)
+            if self.values['oflag'][1]:
+                if os.path.exists(gnam):
+                    os.remove(gnam)
                 if os.path.exists(dat_fnam):
                     os.remove(dat_fnam)
             if not os.path.exists(dat_fnam):
@@ -188,9 +188,48 @@ class Geocor(Satellite_Process):
                 command += ' --margin_height {}'.format(margin)
                 command += ' --scan_indx_step {}'.format(self.values['scan_step'])
                 command += ' --scan_indy_step {}'.format(self.values['scan_step'])
-                command += ' --ref_band {}'.format(self.values[''])
-                command += ' --trg_band {}'.format(self.values[''])
-                command += ' --ref_data_min 1.0e-5' # for WorldView data
+                if self.values['ref_bands'][0] < 0: # panchromatic
+                    command += ' --ref_band -1'
+                elif self.values['ref_bands'][1] < 0: # single band
+                    command += ' --ref_band {}'.format(self.values['ref_bands'][0])
+                elif self.values['ref_bands'][2] < 0: # dual band
+                    command += ' --ref_multi_band {}'.format(self.values['ref_bands'][0])
+                    command += ' --ref_multi_band {}'.format(self.values['ref_bands'][1])
+                    command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][0]) else self.values['ref_factors'][0])
+                    command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][1]) else self.values['ref_factors'][1])
+                else: # triple band
+                    command += ' --ref_multi_band {}'.format(self.values['ref_bands'][0])
+                    command += ' --ref_multi_band {}'.format(self.values['ref_bands'][1])
+                    command += ' --ref_multi_band {}'.format(self.values['ref_bands'][2])
+                    command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][0]) else self.values['ref_factors'][0])
+                    command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][1]) else self.values['ref_factors'][1])
+                    command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][2]) else self.values['ref_factors'][2])
+                if self.values['trg_bands'][0] < 0: # panchromatic
+                    command += ' --trg_band -1'
+                elif self.values['trg_bands'][1] < 0: # single band
+                    command += ' --trg_band {}'.format(self.values['trg_bands'][0])
+                elif self.values['trg_bands'][2] < 0: # dual band
+                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][0])
+                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][1])
+                    command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][0]) else self.values['trg_factors'][0])
+                    command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][1]) else self.values['trg_factors'][1])
+                else: # triple band
+                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][0])
+                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][1])
+                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][2])
+                    command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][0]) else self.values['trg_factors'][0])
+                    command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][1]) else self.values['trg_factors'][1])
+                    command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][2]) else self.values['trg_factors'][2])
+                if not np.isnan(self.values['ref_range'][0]):
+                    command += ' --ref_data_min="{}"'.format(self.values['ref_range'][0])
+                if not np.isnan(self.values['ref_range'][1]):
+                    command += ' --ref_data_max="{}"'.format(self.values['ref_range'][1])
+                if not np.isnan(self.values['trg_range'][0]):
+                    command += ' --trg_data_min="{}"'.format(self.values['trg_range'][0])
+                if not np.isnan(self.values['trg_range'][1]):
+                    command += ' --trg_data_max="{}"'.format(self.values['trg_range'][1])
+
+
                 command += ' --exp'
                 ret = call(command,shell=True)
                 if ret != 0:
@@ -229,23 +268,8 @@ class Geocor(Satellite_Process):
         # Geometric correction
 
 
-        command += ' --ref_band {}'.format(self.values['ref_band'])
-        if self.values['trg_ndvi']:
-            command += ' --trg_ndvi'
-            command += ' --trg_multi_band {}'.format(self.values['trg_bands'][0])
-            command += ' --trg_multi_band {}'.format(self.values['trg_bands'][1])
-        else:
-            command += ' --trg_band {}'.format(self.values['trg_bands'][0])
         command += ' --rthr {}'.format(self.values['boundary_cmins'][0])
         command += ' --feps 0.0001'
-        if not np.isnan(self.values['trg_range'][0]):
-            command += ' --trg_data_min {}'.format(self.values['trg_range'][0])
-        if not np.isnan(self.values['trg_range'][1]):
-            command += ' --trg_data_max {}'.format(self.values['trg_range'][1])
-        if not np.isnan(self.values['ref_range'][0]):
-            command += ' --ref_data_umin {}'.format(self.values['raf_range'][0])
-        if not np.isnan(self.values['ref_range'][1]):
-            command += ' --ref_data_umax {}'.format(self.values['ref_range'][1])
         command += ' --long'
         sys.stderr.write('\nGeometric correction ({}/{})\n'.format(itry+1,len(trials)))
         sys.stderr.write(command+'\n')
