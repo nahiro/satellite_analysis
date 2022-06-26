@@ -1,7 +1,9 @@
 import os
 import sys
+import shutil
 import re
 from datetime import datetime
+import zipfile
 try:
     import gdal
 except Exception:
@@ -93,6 +95,57 @@ class Geocor(Satellite_Process):
                 del l2a_fnams[i]
                 del l2a_dstrs[i]
                 del l2a_sizes[i]
+
+        # Subset
+        subset_dstrs = []
+        for fnam,dstr in zip(l2a_fnams,l2a_dstrs):
+            d = datetime.strptime(dstr,'%Y%m%d')
+            dnam = os.path.join(self.s2_analysis,'subset','{}'.format(d.year))
+            gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
+            if os.path.exists(gnam) and self.values['oflag'][0]:
+                os.remove(gnam)
+            if not os.path.exists(gnam):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                unzip_flag = False
+                rnam = os.path.splitext(fnam)[0]+'.SAFE'
+                if not os.path.exists(rnam):
+                    try:
+                        with zipfile.ZipFile(fnam,'r') as z:
+                            for d in z.namelist():
+                                dnam = os.path.dirname(d)
+                                if re.search('\.SAFE$',dnam):
+                                    if os.path.basename(rnam) != dnam:
+                                        raise ValueError('Error, rnam={}, dnam={}'.format(rnam,dnam))
+                                    break
+                            z.extractall(os.path.dirname(fnam))
+                        unzip_flag = True
+                    except Exception as e:
+                        sys.stderr.write(str(e)+'\n')
+                        sys.stderr.flush()
+                        continue
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_subset.py'))
+                command += ' '+rnam
+                command += ' --output_fnam "{}"'.format(gnam)
+                command += ' --polygon "POLYGON(({} {},{} {},{} {},{} {},{} {}))"'.format(self.values['trg_subset'][0],self.values['trg_subset'][2],
+                                                                                          self.values['trg_subset'][1],self.values['trg_subset'][2],
+                                                                                          self.values['trg_subset'][1],self.values['trg_subset'][3],
+                                                                                          self.values['trg_subset'][0],self.values['trg_subset'][3],
+                                                                                          self.values['trg_subset'][0],self.values['trg_subset'][2])
+                command += ' --resolution {}'.format(int(self.values['trg_pixel']+0.5))
+                command += ' --geotiff'
+                call(command,shell=True)
+                if unzip_flag:
+                    shutil.rmtree(rnam)
+                # Remove cache
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
+                call(command,shell=True)
+            if os.path.exists(gnam):
+                subset_dstrs.append(dstr)
 
 
         """
