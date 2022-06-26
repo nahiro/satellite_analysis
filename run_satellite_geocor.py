@@ -228,8 +228,8 @@ class Geocor(Satellite_Process):
                     command += ' --trg_data_min="{}"'.format(self.values['trg_range'][0])
                 if not np.isnan(self.values['trg_range'][1]):
                     command += ' --trg_data_max="{}"'.format(self.values['trg_range'][1])
-
-
+                command += ' --rthr {}'.format(self.values['cmin'])
+                command += ' --feps 0.01'
                 command += ' --exp'
                 ret = call(command,shell=True)
                 if ret != 0:
@@ -240,9 +240,8 @@ class Geocor(Satellite_Process):
                 command += ' --datdir "{}"'.format(os.path.dirname(dat_fnam))
                 command += ' --replace'
                 command += ' --exp'
-                try:
-                    call(command,shell=True)
-                except Exception:
+                ret = call(command,shell=True)
+                if ret != 0:
                     continue
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'auto_geocor_cc.py'))
@@ -268,14 +267,6 @@ class Geocor(Satellite_Process):
         # Geometric correction
 
 
-        command += ' --rthr {}'.format(self.values['boundary_cmins'][0])
-        command += ' --feps 0.0001'
-        command += ' --long'
-        sys.stderr.write('\nGeometric correction ({}/{})\n'.format(itry+1,len(trials)))
-        sys.stderr.write(command+'\n')
-        sys.stderr.flush()
-        call(command,shell=True)
-        sys.stderr.write('{}\n'.format(datetime.now()))
         #---------
         x,y,r,ni,nb,r90 = np.loadtxt(fnam,usecols=(4,5,6,9,11,12),unpack=True)
         indx0 = np.arange(r.size)[(r>self.values['boundary_cmins'][1]) & (nb>nb.max()*self.values['boundary_nmin']) & (r90<self.values['boundary_rmax'])]
