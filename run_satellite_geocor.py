@@ -147,30 +147,88 @@ class Geocor(Satellite_Process):
             if os.path.exists(gnam):
                 subset_dstrs.append(dstr)
 
+        # Geocor
+        geocor_dstrs = []
+        for dstr in subset_dstrs:
+
+            d = datetime.strptime(dstr,'%Y%m%d')
+            dnam = os.path.join(self.s2_analysis,'geocor','{}'.format(d.year))
+            gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
+            dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
+            if os.path.exists(gnam) and self.values['oflag'][1]:
+                os.remove(gnam)
+                if os.path.exists(dat_fnam):
+                    os.remove(dat_fnam)
+            if not os.path.exists(dat_fnam):
+                fnam = os.path.join(self.s2_analysis,'subset','{}'.format(d.year),'{}_subset.tif'.format(dstr))
+                sel_fnam = os.path.join(dnam,'{}_geocor_selected.dat'.format(dstr))
+                ds = gdal.Open(fnam)
+                trg_trans = ds.GetGeoTransform()
+                ds = None
+                trg_xstp = trg_trans[1]
+                trg_pixel_size = abs(trg_xstp)
+                size = np.int64(self.values['part_size']/trg_pixel_size+0.5)
+                step = np.int64(self.values['gcp_interval']/trg_pixel_size+0.5)
+                shift = np.int64(self.values['max_shift']/trg_pixel_size+0.5)
+                margin = np.int64(self.values['margin']/trg_pixel_size+0.5)
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'find_gcps_cc.py'))
+                command += ' "{}"'.format(fnam)
+                command += ' "{}"'.format(self.values['ref_fnam'])
+                command += ' --out_fnam "{}"'.format(dat_fnam)
+                command += ' --x0 {:.4f}'.format(self.values['init_shifts'][0])
+                command += ' --y0 {:.4f}'.format(self.values['init_shifts'][1])
+                command += ' --subset_width {}'.format(size)
+                command += ' --subset_height {}'.format(size)
+                command += ' --trg_indx_step {}'.format(step)
+                command += ' --trg_indy_step {}'.format(step)
+                command += ' --shift_width {}'.format(shift)
+                command += ' --shift_height {}'.format(shift)
+                command += ' --margin_width {}'.format(margin)
+                command += ' --margin_height {}'.format(margin)
+                command += ' --scan_indx_step {}'.format(self.values['scan_step'])
+                command += ' --scan_indy_step {}'.format(self.values['scan_step'])
+                command += ' --ref_band {}'.format(self.values[''])
+                command += ' --trg_band {}'.format(self.values[''])
+                command += ' --ref_data_min 1.0e-5' # for WorldView data
+                command += ' --exp'
+                ret = call(command,shell=True)
+                if ret != 0:
+                    continue
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'select_gcps.py'))
+                command += ' "{}"'.format(dat_fnam)
+                command += ' --datdir "{}"'.format(os.path.dirname(dat_fnam))
+                command += ' --replace'
+                command += ' --exp'
+                try:
+                    call(command,shell=True)
+                except Exception:
+                    continue
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'auto_geocor_cc.py'))
+                command += ' "{}"'.format(fnam)
+                command += ' "{}"'.format(self.values['ref_fnam'])
+                command += ' --out_fnam "{}"'.format(gnam)
+                command += ' --ref_band 4' # Red band
+                command += ' --trg_band 3' # Red band
+                command += ' --tr 10.0'
+                command += ' --use_gcps "{}"'.format(sel_fnam) # use
+                command += ' --resampling2_band 16'
+                try:
+                    call(command,shell=True)
+                except Exception:
+                    continue
+            #if os.path.exists(sel_fnam):
+            #    os.rename(sel_fnam,dat_fnam)
+            if os.path.exists(gnam):
+                geocor_dstrs.append(dstr)
+
 
         """
         # Geometric correction
-        fnam = os.path.join(wrk_dir,'{}_resized_geocor_{}.dat'.format(trg_bnam,trials[itry]))
-        if os.path.exists(fnam):
-            os.remove(fnam)
-        command = self.python_path
-        command += ' {}'.format(os.path.join(self.scr_dir,'find_gcps.py'))
-        command += ' {}'.format(os.path.join(wrk_dir,'{}_resized.tif'.format(trg_bnam)))
-        command += ' {}'.format(os.path.join(wrk_dir,'{}_{}_resized.tif'.format(ref_bnam,trg_bnam)))
-        command += ' --ref_mask_fnam {}'.format(os.path.join(wrk_dir,'{}_{}_resized_mask.tif'.format(ref_bnam,trg_bnam)))
-        command += ' --out_fnam {}'.format(fnam)
-        command += ' --x0 {:.4f}'.format(xorg)
-        command += ' --y0 {:.4f}'.format(yorg)
-        command += ' --subset_width {}'.format(sizes[itry])
-        command += ' --subset_height {}'.format(sizes[itry])
-        command += ' --trg_indx_step {}'.format(steps[itry])
-        command += ' --trg_indy_step {}'.format(steps[itry])
-        command += ' --shift_width {}'.format(shifts[itry])
-        command += ' --shift_height {}'.format(shifts[itry])
-        command += ' --margin_width {}'.format(margins[itry])
-        command += ' --margin_height {}'.format(margins[itry])
-        command += ' --scan_indx_step {}'.format(self.values['scan_steps'][itry])
-        command += ' --scan_indy_step {}'.format(self.values['scan_steps'][itry])
+
+
         command += ' --ref_band {}'.format(self.values['ref_band'])
         if self.values['trg_ndvi']:
             command += ' --trg_ndvi'
