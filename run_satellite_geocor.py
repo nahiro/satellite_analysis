@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import re
+import tempfile
 from datetime import datetime
 import zipfile
 try:
@@ -235,9 +236,21 @@ class Geocor(Satellite_Process):
                 ret = call(command,shell=True)
                 if ret != 0:
                     continue
+                x,y,r,r90 = np.loadtxt(fnam,usecols=(4,5,6,7),unpack=True)
+                indx0 = np.arange(r.size)[(r90<self.values['rmax'])]
+                x_diff1,y_diff1,e1,n1,indx1 = calc_mean(x,y,emax=self.values['emaxs'][0],selected=indx0)
+                x_diff2,y_diff2,e2,n2,indx2 = calc_mean(x,y,emax=self.values['emaxs'][1],selected=indx1)
+                x_diff3,y_diff3,e3,n3,indx3 = calc_mean(x,y,emax=self.values['emaxs'][2],selected=indx2)
+                with open(dat_fnam,'r') as fp:
+                    lines = fp.readlines()
+                tmp_fp = tempfile.NamedTemporaryFile(mode='w')
+                for i,line in enumerate(lines):
+                    if i in indx3:
+                        tmp_fp.write(line)
+                tmp_fp.seek(0)
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'select_gcps.py'))
-                command += ' --inp_fnam "{}"'.format(dat_fnam)
+                command += ' --inp_fnam "{}"'.format(tmp_fp.name)
                 command += ' --out_fnam "{}"'.format(sel_fnam)
                 command += ' --trg_indx_step {}'.format(step)
                 command += ' --trg_indy_step {}'.format(step)
@@ -248,6 +261,7 @@ class Geocor(Satellite_Process):
                 command += ' --replace'
                 command += ' --exp'
                 ret = call(command,shell=True)
+                tmp_fp.close()
                 if ret != 0:
                     continue
                 command = self.python_path
@@ -257,7 +271,6 @@ class Geocor(Satellite_Process):
                 command += ' --out_fnam "{}"'.format(gnam)
                 command += ' --scrdir "{}"'.format(self.scr_dir)
                 command += ' --use_gcps "{}"'.format(sel_fnam) # use
-                command += ' --optfile "{}"'.format(tmp_fnam)
                 command += ' --tr {}'.format(self.values['trg_pixel'])
                 if self.values['geocor_order'] != 'Auto':
                     command += ' --npoly {}'.format(orders[self.values['geocor_order']])
@@ -265,6 +278,7 @@ class Geocor(Satellite_Process):
                     if band >= 0:
                         command += ' --resampling2_band {}'.format(band)
                 command += ' --minimum_number {}'.format(self.values['nmin'])
+                command += ' --optfile'
                 ret = call(command,shell=True)
                 if ret != 0:
                     continue
@@ -279,11 +293,6 @@ class Geocor(Satellite_Process):
 
 
         #---------
-        x,y,r,r90 = np.loadtxt(fnam,usecols=(4,5,6,7),unpack=True)
-        indx0 = np.arange(r.size)[(r>self.values['cmins'][1]) & (r90<self.values['boundary_rmax'])]
-        x_diff1,y_diff1,e1,n1,indx1 = calc_mean(x,y,emax=self.values['boundary_emaxs'][0],selected=indx0)
-        x_diff2,y_diff2,e2,n2,indx2 = calc_mean(x,y,emax=self.values['boundary_emaxs'][1],selected=indx1)
-        x_diff3,y_diff3,e3,n3,indx3 = calc_mean(x,y,emax=self.values['boundary_emaxs'][2],selected=indx2)
         #---------
 
         """

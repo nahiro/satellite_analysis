@@ -24,6 +24,7 @@ proc_geocor.pnams.append('scan_step')
 proc_geocor.pnams.append('geocor_order')
 proc_geocor.pnams.append('nmin')
 proc_geocor.pnams.append('cmin')
+proc_geocor.pnams.append('rmax')
 proc_geocor.pnams.append('emaxs')
 proc_geocor.pnams.append('smooth_fact')
 proc_geocor.pnams.append('smooth_dmax')
@@ -48,6 +49,7 @@ proc_geocor.params['scan_step'] = 'Scan Step (pixel)'
 proc_geocor.params['geocor_order'] = 'Order of Geom. Correction'
 proc_geocor.params['nmin'] = 'Min GCP Number'
 proc_geocor.params['cmin'] = 'Min Correlation Coefficient'
+proc_geocor.params['rmax'] = 'Max Contrast Spread (m)'
 proc_geocor.params['emaxs'] = 'Max GCP Error (\u03C3)'
 proc_geocor.params['smooth_fact'] = 'Smoothing Factor'
 proc_geocor.params['smooth_dmax'] = 'Max Diff. from Smooth (m)'
@@ -72,6 +74,7 @@ proc_geocor.param_types['scan_step'] = 'int'
 proc_geocor.param_types['geocor_order'] = 'string_select'
 proc_geocor.param_types['nmin'] = 'int'
 proc_geocor.param_types['cmin'] = 'float'
+proc_geocor.param_types['rmax'] = 'float'
 proc_geocor.param_types['emaxs'] = 'float_list'
 proc_geocor.param_types['smooth_fact'] = 'float_list'
 proc_geocor.param_types['smooth_dmax'] = 'float_list'
@@ -94,6 +97,7 @@ proc_geocor.param_range['margin'] = (0.0,1.0e50)
 proc_geocor.param_range['scan_step'] = (1,1000000)
 proc_geocor.param_range['nmin'] = (1,1000000)
 proc_geocor.param_range['cmin'] = (-1.0e6,1.0e6)
+proc_geocor.param_range['rmax'] = (1.0e-6,1.0e6)
 proc_geocor.param_range['emaxs'] = (1.0e-6,1.0e6)
 proc_geocor.param_range['smooth_fact'] = (0.0,1.0e50)
 proc_geocor.param_range['smooth_dmax'] = (0.0,1.0e50)
@@ -117,7 +121,8 @@ proc_geocor.defaults['scan_step'] = 1
 proc_geocor.defaults['geocor_order'] = 'Auto'
 proc_geocor.defaults['nmin'] = 20
 proc_geocor.defaults['cmin'] = 0.3
-proc_geocor.defaults['emaxs'] = [3.0,2.0,1.5]
+proc_geocor.defaults['rmax'] = 1.0
+proc_geocor.defaults['emaxs'] = [3.0,2.0,2.0]
 proc_geocor.defaults['smooth_fact'] = [1.0e4,1.0e4]
 proc_geocor.defaults['smooth_dmax'] = [4.0,4.0]
 proc_geocor.defaults['oflag'] = [False,False,False]
@@ -181,6 +186,7 @@ proc_geocor.input_types['scan_step'] = 'box'
 proc_geocor.input_types['geocor_order'] = 'string_select'
 proc_geocor.input_types['nmin'] = 'box'
 proc_geocor.input_types['cmin'] = 'box'
+proc_geocor.input_types['rmax'] = 'box'
 proc_geocor.input_types['emaxs'] = 'float_list'
 proc_geocor.input_types['smooth_fact'] = 'float_list'
 proc_geocor.input_types['smooth_dmax'] = 'float_list'
