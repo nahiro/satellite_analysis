@@ -24,6 +24,7 @@ parser.add_argument('--smooth_x',default=SMOOTH,type=float,help='Smoothing facto
 parser.add_argument('--smooth_y',default=None,type=float,help='Smoothing factor for Y from 0 to 1 (%(default)s)')
 parser.add_argument('-r','--replace',default=False,action='store_true',help='Replace mode (%(default)s)')
 parser.add_argument('-e','--exp',default=False,action='store_true',help='Output in exp format (%(default)s)')
+parser.add_argument('--long',default=False,action='store_true',help='Output in long format (%(default)s)')
 parser.add_argument('-v','--verbose',default=False,action='store_true',help='Verbose mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 args = parser.parse_args()
@@ -34,7 +35,7 @@ if args.out_fnam is None:
 if args.smooth_y is None:
     args.smooth_y = args.smooth_x
 
-xc,yc,xp,yp,xd,yd,rr = np.loadtxt(fnam,unpack=True)
+xc,yc,xp,yp,xd,yd,rr,r90 = np.loadtxt(fnam,unpack=True)
 xc_uniq = np.unique(xc)
 yc_uniq = np.unique(yc)
 xi = xc.astype(np.int32)
@@ -69,6 +70,7 @@ yp_grid = np.full(yg.shape,np.nan)
 xd_grid = np.full(xg.shape,np.nan)
 yd_grid = np.full(yg.shape,np.nan)
 rr_grid = np.full(xg.shape,np.nan)
+r90_grid = np.full(xg.shape,np.nan)
 xc_grid[indy,indx] = xc
 yc_grid[indy,indx] = yc
 xp_grid[indy,indx] = xp
@@ -76,6 +78,7 @@ yp_grid[indy,indx] = yp
 xd_grid[indy,indx] = xd
 yd_grid[indy,indx] = yd
 rr_grid[indy,indx] = rr
+r90_grid[indy,indx] = r90
 
 xs_grid = np.full(xg.shape,np.nan)
 ys_grid = np.full(yg.shape,np.nan)
@@ -104,9 +107,11 @@ with open(args.out_fnam,'w') as fp:
             xd_out = xd_grid[iy,ix]
             yd_out = yd_grid[iy,ix]
         if args.exp:
-            line = '{:8.1f} {:8.1f} {:15.8e} {:15.8e} {:15.8e} {:15.8e} {:8.3f}\n'.format(xc_grid[iy,ix],yc_grid[iy,ix],xp_out,yp_out,xd_out,yd_out,rr_grid[iy,ix])
+            line = '{:8.1f} {:8.1f} {:15.8e} {:15.8e} {:15.8e} {:15.8e} {:8.3f} {:8.3f}\n'.format(xc_grid[iy,ix],yc_grid[iy,ix],xp_out,yp_out,xd_out,yd_out,rr_grid[iy,ix],r90_grid[iy,ix])
+        elif args.long:
+            line = '{:8.1f} {:8.1f} {:12.6f} {:12.6f} {:10.6f} {:10.6f} {:10.5f} {:10.5f}\n'.format(xc_grid[iy,ix],yc_grid[iy,ix],xp_out,yp_out,xd_out,yd_out,rr_grid[iy,ix],r90_grid[iy,ix])
         else:
-            line = '{:8.1f} {:8.1f} {:8.2f} {:8.2f} {:6.2f} {:6.2f} {:8.3f}\n'.format(xc_grid[iy,ix],yc_grid[iy,ix],xp_out,yp_out,xd_out,yd_out,rr_grid[iy,ix])
+            line = '{:8.1f} {:8.1f} {:8.2f} {:8.2f} {:6.2f} {:6.2f} {:8.3f} {:8.3f}\n'.format(xc_grid[iy,ix],yc_grid[iy,ix],xp_out,yp_out,xd_out,yd_out,rr_grid[iy,ix],r90_grid[iy,ix])
         fp.write(line)
         if args.verbose:
             sys.stdout.write(line)
