@@ -214,6 +214,34 @@ class Process:
         sys.stderr.write('Running process {}.\n'.format(self.proc_name))
         return
 
+    def run_command(self,command,message=None,print_command=True,print_time=True):
+        if message is not None:
+            sys.stderr.write('\n'+message+'\n')
+            sys.stderr.flush()
+        if print_command:
+            sys.stderr.write('\n'+command+'\n')
+            sys.stderr.flush()
+        if print_time:
+            t1 = datetime.now()
+            sys.stderr.write('\nStart: {}\n'.format(t1))
+            sys.stderr.flush()
+        ret = call(command,shell=True)
+        if print_time:
+            t2 = datetime.now()
+            sys.stderr.write('\nEnd: {} ({})\n'.format(t2,t2-t1))
+            sys.stderr.flush()
+        return ret
+
+    def print_message(self,message,print_time=True):
+        if message is not None:
+            sys.stderr.write('\n'+message+'\n')
+            sys.stderr.flush()
+        if print_time:
+            t1 = datetime.now()
+            sys.stderr.write('\n{}\n'.format(t1))
+            sys.stderr.flush()
+        return
+
     def modify(self):
         check_values,check_errors = self.check_all(source='input')
         err = False

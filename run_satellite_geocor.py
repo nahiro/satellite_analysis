@@ -238,7 +238,7 @@ class Geocor(Satellite_Process):
                 command += ' --rthr {}'.format(self.values['cmin'])
                 command += ' --feps 0.01'
                 command += ' --exp'
-                ret = call(command,shell=True)
+                ret = self.run_command(command,message='Geometric Correction for {}'.format(dstr))
                 if ret != 0:
                     continue
                 x,y,r,r90 = np.loadtxt(fnam,usecols=(4,5,6,7),unpack=True)
