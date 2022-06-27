@@ -35,7 +35,7 @@ if args.out_fnam is None:
 if args.smooth_y is None:
     args.smooth_y = args.smooth_x
 
-xc,yc,xp,yp,xd,yd,rr,r90 = np.loadtxt(fnam,unpack=True)
+xc,yc,xp,yp,xd,yd,rr,r90 = np.loadtxt(args.inp_fnam,unpack=True)
 xc_uniq = np.unique(xc)
 yc_uniq = np.unique(yc)
 xi = xc.astype(np.int32)
@@ -47,19 +47,19 @@ yi_uniq_step = np.diff(yi_uniq).min()
 xc_offset = xc_uniq[0]-xi_uniq[0]
 yc_offset = yc_uniq[0]-yi_uniq[0]
 if not np.all(xc_uniq[1:]-xi_uniq[1:] == xc_offset):
-    raise ValueError('Error, different xc offset >>> {}'.format(fnam))
+    raise ValueError('Error, different xc offset >>> {}'.format(args.inp_fnam))
 if not np.all(yc_uniq[1:]-yi_uniq[1:] == yc_offset):
-    raise ValueError('Error, different yc offset >>> {}'.format(fnam))
+    raise ValueError('Error, different yc offset >>> {}'.format(args.inp_fnam))
 xmin = xi.min()
 xmax = xi.max()
 xstp = args.trg_indx_step
 if xstp != xi_uniq_step:
-    sys.stderr.write('Warning, xstp={}, xi_uniq_step={} >>> {}\n'.format(xstp,xi_uniq_step,fnam))
+    sys.stderr.write('Warning, xstp={}, xi_uniq_step={} >>> {}\n'.format(xstp,xi_uniq_step,args.inp_fnam))
 ymin = yi.min()
 ymax = yi.max()
 ystp = args.trg_indy_step
 if ystp != yi_uniq_step:
-    sys.stderr.write('Warning, ystp={}, yi_uniq_step={} >>> {}\n'.format(ystp,yi_uniq_step,fnam))
+    sys.stderr.write('Warning, ystp={}, yi_uniq_step={} >>> {}\n'.format(ystp,yi_uniq_step,args.inp_fnam))
 xg,yg = np.meshgrid(np.arange(xmin,xmax+1,xstp),np.arange(ymin,ymax+1,ystp))
 indx = (xi-xmin)//xstp
 indy = (yi-ymin)//ystp

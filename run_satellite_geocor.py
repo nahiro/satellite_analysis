@@ -241,7 +241,7 @@ class Geocor(Satellite_Process):
                 ret = self.run_command(command,message='Geometric Correction for {}'.format(dstr))
                 if ret != 0:
                     continue
-                x,y,r,r90 = np.loadtxt(fnam,usecols=(4,5,6,7),unpack=True)
+                x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
                 indx0 = np.arange(r.size)[(r90<self.values['rmax'])]
                 x_diff1,y_diff1,e1,n1,indx1 = calc_mean(x,y,emax=self.values['emaxs'][0],selected=indx0)
                 x_diff2,y_diff2,e2,n2,indx2 = calc_mean(x,y,emax=self.values['emaxs'][1],selected=indx1)
