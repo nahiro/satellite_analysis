@@ -399,7 +399,12 @@ class Process:
                     check_errors[pnam] = False
                 except Exception as e:
                     if (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                        pass
+                        if self.param_types[pnam] in ['string']: # center_var maybe None in case ask_files/ask_folders
+                            check_values[pnam] = t
+                        elif self.center_var is None:
+                            check_values[pnam] = self.values[pnam]
+                        else:
+                            check_values[pnam] = self.center_var[pnam].get()
                     else:
                         sys.stderr.write(str(e)+'\n')
         if source == 'input':

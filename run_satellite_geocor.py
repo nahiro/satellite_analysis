@@ -100,7 +100,8 @@ class Geocor(Satellite_Process):
         subset_dstrs = []
         for fnam,dstr in zip(l2a_fnams,l2a_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
-            dnam = os.path.join(self.s2_analysis,'subset','{}'.format(d.year))
+            ystr = '{}'.format(d.year)
+            dnam = os.path.join(self.s2_analysis,'subset',ystr)
             gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
             if os.path.exists(gnam) and self.values['oflag'][0]:
                 os.remove(gnam)
@@ -152,7 +153,8 @@ class Geocor(Satellite_Process):
         orders = {'1st':1,'2nd':2,'3rd':3}
         for dstr in subset_dstrs:
             d = datetime.strptime(dstr,'%Y%m%d')
-            dnam = os.path.join(self.s2_analysis,'geocor','{}'.format(d.year))
+            ystr = '{}'.format(d.year)
+            dnam = os.path.join(self.s2_analysis,'geocor',ystr)
             gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
             dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
             if self.values['oflag'][1]:
@@ -165,7 +167,7 @@ class Geocor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
-                fnam = os.path.join(self.s2_analysis,'subset','{}'.format(d.year),'{}_subset.tif'.format(dstr))
+                fnam = os.path.join(self.s2_analysis,'subset',ystr,'{}_subset.tif'.format(dstr))
                 se1_fnam = os.path.join(dnam,'{}_geocor_selected1.dat'.format(dstr))
                 se2_fnam = os.path.join(dnam,'{}_geocor_selected2.dat'.format(dstr))
                 tmp_fnam = os.path.join(dnam,'{}_geocor_temp.dat'.format(dstr))
@@ -289,6 +291,35 @@ class Geocor(Satellite_Process):
             #    os.rename(se2_fnam,dat_fnam)
             if os.path.exists(gnam):
                 geocor_dstrs.append(dstr)
+
+        # Resample
+        resample_dstrs = []
+        for dstr in geocor_dstrs:
+            d = datetime.strptime(dstr,'%Y%m%d')
+            ystr = '{}'.format(d.year)
+            dnam = os.path.join(self.s2_analysis,'resample',ystr)
+            gnam = os.path.join(dnam,'{}_resample.tif'.format(dstr))
+            if self.values['oflag'][2]:
+                if os.path.exists(gnam):
+                    os.remove(gnam)
+            if not os.path.exists(gnam):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                fnam = os.path.join(self.s2_analysis,'geocor',ystr,'{}_geocor.tif'.format(dstr))
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel_resample.py'))
+                command += ' "{}"'.format(fnam)
+                command += ' --datdir '+os.path.join(datdir,'resample')
+                command += ' --site '+site
+                command += ' --read_comments'
+                command += ' --band_fnam '+os.path.join(datdir,'band_names.txt')
+                ret = call(command,shell=True)
+                if ret != 0:
+                    continue
+            if os.path.exists(gnam):
+                resample_dstrs.append(dstr)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
