@@ -108,7 +108,7 @@ config_defaults.update({
 'geocor.geocor_order'                 : 'Auto',
 'geocor.nmin'                         : 20,
 'geocor.cmin'                         : 0.3,
-'geocor.rmax'                         : 1.0,
+'geocor.rmax'                         : 100.0,
 'geocor.emaxs'                        : [3.0,2.0,2.0],
 'geocor.smooth_fact'                  : [1.0e4,1.0e4],
 'geocor.smooth_dmax'                  : [4.0,4.0],

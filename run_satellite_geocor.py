@@ -2,7 +2,6 @@ import os
 import sys
 import shutil
 import re
-import tempfile
 from datetime import datetime
 import zipfile
 try:
@@ -148,7 +147,7 @@ class Geocor(Satellite_Process):
             if os.path.exists(gnam):
                 subset_dstrs.append(dstr)
 
-        # Geocor
+        # Geometric correction
         geocor_dstrs = []
         orders = {'1st':1,'2nd':2,'3rd':3}
         for dstr in subset_dstrs:
@@ -162,8 +161,14 @@ class Geocor(Satellite_Process):
                 if os.path.exists(dat_fnam):
                     os.remove(dat_fnam)
             if not os.path.exists(dat_fnam):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
                 fnam = os.path.join(self.s2_analysis,'subset','{}'.format(d.year),'{}_subset.tif'.format(dstr))
-                sel_fnam = os.path.join(dnam,'{}_geocor_selected.dat'.format(dstr))
+                se1_fnam = os.path.join(dnam,'{}_geocor_selected1.dat'.format(dstr))
+                se2_fnam = os.path.join(dnam,'{}_geocor_selected2.dat'.format(dstr))
+                tmp_fnam = os.path.join(dnam,'{}_geocor_temp.dat'.format(dstr))
                 ds = gdal.Open(fnam)
                 trg_trans = ds.GetGeoTransform()
                 ds = None
@@ -243,15 +248,14 @@ class Geocor(Satellite_Process):
                 x_diff3,y_diff3,e3,n3,indx3 = calc_mean(x,y,emax=self.values['emaxs'][2],selected=indx2)
                 with open(dat_fnam,'r') as fp:
                     lines = fp.readlines()
-                tmp_fp = tempfile.NamedTemporaryFile(mode='w')
-                for i,line in enumerate(lines):
-                    if i in indx3:
-                        tmp_fp.write(line)
-                tmp_fp.seek(0)
+                with open(se1_fnam,'w') as fp:
+                    for i,line in enumerate(lines):
+                        if i in indx3:
+                            fp.write(line)
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'select_gcps.py'))
-                command += ' --inp_fnam "{}"'.format(tmp_fp.name)
-                command += ' --out_fnam "{}"'.format(sel_fnam)
+                command += ' --inp_fnam "{}"'.format(se1_fnam)
+                command += ' --out_fnam "{}"'.format(se2_fnam)
                 command += ' --trg_indx_step {}'.format(step)
                 command += ' --trg_indy_step {}'.format(step)
                 command += ' --smooth_x="{}"'.format(self.values['smooth_fact'][0])
@@ -261,7 +265,6 @@ class Geocor(Satellite_Process):
                 command += ' --replace'
                 command += ' --exp'
                 ret = call(command,shell=True)
-                tmp_fp.close()
                 if ret != 0:
                     continue
                 command = self.python_path
@@ -270,7 +273,7 @@ class Geocor(Satellite_Process):
                 command += ' "{}"'.format(self.values['ref_fnam'])
                 command += ' --out_fnam "{}"'.format(gnam)
                 command += ' --scrdir "{}"'.format(self.scr_dir)
-                command += ' --use_gcps "{}"'.format(sel_fnam) # use
+                command += ' --use_gcps "{}"'.format(se2_fnam) # use
                 command += ' --tr {}'.format(self.values['trg_pixel'])
                 if self.values['geocor_order'] != 'Auto':
                     command += ' --npoly {}'.format(orders[self.values['geocor_order']])
@@ -278,24 +281,14 @@ class Geocor(Satellite_Process):
                     if band >= 0:
                         command += ' --resampling2_band {}'.format(band)
                 command += ' --minimum_number {}'.format(self.values['nmin'])
-                command += ' --optfile'
+                command += ' --optfile "{}"'.format(tmp_fnam)
                 ret = call(command,shell=True)
                 if ret != 0:
                     continue
-            #if os.path.exists(sel_fnam):
-            #    os.rename(sel_fnam,dat_fnam)
+            #if os.path.exists(se2_fnam):
+            #    os.rename(se2_fnam,dat_fnam)
             if os.path.exists(gnam):
                 geocor_dstrs.append(dstr)
-
-
-        """
-        # Geometric correction
-
-
-        #---------
-        #---------
-
-        """
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
