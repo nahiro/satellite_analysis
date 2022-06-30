@@ -94,10 +94,8 @@ if args.ax1_zstp is not None:
         args.ax1_zstp.append(args.ax1_zstp[-1])
 if args.src_geotiff is None:
     raise ValueError('Error, src_geotiff is not specified.')
-elif args.dst_geotiff is None or args.fignam is None:
+elif args.fignam is None:
     bnam,enam = os.path.splitext(args.src_geotiff)
-    if args.dst_geotiff is None:
-        args.dst_geotiff = bnam+'_indices'+enam
     if args.fignam is None:
         args.fignam = bnam+'_indices.pdf'
 
@@ -217,27 +215,28 @@ for param in args.param:
 dst_data = np.array(dst_data)
 
 # Write Destination GeoTIFF
-dst_nx = src_nx
-dst_ny = src_ny
-dst_nb = len(args.param)
-dst_prj = src_prj
-dst_trans = src_trans
-dst_meta = src_meta
-dst_dtype = gdal.GDT_Float32
-dst_nodata = np.nan
-dst_band = args.param
-drv = gdal.GetDriverByName('GTiff')
-ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,dst_dtype)
-ds.SetProjection(dst_prj)
-ds.SetGeoTransform(dst_trans)
-ds.SetMetadata(dst_meta)
-for iband in range(dst_nb):
-    band = ds.GetRasterBand(iband+1)
-    band.WriteArray(dst_data[iband])
-    band.SetDescription(dst_band[iband])
-band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
-ds.FlushCache()
-ds = None # close dataset
+if args.dst_geotiff is not None:
+    dst_nx = src_nx
+    dst_ny = src_ny
+    dst_nb = len(args.param)
+    dst_prj = src_prj
+    dst_trans = src_trans
+    dst_meta = src_meta
+    dst_dtype = gdal.GDT_Float32
+    dst_nodata = np.nan
+    dst_band = args.param
+    drv = gdal.GetDriverByName('GTiff')
+    ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,dst_dtype)
+    ds.SetProjection(dst_prj)
+    ds.SetGeoTransform(dst_trans)
+    ds.SetMetadata(dst_meta)
+    for iband in range(dst_nb):
+        band = ds.GetRasterBand(iband+1)
+        band.WriteArray(dst_data[iband])
+        band.SetDescription(dst_band[iband])
+    band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
+    ds.FlushCache()
+    ds = None # close dataset
 
 # For debug
 if args.debug:
