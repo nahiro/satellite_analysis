@@ -33,6 +33,7 @@ class Process:
         self.flag_check = {}
         self.flag_fill = {}
         self.depend_proc = {}
+        self.expected = {}
 
         self.root_width = 1000
         self.top_frame_height = 5
@@ -102,7 +103,44 @@ class Process:
                     dnam = self.inidir
             else:
                 dnam = self.inidir
-        path = tkfilebrowser.askopenfilename(initialdir=dnam)
+        if pnam in self.expected:
+            if isinstance(self.expected[pnam],str):
+                es = [self.expected[pnam]]
+            else:
+                es = self.expected[pnam]
+            fs = []
+            flag_all = False
+            for e in es:
+                if isinstance(e,str):
+                    bnam,enam = os.path.splitext(e)
+                    enam = enam.replace('.','')
+                    if bnam == '*' and enam == '*':
+                        pass
+                    elif bnam == '*':
+                        fs.append(('{} files'.format(enam),'*.{}|*.{}'.format(enam.lower(),enam.upper())))
+                        flag_all = True
+                    elif enam == '*':
+                        fs.append(('{} files'.format(bnam),'*{}.*'.format(bnam)))
+                        flag_all = True
+                    else:
+                        fs.extend([('{}.{}'.format(bnam,enam),'*{}.{}|*{}.{}'.format(bnam,enam.lower(),bnam,enam.upper())),
+                                   ('{} files'.format(bnam),'*{}.*'.format(bnam)),
+                                   ('{} files'.format(enam),'*.{}|*.{}'.format(enam.lower(),enam.upper()))])
+                        flag_all = True
+                else:
+                    fs.append(e)
+            if flag_all:
+                fs.append(('all files','*.*'))
+            if len(fs) < 1:
+                fs = None
+            else:
+                fs = tuple(fs)
+        else:
+            fs = None
+        if fs is None:
+            path = tkfilebrowser.askopenfilename(initialdir=dnam)
+        else:
+            path = tkfilebrowser.askopenfilename(initialdir=dnam,filetypes=fs)
         if len(path) > 0:
             self.center_var[pnam].set(path)
         return
@@ -123,7 +161,44 @@ class Process:
                     dnam = self.inidir
             else:
                 dnam = self.inidir
-        files = list(tkfilebrowser.askopenfilenames(initialdir=dnam))
+        if pnam in self.expected:
+            if isinstance(self.expected[pnam],str):
+                es = [self.expected[pnam]]
+            else:
+                es = self.expected[pnam]
+            fs = []
+            flag_all = False
+            for e in es:
+                if isinstance(e,str):
+                    bnam,enam = os.path.splitext(e)
+                    enam = enam.replace('.','')
+                    if bnam == '*' and enam == '*':
+                        pass
+                    elif bnam == '*':
+                        fs.append(('{} files'.format(enam),'*.{}|*.{}'.format(enam.lower(),enam.upper())))
+                        flag_all = True
+                    elif enam == '*':
+                        fs.append(('{} files'.format(bnam),'*{}.*'.format(bnam)))
+                        flag_all = True
+                    else:
+                        fs.extend([('{}.{}'.format(bnam,enam),'*{}.{}|*{}.{}'.format(bnam,enam.lower(),bnam,enam.upper())),
+                                   ('{} files'.format(bnam),'*{}.*'.format(bnam)),
+                                   ('{} files'.format(enam),'*.{}|*.{}'.format(enam.lower(),enam.upper()))])
+                        flag_all = True
+                else:
+                    fs.append(e)
+            if flag_all:
+                fs.append(('all files','*.*'))
+            if len(fs) < 1:
+                fs = None
+            else:
+                fs = tuple(fs)
+        else:
+            fs = None
+        if fs is None:
+            files = list(tkfilebrowser.askopenfilenames(initialdir=dnam))
+        else:
+            files = list(tkfilebrowser.askopenfilenames(initialdir=dnam,filetypes=fs))
         if len(files) > 0:
             lines = self.center_inp[pnam].get('1.0',tk.END)
             if (len(lines) > 1) and (lines[-2] != '\n'):
