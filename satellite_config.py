@@ -94,7 +94,7 @@ config_defaults.update({
 'geocor.ref_range'                    : [1.0e-5,np.nan],
 'geocor.trg_subset'                   : [107.201,107.367,-6.910,-6.750],
 'geocor.trg_resample'                 : [743805.0,757295.0,9235815.0,9251805.0],
-'geocor.trg_band_fnam'                : os.path.join(main_s2_analysis,'band_names.txt'),
+'geocor.band_fnam'                    : os.path.join(main_s2_analysis,'band_names.txt'),
 'geocor.trg_bands'                    : [4,-1,-1],
 'geocor.trg_factors'                  : [np.nan,np.nan,np.nan],
 'geocor.trg_flags'                    : [17,-1,-1,-1,-1],
@@ -119,6 +119,7 @@ config_defaults.update({
 'geocor.middle_left_frame_width'      : 1000,
 #----------- parcel -----------
 'parcel.gis_fnam'                     : gis_fnam,
+'parcel.band_fnam'                    : os.path.join(main_s2_analysis,'band_names.txt'),
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'parcel.norm_bands'                   : [True,True,True,True,True,True,True,False,False,False],
 'parcel.out_nrefs'                    : [True,True,True,True,True,True,True,True,True,True],

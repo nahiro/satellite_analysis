@@ -47,11 +47,10 @@ class Geocor(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
-        wrk_dir = os.path.join(self.s2_analysis)
-        if not os.path.exists(wrk_dir):
-            os.makedirs(wrk_dir)
-        if not os.path.isdir(wrk_dir):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
+        if not os.path.exists(self.s2_analysis):
+            os.makedirs(self.s2_analysis)
+        if not os.path.isdir(self.s2_analysis):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
         if not os.path.exists(self.values['ref_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
         ref_bnam,ref_enam = os.path.splitext(os.path.basename(self.values['ref_fnam']))
@@ -296,10 +295,10 @@ class Geocor(Satellite_Process):
                 geocor_dstrs.append(dstr)
 
         # Resample
-        if not os.path.exists(self.values['trg_band_fnam']):
+        if not os.path.exists(self.values['band_fnam']):
             if len(l2a_fnams) < 1:
                 raise ValueError('Error, no L2A data to read band names.')
-            dnam = os.path.dirname(self.values['trg_band_fnam'])
+            dnam = os.path.dirname(self.values['band_fnam'])
             if not os.path.exists(dnam):
                 os.makedirs(dnam)
             if not os.path.isdir(dnam):
@@ -307,7 +306,7 @@ class Geocor(Satellite_Process):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'snap_bandname.py'))
             command += ' --inp_fnam "{}"'.format(l2a_fnams[0])
-            command += ' --out_fnam "{}"'.format(self.values['trg_band_fnam'])
+            command += ' --out_fnam "{}"'.format(self.values['band_fnam'])
             self.run_command(command,message='Read band names')
         resample_dstrs = []
         for dstr in geocor_dstrs:
@@ -333,7 +332,7 @@ class Geocor(Satellite_Process):
                 command += ' --ymin {}'.format(self.values['trg_resample'][2])
                 command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
-                command += ' --band_fnam "{}"'.format(self.values['trg_band_fnam'])
+                command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
                 self.run_command(command,message='Resampling for {}'.format(dstr))
             if os.path.exists(gnam):
                 resample_dstrs.append(dstr)
