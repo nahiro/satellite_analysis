@@ -281,7 +281,7 @@ class Geocor(Satellite_Process):
                 if self.values['geocor_order'] != 'Auto':
                     command += ' --npoly {}'.format(orders[self.values['geocor_order']])
                 for band in self.values['trg_flags']:
-                    if band >= 0:
+                    if band > 0:
                         command += ' --resampling2_band {}'.format(band)
                 command += ' --minimum_number {}'.format(self.values['nmin'])
                 command += ' --optfile "{}"'.format(tmp_fnam)

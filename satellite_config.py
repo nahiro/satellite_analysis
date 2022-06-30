@@ -29,8 +29,8 @@ main_start_date = (now_dtim-timedelta(days=230)).strftime('%Y-%m%b-%d')
 main_end_date = (now_dtim-timedelta(days=140)).strftime('%Y-%m%b-%d')
 main_first_date = (now_dtim-timedelta(days=260)).strftime('%Y-%m%b-%d')
 main_last_date = now_dtim.strftime('%Y-%m%b-%d')
-main_field_data = os.path.join(top_dir,'Field_Data')
-main_drone_analysis = os.path.join(top_dir,'Drone_Analysis')
+main_field_data = os.path.join(top_dir,'Field_Data','Current')
+main_drone_analysis = os.path.join(top_dir,'Drone_Analysis','Current')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
 main_s2_data = os.path.join(top_dir,'Sentinel-2_Data')
 main_s2_analysis = os.path.join(top_dir,'Sentinel-2_Analysis')
@@ -94,6 +94,7 @@ config_defaults.update({
 'geocor.ref_range'                    : [1.0e-5,np.nan],
 'geocor.trg_subset'                   : [107.201,107.367,-6.910,-6.750],
 'geocor.trg_resample'                 : [743805.0,757295.0,9235815.0,9251805.0],
+'geocor.trg_band_fnam'                : os.path.join(main_s2_analysis,'band_names.txt'),
 'geocor.trg_bands'                    : [4,-1,-1],
 'geocor.trg_factors'                  : [np.nan,np.nan,np.nan],
 'geocor.trg_flags'                    : [17,-1,-1,-1,-1],
@@ -190,16 +191,16 @@ config_defaults.update({
 'phenology.atc_nthrs'                 : [-0.0005,-0.0005,-0.0003],
 'phenology.middle_left_frame_width'   : 1000,
 #----------- extract -----------
-'extract.obs_fnam'                    : os.path.join(main_field_data,'Current','observation.xls'),
+'extract.obs_fnam'                    : os.path.join(main_field_data,'observation.xls'),
 'extract.i_sheet'                     : 1,
 'extract.epsg'                        : 32748,
-'extract.gps_fnam'                    : os.path.join(main_drone_analysis,'Current','identify','orthomosaic_identify.csv'),
+'extract.gps_fnam'                    : os.path.join(main_drone_analysis,'identify','orthomosaic_identify.csv'),
 'extract.event_dates'                 : ['','',''],
 'extract.python_path'                 : python_path,
 'extract.scr_dir'                     : scr_dir,
 'extract.middle_left_frame_width'     : 1000,
 #----------- formula -----------
-'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'Current','extract','s2_indices.csv'),
+'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'extract','s2_indices.csv'),
 'formula.data_select'                 : 'Days from Assessment',
 'formula.assess_range'                : [-5.0,5.0],
 'formula.mature_range'                : [30.0,40.0],
@@ -233,7 +234,7 @@ config_defaults.update({
 'estimate.assess_value'               : 0.0,
 'estimate.mature_value'               : 35.0,
 'estimate.age_value'                  : 95.0,
-'estimate.pm_fnam'                    : os.path.join(main_s2_analysis,'Current','formula','pm_formula_age_90_110.csv'),
+'estimate.pm_fnam'                    : os.path.join(main_s2_analysis,'formula','pm_formula_age_90_110.csv'),
 'estimate.pm_number'                  : 1,
 'estimate.digitize'                   : False,
 'estimate.y_params'                   : [True,False,False,False,False,False],
