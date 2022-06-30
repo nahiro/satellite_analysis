@@ -295,6 +295,19 @@ class Geocor(Satellite_Process):
                 geocor_dstrs.append(dstr)
 
         # Resample
+        if not os.path.exists(self.values['trg_band_fnam']):
+            if len(l2a_fnams) < 1:
+                raise ValueError('Error, no L2A data to read band names.')
+            dnam = os.path.dirname(self.values['trg_band_fnam'])
+            if not os.path.exists(dnam):
+                os.makedirs(dnam)
+            if not os.path.isdir(dnam):
+                raise IOError('Error, no such folder >>> {}'.format(dnam))
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'snap_bandname.py'))
+            command += ' --inp_fnam "{}"'.format(l2a_fnams[0])
+            command += ' --out_fnam "{}"'.format(self.values['trg_band_fnam'])
+            self.run_command(command,message='Read band names')
         resample_dstrs = []
         for dstr in geocor_dstrs:
             d = datetime.strptime(dstr,'%Y%m%d')
@@ -319,11 +332,8 @@ class Geocor(Satellite_Process):
                 command += ' --ymin {}'.format(self.values['trg_resample'][2])
                 command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
-                command += ' --band_fnam '+os.path.join(datdir,'band_names.txt')
-                try:
-                    self.run_command(command,message='Resampling for {}'.format(dstr))
-                except Exception:
-                    continue
+                command += ' --band_fnam "{}"'.format(self.values['trg_band_fnam'])
+                self.run_command(command,message='Resampling for {}'.format(dstr))
             if os.path.exists(gnam):
                 resample_dstrs.append(dstr)
 
