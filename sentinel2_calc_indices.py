@@ -192,7 +192,7 @@ for param in args.param:
         green = value_pix['g']
         red = value_pix[args.rgi_red_band]
         pnams.append(param)
-        dst_data.append(green*red)
+        dst_data.append(green*red*1.0e-8)
     elif param == 'NRGI':
         green = value_pix['g']
         red = value_pix[args.rgi_red_band]
@@ -202,7 +202,7 @@ for param in args.param:
         if len(param) in [2,3]:
             band = param[1:]
             pnams.append('{}'.format(bands[band]))
-            dst_data.append(value_pix[band])
+            dst_data.append(value_pix[band]*1.0e-4)
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
     elif param[0] == 'N':

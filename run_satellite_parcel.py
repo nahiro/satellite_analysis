@@ -67,7 +67,7 @@ class Parcel(Satellite_Process):
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_analysis,'parcel',ystr)
             gnam = os.path.join(dnam,'{}_indices.tif'.format(dstr))
-            if os.path.exists(gnam) and self.values['oflag'][0]:
+            if os.path.exists(gnam) and self.values['oflag']:
                 os.remove(gnam)
             if not os.path.exists(gnam):
                 if not os.path.exists(dnam):
