@@ -16,6 +16,7 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
+band_list = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 bands = {}
 bands['b'] = 'Blue'
 bands['g'] = 'Green'
@@ -38,6 +39,9 @@ band_dict['n1'] = 'B8'
 band_dict['n2'] = 'B8A'
 band_dict['s1'] = 'B11'
 band_dict['s2'] = 'B12'
+band_index = {}
+for iband,band in band_list:
+    band_index[band] = iband
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
@@ -113,33 +117,31 @@ with open(args.band_fnam,'r') as fp:
         if len(item) <= args.band_col or item[0][0]=='#':
             continue
         band_name.append(item[args.band_col])
-band_index = {}
-for band in bands:
-    b = band_dict[band]
-    if not b in band_name:
-        raise ValueError('Error, {} is not in the band list.'.format(b))
-    band_index[band] = band_name.index(b)
 
 # Read Source GeoTIFF
 ds = gdal.Open(args.src_geotiff)
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
-src_nb = ds.RasterCount
-if src_nb != len(bands):
-    raise ValueError('Error, src_nb={}, len(bands)={} >>> {}'.format(src_nb,len(bands),args.src_geotiff))
+src_nb = len(band_list)
 src_shape = (src_ny,src_nx)
 src_prj = ds.GetProjection()
 src_trans = ds.GetGeoTransform()
 if src_trans[2] != 0.0 or src_trans[4] != 0.0:
     raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
 src_meta = ds.GetMetadata()
-src_data = ds.ReadAsArray().astype(np.float64).reshape(src_nb,src_ny,src_nx)
+src_data = []
 src_band = []
-for iband in range(src_nb):
-    band = ds.GetRasterBand(iband+1)
-    src_band.append(band.GetDescription())
-src_dtype = band.DataType
-src_nodata = band.GetNoDataValue()
+for band in band_list:
+    bnam = band_dict[band]
+    if not bnam in band_name:
+        raise ValueError('Error, {} is not in the band name list.'.format(bnam))
+    iband = band_name.index(bnam)
+    b = ds.GetRasterBand(iband+1)
+    src_data.append(b.ReadAsArray().astype(np.float64).reshape(src_ny,src_nx))
+    src_band.append(b.GetDescription())
+src_data = np.array(src_data)
+src_dtype = b.DataType
+src_nodata = b.GetNoDataValue()
 src_xmin = src_trans[0]
 src_xstp = src_trans[1]
 src_xmax = src_xmin+src_nx*src_xstp
