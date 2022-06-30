@@ -178,12 +178,12 @@ pnams = []
 for param in args.param:
     if param == 'NDVI':
         red = value_pix['r']
-        nir = value_pix['n']
+        nir = value_pix['n1']
         pnams.append(param)
         dst_data.append((nir-red)/(nir+red))
     elif param == 'GNDVI':
         green = value_pix['g']
-        nir = value_pix['n']
+        nir = value_pix['n1']
         pnams.append(param)
         dst_data.append((nir-green)/(nir+green))
     elif param == 'RGI':
@@ -197,15 +197,15 @@ for param in args.param:
         pnams.append(param)
         dst_data.append(green*norm*red*norm)
     elif param[0] == 'S':
-        if len(param) == 2:
-            band = param[1]
+        if len(param) in [2,3]:
+            band = param[1:]
             pnams.append('{}'.format(bands[band]))
             dst_data.append(value_pix[band])
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
     elif param[0] == 'N':
-        if len(param) == 2:
-            band = param[1]
+        if len(param) in [2,3]:
+            band = param[1:]
             pnams.append('Normalized {}'.format(bands[band]))
             dst_data.append(value_pix[band]*norm)
         else:
