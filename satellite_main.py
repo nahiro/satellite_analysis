@@ -169,7 +169,7 @@ def run_all():
     return
 
 def set_child(pnam):
-    modules[pnam].set(root)
+    modules[pnam].set(root,center_var)
 
 def check_child(pnam):
     for p in pnams:

@@ -32,6 +32,7 @@ class Process:
         self.input_types = {}
         self.flag_check = {}
         self.flag_fill = {}
+        self.depend_proc = {}
 
         self.root_width = 1000
         self.top_frame_height = 5
@@ -60,6 +61,7 @@ class Process:
         self.browse_image = os.path.join(HOME,'Pictures','browse.png')
         self.root = None
         self.chk_btn = None
+        self.left_btn = None
         self.top_frame = None
         self.middle_frame = None
         self.middle_left_canvas = None
@@ -212,6 +214,7 @@ class Process:
 
     def run(self):
         sys.stderr.write('Running process {}.\n'.format(self.proc_name))
+        sys.stderr.flush()
         return
 
     def run_command(self,command,message=None,print_command=True,print_time=True):
@@ -230,6 +233,11 @@ class Process:
             t2 = datetime.now()
             sys.stderr.write('\nEnd: {} ({})\n'.format(t2,t2-t1))
             sys.stderr.flush()
+        if ret != 0:
+            sys.stderr.write('\nTerminated process {}.\n'.format(self.proc_name))
+            sys.stderr.write('\n')
+            sys.stderr.flush()
+            raise ValueError('ERROR')
         return ret
 
     def print_message(self,message,print_time=True):
@@ -264,7 +272,7 @@ class Process:
                     self.center_var[pnam].set(value)
                     self.values[pnam] = value
         if not err:
-            self.chk_btn.invoke()
+            self.left_btn.invoke()
             self.root.destroy()
         return
 
@@ -339,8 +347,20 @@ class Process:
             else:
                 if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
                     if (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                        self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
-                        ret = True
+                        if pnam in self.depend_proc:
+                            flag = False
+                            for proc in self.depend_proc[pnam]:
+                                if not self.chk_btn[proc].get():
+                                    flag = True
+                                    break
+                            if flag:
+                                self.right_lbl[pnam].config(text='ERROR',foreground='red')
+                            else:
+                                self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                                ret = True
+                        else:
+                            self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                            ret = True
                     else:
                         self.right_lbl[pnam].config(text='ERROR',foreground='red')
                     if self.input_types[pnam] in ['ask_files','ask_folders']:
@@ -420,8 +440,20 @@ class Process:
                     if check_errors[pnam]:
                         if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
                             if (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                                self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
-                                check_errors[pnam] = False
+                                if pnam in self.depend_proc:
+                                    flag = False
+                                    for proc in self.depend_proc[pnam]:
+                                        if not self.chk_btn[proc].get():
+                                            flag = True
+                                            break
+                                    if flag:
+                                        self.right_lbl[pnam].config(text='ERROR',foreground='red')
+                                    else:
+                                        self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                                        check_errors[pnam] = False
+                                else:
+                                    self.right_lbl[pnam].config(text='\U0000274C',foreground='red')
+                                    check_errors[pnam] = False
                             else:
                                 self.right_lbl[pnam].config(text='ERROR',foreground='red')
                             if self.input_types[pnam] in ['ask_files','ask_folders']:
@@ -443,7 +475,18 @@ class Process:
             for pnam in self.pnams:
                 if self.input_types[pnam] in ['ask_file','ask_files','ask_folder','ask_folders']:
                     if (pnam in self.flag_check) and (not self.flag_check[pnam]):
-                        check_errors[pnam] = False
+                        if (pnam in self.depend_proc) and (self.chk_btn is not None):
+                            flag = False
+                            for proc in self.depend_proc[pnam]:
+                                if not self.chk_btn[proc].get():
+                                    flag = True
+                                    break
+                            if flag:
+                                pass
+                            else:
+                                check_errors[pnam] = False
+                        else:
+                            check_errors[pnam] = False
         return check_values,check_errors
 
     def print_message(self,message):
@@ -468,12 +511,13 @@ class Process:
         sys.stderr.flush()
         return
 
-    def set(self,parent):
+    def set(self,parent,chk_btn):
         if self.root is not None and self.root.winfo_exists():
             return
         for x in parent.winfo_children():
             if isinstance(x,ttk.Button) and x['text'] == 'check_{}'.format(self.proc_name):
-                self.chk_btn = x
+                self.left_btn = x
+        self.chk_btn = chk_btn
         self.root = tk.Toplevel(parent)
         self.root.title(self.proc_title)
         self.root.geometry('{}x{}'.format(self.middle_left_frame_width,
