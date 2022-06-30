@@ -31,6 +31,7 @@ parser.add_argument('--site',default=SITE,help='Site name for preset coordinates
 parser.add_argument('--polygon',default=None,help='Polygon of ROI in WKT format (%(default)s)')
 parser.add_argument('-r','--resolution',default=RESOLUTION,type=int,help='Spatial resolution in m (%(default)s)')
 parser.add_argument('-G','--geotiff',default=False,action='store_true',help='GeoTiff mode (%(default)s)')
+parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 args = parser.parse_args()
 safe_flag = False
 m = re.search('^[^_]+_[^_]+_([^_]+)_.*.zip$',os.path.basename(args.inp_fnam))
@@ -45,9 +46,9 @@ if args.out_fnam is None:
         args.out_fnam = os.path.join(args.datdir,'{}.tif'.format(dstr))
     else:
         args.out_fnam = os.path.join(args.datdir,'{}.dim'.format(dstr))
-if os.path.exists(args.out_fnam):
+if os.path.exists(args.out_fnam) and not args.overwrite:
+    sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam)
     sys.exit()
-
 if args.site is not None:
     if args.site.lower() == 'cihea':
         args.polygon = POLYGON_CIHEA
