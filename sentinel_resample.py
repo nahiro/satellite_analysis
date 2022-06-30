@@ -48,8 +48,9 @@ parser.add_argument('-Y','--ymax',default=YMAX_CIHEA,type=float,help='Maximum Y 
 parser.add_argument('--ystp',default=YSTP,type=float,help='Step Y in m (%(default)s)')
 parser.add_argument('--band_col',default=BAND_COL,help='Band column number (%(default)s)')
 parser.add_argument('--no_check_grid',default=False,action='store_true',help='Do not check grid (%(default)s)')
-parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 parser.add_argument('--read_comments',default=False,action='store_true',help='Read comments from input_file (%(default)s)')
+parser.add_argument('-v','--verbose',default=False,action='store_true',help='Verbose mode (%(default)s)')
+parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 args = parser.parse_args()
 if args.out_fnam is None:
     bnam,enam = os.path.splitext(os.path.basename(args.inp_fnam))
@@ -169,8 +170,9 @@ if args.output_band is not None:
     for band in args.output_band:
         indxs.append(band_name.index(band))
 dst_nb = len(indxs)
-for i in indxs:
-    sys.stderr.write('{}\n'.format(band_name[i]))
+if args.verbose:
+    for i in indxs:
+        sys.stderr.write('{}\n'.format(band_name[i]))
 if flag_grid:
     sys.stderr.write('############ No need to interpolate.\n')
     dst_data = src_data[indxs,indy1:indy2,indx1:indx2]
