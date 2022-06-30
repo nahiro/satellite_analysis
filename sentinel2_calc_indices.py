@@ -40,7 +40,7 @@ band_dict['s1'] = 'B11'
 band_dict['s2'] = 'B12'
 
 # Default values
-PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3',,'Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
 NORM_BAND = ['b','g','r','e1','e2','e3','n1']
 BAND_COL = 1
 RGI_RED_BAND = 'e1'

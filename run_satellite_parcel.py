@@ -74,20 +74,19 @@ class Parcel(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
-                out_params = [(('S'+param) if param.islower() else param) for param in self.list_labels['out_params']]
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_calc_indices.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
                 command += ' --dst_geotiff "{}"'.format(gnam)
                 command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
-                command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_indices.pdf'.format(trg_bnam)))
-                for param,flag in zip(out_params,self.values['out_refs']):
+                command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_indices.pdf'.format(dstr)))
+                for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
+                    if flag:
+                        command += ' --param S{}'.format(param)
+                for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
                     if flag:
                         command += ' --param {}'.format(param)
-                for param,flag in zip(out_params,self.values['out_nrefs']):
-                    if flag:
-                        command += ' --param {}'.format(param)
-                for param,flag in zip(out_params,self.values['out_inds']):
+                for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
                     if flag:
                         command += ' --param {}'.format(param)
                 for band,flag in zip(self.list_labels['norm_bands'],self.values['norm_bands']):
