@@ -128,8 +128,8 @@ class Geocor(Satellite_Process):
                         continue
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_subset.py'))
-                command += ' '+rnam
-                command += ' --output_fnam "{}"'.format(gnam)
+                command += ' --inp_fnam "{}"'.format(rnam)
+                command += ' --out_fnam "{}"'.format(gnam)
                 command += ' --polygon "POLYGON(({} {},{} {},{} {},{} {},{} {}))"'.format(self.values['trg_subset'][0],self.values['trg_subset'][2],
                                                                                           self.values['trg_subset'][1],self.values['trg_subset'][2],
                                                                                           self.values['trg_subset'][1],self.values['trg_subset'][3],
@@ -312,9 +312,12 @@ class Geocor(Satellite_Process):
                 fnam = os.path.join(self.s2_analysis,'geocor',ystr,'{}_geocor.tif'.format(dstr))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel_resample.py'))
-                command += ' "{}"'.format(fnam)
-                command += ' --datdir '+os.path.join(datdir,'resample')
-                command += ' --site '+site
+                command += ' --inp_fnam "{}"'.format(fnam)
+                command += ' --out_fnam "{}"'.format(gnam)
+                command += ' --xmin {}'.format(self.values['trg_resample'][0])
+                command += ' --xmax {}'.format(self.values['trg_resample'][1])
+                command += ' --ymin {}'.format(self.values['trg_resample'][2])
+                command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
                 command += ' --band_fnam '+os.path.join(datdir,'band_names.txt')
                 try:
