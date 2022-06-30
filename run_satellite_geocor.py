@@ -10,7 +10,6 @@ except Exception:
     from osgeo import gdal
 from glob import glob
 import numpy as np
-from subprocess import call
 from proc_satellite_class import Satellite_Process
 
 def calc_mean(x,y,emax=2.0,nrpt=10,nmin=1,selected=None):
@@ -144,7 +143,7 @@ class Geocor(Satellite_Process):
                 # Remove cache
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
-                call(command,shell=True)
+                self.run_command(command,print_command=False,print_time=False)
             if os.path.exists(gnam):
                 subset_dstrs.append(dstr)
 
@@ -240,8 +239,9 @@ class Geocor(Satellite_Process):
                 command += ' --rthr {}'.format(self.values['cmin'])
                 command += ' --feps 0.01'
                 command += ' --exp'
-                ret = self.run_command(command,message='Geometric Correction for {}'.format(dstr))
-                if ret != 0:
+                try:
+                    self.run_command(command,message='Find GCPs for {}'.format(dstr))
+                except Exception:
                     continue
                 x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
                 indx0 = np.arange(r.size)[(r90<self.values['rmax'])]
@@ -266,8 +266,9 @@ class Geocor(Satellite_Process):
                 command += ' --ythr {}'.format(self.values['smooth_dmax'][1])
                 command += ' --replace'
                 command += ' --exp'
-                ret = call(command,shell=True)
-                if ret != 0:
+                try:
+                    self.run_command(command,message='Select GCPs for {}'.format(dstr))
+                except Exception:
                     continue
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'auto_geocor_cc.py'))
@@ -284,8 +285,9 @@ class Geocor(Satellite_Process):
                         command += ' --resampling2_band {}'.format(band)
                 command += ' --minimum_number {}'.format(self.values['nmin'])
                 command += ' --optfile "{}"'.format(tmp_fnam)
-                ret = call(command,shell=True)
-                if ret != 0:
+                try:
+                    self.run_command(command,message='Geometric Correction for {}'.format(dstr))
+                except Exception:
                     continue
             #if os.path.exists(se2_fnam):
             #    os.rename(se2_fnam,dat_fnam)
@@ -315,8 +317,9 @@ class Geocor(Satellite_Process):
                 command += ' --site '+site
                 command += ' --read_comments'
                 command += ' --band_fnam '+os.path.join(datdir,'band_names.txt')
-                ret = call(command,shell=True)
-                if ret != 0:
+                try:
+                    self.run_command(command,message='Resampling for {}'.format(dstr))
+                except Exception:
                     continue
             if os.path.exists(gnam):
                 resample_dstrs.append(dstr)
