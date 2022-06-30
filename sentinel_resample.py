@@ -55,7 +55,7 @@ if args.out_fnam is None:
     bnam,enam = os.path.splitext(os.path.basename(args.inp_fnam))
     args.out_fnam = os.path.join(args.datdir,bnam+'_resample'+enam)
 if os.path.exists(args.out_fnam) and not args.overwrite:
-    sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam)
+    sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam))
     sys.exit()
 if args.site is not None:
     if args.site.lower() == 'cihea':

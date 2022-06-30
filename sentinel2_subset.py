@@ -47,7 +47,7 @@ if args.out_fnam is None:
     else:
         args.out_fnam = os.path.join(args.datdir,'{}.dim'.format(dstr))
 if os.path.exists(args.out_fnam) and not args.overwrite:
-    sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam)
+    sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam))
     sys.exit()
 if args.site is not None:
     if args.site.lower() == 'cihea':
