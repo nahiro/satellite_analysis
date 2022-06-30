@@ -13,30 +13,45 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
-PARAMS = ['Sb','Sg','Sr','Se','Sn','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
 bands = {}
 bands['b'] = 'Blue'
 bands['g'] = 'Green'
 bands['r'] = 'Red'
-bands['e'] = 'RedEdge'
-bands['n'] = 'NIR'
-band_index = {}
-band_index['b'] = 0
-band_index['g'] = 1
-band_index['r'] = 2
-band_index['e'] = 3
-band_index['n'] = 4
+bands['e1'] = 'RedEdge1'
+bands['e2'] = 'RedEdge2'
+bands['e3'] = 'RedEdge3'
+bands['n1'] = 'NIR1'
+bands['n2'] = 'NIR2'
+bands['s1'] = 'SWIR1'
+bands['s2'] = 'SWIR2'
+band_dict = {}
+band_dict['b'] = 'B2'
+band_dict['g'] = 'B3'
+band_dict['r'] = 'B4'
+band_dict['e1'] = 'B5'
+band_dict['e2'] = 'B6'
+band_dict['e3'] = 'B7'
+band_dict['n1'] = 'B8'
+band_dict['n2'] = 'B8A'
+band_dict['s1'] = 'B11'
+band_dict['s2'] = 'B12'
 
 # Default values
-PARAM = ['Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','NRGI']
-NORM_BAND = ['b','g','r','e','n']
-RGI_RED_BAND = 'e'
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3',,'Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
+NORM_BAND = ['b','g','r','e1','e2','e3','n1']
+BAND_COL = 1
+RGI_RED_BAND = 'e1'
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
 parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
 parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
+parser.add_argument('-B','--band_fnam',default=None,help='Band file name (%(default)s)')
+parser.add_argument('--band_col',default=BAND_COL,help='Band column number (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
 parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
@@ -89,6 +104,21 @@ def calc_vpix(data,band):
     if args.data_max is not None:
         vpix[vpix > args.data_max] = np.nan
     return vpix
+
+# Get band name
+band_name = []
+with open(args.band_fnam,'r') as fp:
+    for line in fp:
+        item = line.split()
+        if len(item) <= args.band_col or item[0][0]=='#':
+            continue
+        band_name.append(item[args.band_col])
+band_index = {}
+for band in bands:
+    b = band_dict[band]
+    if not b in band_name:
+        raise ValueError('Error, {} is not in the band list.'.format(b))
+    band_index[band] = band_name.index(b)
 
 # Read Source GeoTIFF
 ds = gdal.Open(args.src_geotiff)
