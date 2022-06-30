@@ -15,11 +15,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
-OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
 
 # Default values
-Y_PARAM = ['BLB']
-SMAX = [9]
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
 RMAX = 0.01
 
 # Read options
@@ -29,8 +30,7 @@ parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name 
 parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
-parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
-parser.add_argument('-S','--smax',default=None,type=int,action='append',help='Max score ({})'.format(SMAX))
+parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-r','--rmax',default=RMAX,type=float,help='Maximum exclusion ratio (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
@@ -42,35 +42,28 @@ parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.y_param is None:
-    args.y_param = Y_PARAM
-for param in args.y_param:
-    if not param in OBJECTS:
-        raise ValueError('Error, unknown objective variable for y_param >>> {}'.format(param))
-if args.smax is None:
-    args.smax = SMAX
-while len(args.smax) < len(args.y_param):
-    args.smax.append(args.smax[-1])
-smax = {}
-for i,param in enumerate(args.y_param):
-    smax[param] = args.smax[i]
+if args.param is None:
+    args.param = PARAM
+for param in args.param:
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter >>> {}'.format(param))
 if args.ax1_zmin is not None:
-    while len(args.ax1_zmin) < len(args.y_param):
+    while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
     ax1_zmin = {}
-    for i,param in enumerate(args.y_param):
+    for i,param in enumerate(args.param):
         ax1_zmin[param] = args.ax1_zmin[i]
 if args.ax1_zmax is not None:
-    while len(args.ax1_zmax) < len(args.y_param):
+    while len(args.ax1_zmax) < len(args.param):
         args.ax1_zmax.append(args.ax1_zmax[-1])
     ax1_zmax = {}
-    for i,param in enumerate(args.y_param):
+    for i,param in enumerate(args.param):
         ax1_zmax[param] = args.ax1_zmax[i]
 if args.ax1_zstp is not None:
-    while len(args.ax1_zstp) < len(args.y_param):
+    while len(args.ax1_zstp) < len(args.param):
         args.ax1_zstp.append(args.ax1_zstp[-1])
     ax1_zstp = {}
-    for i,param in enumerate(args.y_param):
+    for i,param in enumerate(args.param):
         ax1_zstp[param] = args.ax1_zstp[i]
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
     bnam,enam = os.path.splitext(args.src_geotiff)
@@ -138,17 +131,17 @@ out_data = {}
 if args.debug:
     dst_nx = src_nx
     dst_ny = src_ny
-    dst_nb = len(args.y_param)
+    dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
     dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
-    dst_band = args.y_param
+    dst_band = args.param
 src_band_index = {}
 dst_band_index = {}
-for y_param in args.y_param:
-    if not y_param in src_band:
-        raise ValueError('Error in finding {} in {}'.format(y_param,args.src_geotiff))
-    src_band_index[y_param] = src_band.index(y_param)
-    dst_band_index[y_param] = dst_band.index(y_param)
+for param in args.param:
+    if not param in src_band:
+        raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
+    src_band_index[param] = src_band.index(param)
+    dst_band_index[param] = dst_band.index(param)
 for object_id in object_ids:
     cnd1 = (mask_data == object_id)
     n1 = cnd1.sum()
@@ -156,9 +149,9 @@ for object_id in object_ids:
         continue
     data = []
     flag = False
-    for y_param in args.y_param:
-        src_iband = src_band_index[y_param]
-        dst_iband = dst_band_index[y_param]
+    for param in args.param:
+        src_iband = src_band_index[param]
+        dst_iband = dst_band_index[param]
         d1 = src_data[src_iband,cnd1]
         cnd2 = np.isnan(d1)
         d2 = d1[cnd2]
@@ -180,14 +173,14 @@ for object_id in object_ids:
 # Output results
 with open(args.out_csv,'w') as fp:
     fp.write('{:>8s}'.format('OBJECTID'))
-    for y_param in args.y_param:
-        fp.write(', {:>13s}'.format(y_param))
+    for param in args.param:
+        fp.write(', {:>13s}'.format(param))
     fp.write('\n')
     for object_id in object_ids:
         if object_id in out_data:
             fp.write('{:8d}'.format(object_id))
-            for y_param in args.y_param:
-                fp.write(', {:>13.6e}'.format(out_data[object_id][dst_band_index[y_param]]))
+            for param in args.param:
+                fp.write(', {:>13.6e}'.format(out_data[object_id][dst_band_index[param]]))
             fp.write('\n')
 
 if args.shp_fnam is not None:
@@ -195,8 +188,8 @@ if args.shp_fnam is not None:
     w = shapefile.Writer(args.out_shp)
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
-    for y_param in args.y_param:
-        w.field(y_param,'F',13,6)
+    for param in args.param:
+        w.field(param,'F',13,6)
     for iobj,shaperec in enumerate(r.iterShapeRecords()):
         rec = shaperec.record
         shp = shaperec.shape
@@ -220,9 +213,9 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
-    for param in args.y_param:
+    for param in args.param:
         iband = dst_band_index[param]
-        data = dst_data[iband]*100.0
+        data = dst_data[iband]
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
@@ -240,7 +233,7 @@ if args.debug:
             for iobj,shaperec in enumerate(r.iterShapeRecords()):
                 rec = shaperec.record
                 shp = shaperec.shape
-                z = getattr(rec,param)*100.0
+                z = getattr(rec,param)
                 if not np.isnan(z):
                     ax1.add_patch(plt.Polygon(shp.points,edgecolor='k',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
             im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
