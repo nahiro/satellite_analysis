@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import gdal
 import osr
 from scipy.interpolate import griddata
-from optparse import OptionParser,IndentedHelpFormatter
+from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Defaults
 DATDIR = os.curdir

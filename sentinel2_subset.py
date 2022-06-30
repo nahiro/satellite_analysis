@@ -23,33 +23,29 @@ POLYGON_BOJONGSOANG = 'POLYGON((107.54 -7.04,107.75 -7.04,107.75 -6.95,107.54 -6
 RESOLUTION = 10 # m
 
 # Read options
-parser = ArgumentParser(usage='%(prog)s input_fnam [options]',
-                        formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-o','--output_fnam',default=None,help='Output file name (%(default)s)')
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-I','--inp_fnam',default=None,help='Input file name (%(default)s)')
+parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Output data directory (%(default)s)')
 parser.add_argument('--site',default=SITE,help='Site name for preset coordinates (%(default)s)')
 parser.add_argument('--polygon',default=None,help='Polygon of ROI in WKT format (%(default)s)')
 parser.add_argument('-r','--resolution',default=RESOLUTION,type=int,help='Spatial resolution in m (%(default)s)')
 parser.add_argument('-G','--geotiff',default=False,action='store_true',help='GeoTiff mode (%(default)s)')
-(args,rest) = parser.parse_known_args()
-if len(rest) < 1:
-    parser.print_help()
-    sys.exit(0)
-input_fnam = rest[0]
+args = parser.parse_args()
 safe_flag = False
-m = re.search('^[^_]+_[^_]+_([^_]+)_.*.zip$',os.path.basename(input_fnam))
+m = re.search('^[^_]+_[^_]+_([^_]+)_.*.zip$',os.path.basename(args.inp_fnam))
 if not m:
-    m = re.search('^[^_]+_[^_]+_([^_]+)_.*.SAFE$',os.path.basename(input_fnam))
+    m = re.search('^[^_]+_[^_]+_([^_]+)_.*.SAFE$',os.path.basename(args.inp_fnam))
     if not m:
-        raise ValueError('Error in file name >>> '+input_fnam)
+        raise ValueError('Error in file name >>> '+args.inp_fnam)
     safe_flag = True
 dstr = m.group(1)[:8]
-if args.output_fnam is None:
+if args.out_fnam is None:
     if args.geotiff:
-        args.output_fnam = os.path.join(args.datdir,'{}.tif'.format(dstr))
+        args.out_fnam = os.path.join(args.datdir,'{}.tif'.format(dstr))
     else:
-        args.output_fnam = os.path.join(args.datdir,'{}.dim'.format(dstr))
-if os.path.exists(args.output_fnam):
+        args.out_fnam = os.path.join(args.datdir,'{}.dim'.format(dstr))
+if os.path.exists(args.out_fnam):
     sys.exit()
 
 if args.site is not None:
@@ -64,9 +60,9 @@ if args.site is not None:
 GPF.getDefaultInstance().getOperatorSpiRegistry().loadOperatorSpis()
 # Read original product
 if safe_flag:
-    data = ProductIO.readProduct(os.path.join(input_fnam,'MTD_MSIL2A.xml'))
+    data = ProductIO.readProduct(os.path.join(args.inp_fnam,'MTD_MSIL2A.xml'))
 else:
-    data = ProductIO.readProduct(input_fnam)
+    data = ProductIO.readProduct(args.inp_fnam)
 # Resample (ResamplingOp.java)
 params = HashMap()
 params.put('sourceProduct',data)
@@ -84,6 +80,6 @@ params.put('geoRegion',geom)
 data_tmp = GPF.createProduct('Subset',params,data)
 data = data_tmp
 if args.geotiff:
-    ProductIO.writeProduct(data,args.output_fnam,'GeoTiff')
+    ProductIO.writeProduct(data,args.out_fnam,'GeoTiff')
 else:
-    ProductIO.writeProduct(data,args.output_fnam,'BEAM-DIMAP')
+    ProductIO.writeProduct(data,args.out_fnam,'BEAM-DIMAP')
