@@ -76,7 +76,7 @@ class Parcel(Satellite_Process):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
                 mask_fnam = os.path.join(self.s2_analysis,'parcel_mask.tif')
-                if not os.path.exists():
+                if not os.path.exists(mask_fnam):
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
                     command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
@@ -85,6 +85,8 @@ class Parcel(Satellite_Process):
                     command += ' --buffer="{}"'.format(-abs(self.values['buffer']))
                     command += ' --use_index'
                     self.run_command(command,message='<<< Make mask >>>')
+                if not os.path.exists(mask_fnam):
+                    raise ValueError('Error, no such file >>> {}'.format(mask_fnam))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_calc_indices.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
