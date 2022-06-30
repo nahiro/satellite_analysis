@@ -126,7 +126,7 @@ ds = None
 # Get OBJECTID
 object_ids = np.unique(mask_data[mask_data != mask_nodata])
 
-# Calculate mean damage intensity
+# Calculate mean indices
 out_data = {}
 if args.debug:
     dst_nx = src_nx
@@ -159,10 +159,7 @@ for object_id in object_ids:
         if n2/n1 > args.rmax:
             data.append(np.nan)
         else:
-            if smax[y_param] == 1:
-                v = d1[~cnd2].mean()
-            else:
-                v = d1[~cnd2].mean()/smax[y_param]
+            v = d1[~cnd2].mean()
             data.append(v)
             flag = True
             if args.debug:
@@ -261,7 +258,7 @@ if args.debug:
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
-        ax2.set_ylabel('{} Intensity (%)'.format(param))
+        ax2.set_ylabel('{}'.format(param))
         ax2.yaxis.set_label_coords(4.5,0.5)
         if args.remove_nan:
             src_indy,src_indx = np.indices(src_shape)

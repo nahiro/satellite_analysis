@@ -62,31 +62,20 @@ class Parcel(Satellite_Process):
         resample_dstrs = [resample_dstrs[i] for i in inds]
 
         # Calculate indices
+        indices_fnams = []
+        indices_dstrs = []
         for fnam,dstr in zip(resample_fnams,resample_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_analysis,'parcel',ystr)
+            dnam = os.path.join(self.s2_analysis,'indices',ystr)
             gnam = os.path.join(dnam,'{}_indices.tif'.format(dstr))
-            if os.path.exists(gnam) and self.values['oflag']:
+            if os.path.exists(gnam) and self.values['oflag'][0]:
                 os.remove(gnam)
             if not os.path.exists(gnam):
                 if not os.path.exists(dnam):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
-                # Make mask
-                mask_fnam = os.path.join(self.s2_analysis,'parcel_mask.tif')
-                if not os.path.exists(mask_fnam):
-                    command = self.python_path
-                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
-                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                    command += ' --src_geotiff "{}"'.format(fnam)
-                    command += ' --dst_geotiff "{}"'.format(mask_fnam)
-                    command += ' --buffer="{}"'.format(-abs(self.values['buffer']))
-                    command += ' --use_index'
-                    self.run_command(command,message='<<< Make mask >>>')
-                if not os.path.exists(mask_fnam):
-                    raise ValueError('Error, no such file >>> {}'.format(mask_fnam))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_calc_indices.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
@@ -117,6 +106,69 @@ class Parcel(Satellite_Process):
                 #        command += ' --ax1_zstp="{}"'.format(value)
                 command += ' --ax1_title "{}"'.format(dstr)
                 #command += ' --fig_dpi {}'.format(self.fig_dpi)
+                command += ' --remove_nan'
+                command += ' --debug'
+                command += ' --batch'
+                self.run_command(command,message='<<< Calculate indices for {} >>>'.format(dstr))
+            if os.path.exists(gnam):
+                indices_fnams.append(gnam)
+                indices_dstrs.append(dstr)
+
+        # Parcellate data
+        for fnam,dstr in zip(indices_fnams,indices_dstrs):
+            d = datetime.strptime(dstr,'%Y%m%d')
+            ystr = '{}'.format(d.year)
+            dnam = os.path.join(self.s2_analysis,'parcel',ystr)
+            gnam = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
+            if os.path.exists(gnam) and self.values['oflag'][1]:
+                os.remove(gnam)
+            if not os.path.exists(gnam):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                # Make mask
+                mask_fnam = os.path.join(self.s2_analysis,'parcel_mask.tif')
+                if not os.path.exists(mask_fnam):
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                    command += ' --src_geotiff "{}"'.format(fnam)
+                    command += ' --dst_geotiff "{}"'.format(mask_fnam)
+                    command += ' --buffer="{}"'.format(-abs(self.values['buffer']))
+                    command += ' --use_index'
+                    self.run_command(command,message='<<< Make mask >>>')
+                if not os.path.exists(mask_fnam):
+                    raise ValueError('Error, no such file >>> {}'.format(mask_fnam))
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_parcellate.py'))
+                command += ' --src_geotiff "{}"'.format(os.path.join(dnam,'{}_indices.tif'.format(dstr)))
+                command += ' --mask_geotiff "{}"'.format(mask_fnam)
+                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                command += ' --out_csv "{}"'.format(gnam)
+                command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
+                for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
+                    if flag:
+                        command += ' --param S{}'.format(param)
+                for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
+                    if flag:
+                        command += ' --param {}'.format(param)
+                for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
+                    if flag:
+                        command += ' --param {}'.format(param)
+                command += ' --rmax 0.01'
+                command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_parcel.pdf'.format(dstr)))
+                #for value,flag in zip(self.ax1_zmin[2],self.values['out_refs']):
+                #    if flag:
+                #        command += ' --ax1_zmin="{}"'.format(value)
+                #for value,flag in zip(self.ax1_zmax[2],self.values['out_refs']):
+                #    if flag:
+                #        command += ' --ax1_zmax="{}"'.format(value)
+                #for value,flag in zip(self.ax1_zstp[2],self.values['out_refs']):
+                #    if flag:
+                #        command += ' --ax1_zstp="{}"'.format(value)
+                command += ' --ax1_title "{}"'.format(dstr)
+                command += ' --use_index'
                 command += ' --remove_nan'
                 command += ' --debug'
                 command += ' --batch'
