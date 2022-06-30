@@ -73,7 +73,7 @@ parser.add_argument('-e','--trg_epsg',default=None,help='Target EPSG (guessed fr
 parser.add_argument('-n','--npoly',default=None,type=int,help='Order of polynomial used for warping between 1 and 3 (selected based on the number of GCPs)')
 parser.add_argument('-R','--resampling',default=RESAMPLING,help='Resampling method (%(default)s)')
 parser.add_argument('--resampling2',default=RESAMPLING2,help='Another resampling method (%(default)s)')
-parser.add_argument('--resampling2_band',default=None,type=int,action='append',help='Target band# for another resampling method (%(default)s)')
+parser.add_argument('--resampling2_band',default=None,type=int,action='append',help='Target band# from 1 for another resampling method (%(default)s)')
 parser.add_argument('--minimum_number',default=MINIMUM_NUMBER,type=int,help='Minimum number of GCPs to perform geometric correction (%(default)s)')
 parser.add_argument('--refine_gcps',default=None,type=float,help='Tolerance to refine GCPs for polynomial interpolation (%(default)s)')
 parser.add_argument('--minimum_gcps',default=None,type=int,help='Minimum number of GCPs to be left after refine_gcps (available number - discard_number or available number x minimum_ratio)')
@@ -260,7 +260,7 @@ if trg_fnam is not None:
         command2 += ' '+out2_fnam
         command = 'gdal_translate'
         for band_index in args.resampling2_band:
-            command += ' -b {}'.format(band_index+1)
+            command += ' -b {}'.format(band_index)
         command += ' '+tmp_fnam
         command += ' '+tmp2_fnam
         call(command,shell=True)
@@ -272,7 +272,7 @@ if trg_fnam is not None:
         ds = drv.CreateCopy(out_fnam,ds1,strict=0)
         for i,band_index in enumerate(args.resampling2_band):
             band = ds2.GetRasterBand(i+1)
-            ds.GetRasterBand(band_index+1).WriteArray(band.ReadAsArray())
+            ds.GetRasterBand(band_index).WriteArray(band.ReadAsArray())
         ds.FlushCache()
         ds = None
         ds1 = None

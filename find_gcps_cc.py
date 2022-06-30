@@ -16,8 +16,8 @@ from scipy.optimize import leastsq
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
-REF_BAND = 4 # WorldView Red
-TRG_BAND = 3 # Sentinel-2 Red
+REF_BAND = 5 # WorldView Red
+TRG_BAND = 4 # Sentinel-2 Red
 SUBSET_WIDTH = 100 # pixel
 SUBSET_HEIGHT = 100 # pixel
 X0 = 0.0 # m
@@ -36,11 +36,11 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('trg_fnam',default=None,help='Target image (%(default)s)')
 parser.add_argument('ref_fnam',default=None,help='Reference image (%(default)s)')
 parser.add_argument('-o','--out_fnam',default=None,help='Output file name (%(default)s)')
-parser.add_argument('-b','--ref_band',default=REF_BAND,type=int,help='Reference band# (%(default)s)')
-parser.add_argument('-B','--trg_band',default=TRG_BAND,type=int,help='Target band# (%(default)s)')
-parser.add_argument('--ref_multi_band',default=None,type=int,action='append',help='Reference multi-band number (%(default)s)')
+parser.add_argument('-b','--ref_band',default=REF_BAND,type=int,help='Reference band# from 1 (%(default)s)')
+parser.add_argument('-B','--trg_band',default=TRG_BAND,type=int,help='Target band# from 1 (%(default)s)')
+parser.add_argument('--ref_multi_band',default=None,type=int,action='append',help='Reference multi-band number from 1 (%(default)s)')
 parser.add_argument('--ref_multi_ratio',default=None,type=float,action='append',help='Reference multi-band ratio (%(default)s)')
-parser.add_argument('--trg_multi_band',default=None,type=int,action='append',help='Target multi-band number (%(default)s)')
+parser.add_argument('--trg_multi_band',default=None,type=int,action='append',help='Target multi-band number from 1 (%(default)s)')
 parser.add_argument('--trg_multi_ratio',default=None,type=float,action='append',help='Target multi-band ratio (%(default)s)')
 parser.add_argument('-x','--trg_indx_start',default=None,type=int,help='Target start x index (0)')
 parser.add_argument('-X','--trg_indx_stop',default=None,type=int,help='Target stop x index (target width)')
@@ -109,11 +109,11 @@ if args.ref_multi_band is not None:
         raise ValueError('Error, len(args.ref_multi_band)={}, len(args.ref_multi_ratio)={}'.format(len(args.ref_multi_band),len(args.ref_multi_ratio)))
     ref_data = 0.0
     for band,ratio in zip(args.ref_multi_band,args.ref_multi_ratio):
-        ref_data += ds.GetRasterBand(band+1).ReadAsArray().astype(np.float64)*ratio
+        ref_data += ds.GetRasterBand(band).ReadAsArray().astype(np.float64)*ratio
 elif args.ref_band < 0:
     ref_data = ds.ReadAsArray().astype(np.float64)
 else:
-    ref_data = ds.GetRasterBand(args.ref_band+1).ReadAsArray().astype(np.float64)
+    ref_data = ds.GetRasterBand(args.ref_band).ReadAsArray().astype(np.float64)
 trans = ds.GetGeoTransform()
 ref_shape = ref_data.shape
 indy,indx = np.indices(ref_shape)
@@ -147,11 +147,11 @@ if args.trg_multi_band is not None:
         raise ValueError('Error, len(args.trg_multi_band)={}, len(args.trg_multi_ratio)={}'.format(len(args.trg_multi_band),len(args.trg_multi_ratio)))
     trg_data = 0.0
     for band,ratio in zip(args.trg_multi_band,args.trg_multi_ratio):
-        trg_data += ds.GetRasterBand(band+1).ReadAsArray().astype(np.float64)*ratio
+        trg_data += ds.GetRasterBand(band).ReadAsArray().astype(np.float64)*ratio
 elif args.trg_band < 0:
     trg_data = ds.ReadAsArray().astype(np.float64)
 else:
-    trg_data = ds.GetRasterBand(args.trg_band+1).ReadAsArray().astype(np.float64)
+    trg_data = ds.GetRasterBand(args.trg_band).ReadAsArray().astype(np.float64)
 trans = ds.GetGeoTransform()
 trg_shape = trg_data.shape
 indy,indx = np.indices(trg_shape)
