@@ -40,7 +40,7 @@ band_dict['n2'] = 'B8A'
 band_dict['s1'] = 'B11'
 band_dict['s2'] = 'B12'
 band_index = {}
-for iband,band in band_list:
+for iband,band in enumerate(band_list):
     band_index[band] = iband
 
 # Default values
