@@ -14,6 +14,7 @@ proc_parcel.pnams.append('sc_flag')
 proc_parcel.pnams.append('cloud_flag')
 proc_parcel.pnams.append('cloud_band')
 proc_parcel.pnams.append('cloud_thr')
+proc_parcel.pnams.append('buffer')
 proc_parcel.pnams.append('oflag')
 proc_parcel.params['gis_fnam'] = 'Polygon File'
 proc_parcel.params['out_refs'] = 'Output Reflectance'
@@ -25,6 +26,7 @@ proc_parcel.params['sc_flag'] = 'Cloud Rem. by SC Flag'
 proc_parcel.params['cloud_flag'] = 'Cloud Rem. by Reflectance'
 proc_parcel.params['cloud_band'] = 'Band for Cloud Removal'
 proc_parcel.params['cloud_thr'] = 'Thres. for Cloud Removal'
+proc_parcel.params['buffer'] = 'Buffer Radius (m)'
 proc_parcel.params['oflag'] = 'Overwrite Flag'
 proc_parcel.param_types['gis_fnam'] = 'string'
 proc_parcel.param_types['out_refs'] = 'boolean_list'
@@ -36,8 +38,10 @@ proc_parcel.param_types['sc_flag'] = 'boolean_list'
 proc_parcel.param_types['cloud_flag'] = 'boolean_list'
 proc_parcel.param_types['cloud_band'] = 'string_select'
 proc_parcel.param_types['cloud_thr'] = 'float'
+proc_parcel.param_types['buffer'] = 'float'
 proc_parcel.param_types['oflag'] = 'boolean'
 proc_parcel.param_range['cloud_thr'] = (0.0,10.0)
+proc_parcel.param_range['buffer'] = (0.0,10.0e3)
 proc_parcel.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_parcel.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_parcel.defaults['norm_bands'] = [True,True,True,True,True,True,True,False,False,False]
@@ -48,6 +52,7 @@ proc_parcel.defaults['sc_flag'] = [True,True,True]
 proc_parcel.defaults['cloud_flag'] = [True,True,True]
 proc_parcel.defaults['cloud_band'] = 'r'
 proc_parcel.defaults['cloud_thr'] = 0.35
+proc_parcel.defaults['buffer'] = 1.0
 proc_parcel.defaults['oflag'] = False
 proc_parcel.list_sizes['out_refs'] = 10
 proc_parcel.list_sizes['norm_bands'] = 10
@@ -75,6 +80,7 @@ proc_parcel.input_types['sc_flag'] = 'boolean_list'
 proc_parcel.input_types['cloud_flag'] = 'boolean_list'
 proc_parcel.input_types['cloud_band'] = 'string_select'
 proc_parcel.input_types['cloud_thr'] = 'box'
+proc_parcel.input_types['buffer'] = 'box'
 proc_parcel.input_types['oflag'] = 'boolean'
 for pnam in proc_parcel.pnams:
     proc_parcel.values[pnam] = proc_parcel.defaults[pnam]
