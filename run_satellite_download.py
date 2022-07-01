@@ -5,7 +5,6 @@ from datetime import datetime
 from glob import glob
 import numpy as np
 import pandas as pd
-from subprocess import call
 from proc_satellite_class import Satellite_Process
 
 class Download(Satellite_Process):
@@ -31,6 +30,53 @@ class Download(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,l2a_dir))
         tmp_fnam = os.path.join(l2a_dir,'temp.csv')
 
+        # Download Planting data
+        itarg = 0
+        if self.values['dflag'][itarg]:
+            for year in data_years:
+                ystr = '{}'.format(year)
+                # Make file list
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
+                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' --srcdir {}'.format('{}/{}'.format(self.values['trans_path'],year))
+                command += ' --out_csv {}'.format(tmp_fnam)
+                command += ' --max_layer 1'
+                try:
+                    self.run_command(command,message='<<< Make Planting data list ({}) >>>'.format(ystr))
+                except Exception:
+                    continue
+        """
+                df = pd.read_csv(tmp_fnam,comment='#')
+                df.columns = df.columns.str.strip()
+                inds = []
+                for index,row in df.iterrows():
+                    #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                    src_fnam = row['fileName']
+                    m = re.search('_('+'\d'*8+')_final.tif$',src_fnam)
+                    if not m:
+                        continue
+                    dstr = m.group(1)
+                    d = datetime.strptime(dstr,'%Y%m%d')
+                    if d < first_dtim or d > last_dtim:
+                        continue
+                    inds.append(index)
+                if len(inds) < 1:
+                    continue
+                df.loc[inds].to_csv(tmp_fnam,index=False)
+                # Download Data
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
+                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' --inp_list {}'.format(tmp_fnam)
+                command += ' --dstdir {}'.format(os.path.join(self.s1_analysis,'planting',ystr))
+                command += ' --verbose'
+                if self.values['oflag'][itarg]:
+                    command += ' --overwrite'
+                self.run_command(command,message='<<< Download Planting data ({}) >>>'.format(ystr))
+
         # Download Sentinel-2 L2A
         itarg = 1
         if args.dflag[itarg]:
@@ -43,17 +89,19 @@ class Download(Satellite_Process):
             if len(keys) < 1:
                 keys = None
             for year in data_years:
+                ystr = '{}'.format(year)
                 # Make file list
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
                 command += ' --drvdir {}'.format(self.values['drv_dir'])
                 command += ' --srcdir {}'.format('{}/{}'.format(self.values['l2a_path'],year))
                 command += ' --out_csv {}'.format(tmp_fnam)
                 command += ' --max_layer 0'
-                sys.stderr.write(command+'\n')
-                sys.stderr.flush()
-                ret = call(command,shell=True)
-                if ret != 0:
+                try:
+                    self.run_command(command,message='<<< Make Sentinel-2 L2A list ({}) >>>'.format(ystr))
+                except Exception:
                     continue
                 df = pd.read_csv(tmp_fnam,comment='#')
                 df.columns = df.columns.str.strip()
@@ -85,13 +133,12 @@ class Download(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
                 command += ' --drvdir {}'.format(self.values['drv_dir'])
                 command += ' --inp_list {}'.format(tmp_fnam)
-                command += ' --dstdir {}'.format(os.path.join(self.s2_data,'{}'.format(year)))
+                command += ' --dstdir {}'.format(os.path.join(self.s2_data,ystr))
                 command += ' --verbose'
-                if args.oflag[itarg]:
+                if self.values['oflag'][itarg]:
                     command += ' --overwrite'
-                sys.stderr.write(command+'\n')
-                sys.stderr.flush()
-                call(command,shell=True)
+                self.run_command(command,message='<<< Download Sentinel-2 L2A ({}) >>>'.format(ystr))
+        """
 
         #if os.path.exists(tmp_fnam):
         #    os.remove(tmp_fnam)
