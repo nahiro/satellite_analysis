@@ -96,6 +96,7 @@ class Geocor(Satellite_Process):
                 del l2a_sizes[i]
 
         # Subset
+        subset_fnams = []
         subset_dstrs = []
         for fnam,dstr in zip(l2a_fnams,l2a_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
@@ -145,9 +146,11 @@ class Geocor(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
                 self.run_command(command,print_command=False,print_time=False)
             if os.path.exists(gnam):
+                subset_fnams.append(gnam)
                 subset_dstrs.append(dstr)
 
         # Geometric correction
+        geocor_fnams = []
         geocor_dstrs = []
         orders = {'1st':1,'2nd':2,'3rd':3}
         for dstr in subset_dstrs:
@@ -292,6 +295,7 @@ class Geocor(Satellite_Process):
             #if os.path.exists(se2_fnam):
             #    os.rename(se2_fnam,dat_fnam)
             if os.path.exists(gnam):
+                geocor_fnams.append(gnam)
                 geocor_dstrs.append(dstr)
 
         # Resample
@@ -308,6 +312,7 @@ class Geocor(Satellite_Process):
             command += ' --inp_fnam "{}"'.format(l2a_fnams[0])
             command += ' --out_fnam "{}"'.format(self.values['band_fnam'])
             self.run_command(command,message='Read band names')
+        resample_fnams = []
         resample_dstrs = []
         for dstr in geocor_dstrs:
             d = datetime.strptime(dstr,'%Y%m%d')
@@ -335,6 +340,7 @@ class Geocor(Satellite_Process):
                 command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
                 self.run_command(command,message='Resampling for {}'.format(dstr))
             if os.path.exists(gnam):
+                resample_fnams.append(gnam)
                 resample_dstrs.append(dstr)
 
         # Finish process
