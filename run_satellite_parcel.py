@@ -142,7 +142,7 @@ class Parcel(Satellite_Process):
                     raise ValueError('Error, no such file >>> {}'.format(mask_fnam))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_parcellate.py'))
-                command += ' --src_geotiff "{}"'.format(os.path.join(dnam,'{}_indices.tif'.format(dstr)))
+                command += ' --src_geotiff "{}"'.format(fnam)
                 command += ' --mask_geotiff "{}"'.format(mask_fnam)
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                 command += ' --out_csv "{}"'.format(gnam)
