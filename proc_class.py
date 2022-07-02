@@ -2,6 +2,9 @@ import os
 import sys
 import re
 from datetime import datetime
+import tempfile
+import random
+import string
 import numpy as np
 import tkinter as tk
 from tkinter import ttk
@@ -254,6 +257,12 @@ class Process:
             if self.check_err(pnam,lines):
                 self.center_var[pnam].set(lines)
         return
+
+    def mktemp(self,suffix='',prefix=''):
+        dnam = tempfile.gettempdir()
+        string_seed = string.digits + string.ascii_lowercase + string.ascii_uppercase
+        random_string = ''.join(random.choices(string_seed,k=8))
+        return os.path.join(dnam,'{}{}_{}{}'.format(prefix,self.proc_name,random_string,suffix))
 
     def on_mousewheel(self,event):
         if self.root is not None and self.root.winfo_exists():
