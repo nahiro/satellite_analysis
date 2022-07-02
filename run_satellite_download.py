@@ -55,20 +55,23 @@ class Download(Satellite_Process):
                 inds = []
                 for index,row in df.iterrows():
                     #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
-                    src_fnam = row['fileName']
+                    src_fnam = row['fileName'].split('/')[-1]
                     m = re.search('_('+'\d'*8+')_final.tif$',src_fnam)
                     if not m:
-                        continue
+                        m = re.search('_('+'\d'*8+')_final.json$',src_fnam)
+                        if not m:
+                            continue
                     dstr = m.group(1)
                     d = datetime.strptime(dstr,'%Y%m%d')
                     if d < first_dtim or d > last_dtim:
                         continue
+                    df.loc[index,'fileName'] = src_fnam
+                    df.loc[index,'nLayer'] = 0
                     inds.append(index)
                 if len(inds) < 1:
                     continue
                 tmp_fnam = self.mktemp(suffix='.csv')
                 df.loc[inds].to_csv(tmp_fnam,index=False)
-        """
                 # Download Data
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
@@ -79,6 +82,9 @@ class Download(Satellite_Process):
                 if self.values['oflag'][itarg]:
                     command += ' --overwrite'
                 self.run_command(command,message='<<< Download Planting data ({}) >>>'.format(ystr))
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
+        """
 
         # Download Sentinel-2 L2A
         itarg = 1
