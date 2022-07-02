@@ -28,7 +28,6 @@ class Download(Satellite_Process):
             os.makedirs(l2a_dir)
         if not os.path.isdir(l2a_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,l2a_dir))
-        tmp_fnam = os.path.join(l2a_dir,'temp.csv')
 
         # Download Planting data
         itarg = 0
@@ -36,8 +35,7 @@ class Download(Satellite_Process):
             for year in data_years:
                 ystr = '{}'.format(year)
                 # Make file list
-                if os.path.exists(tmp_fnam):
-                    os.remove(tmp_fnam)
+                tmp_fnam = self.mktemp(suffix='.csv')
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
                 command += ' --drvdir {}'.format(self.values['drv_dir'])
@@ -47,9 +45,12 @@ class Download(Satellite_Process):
                 try:
                     self.run_command(command,message='<<< Make Planting data list ({}) >>>'.format(ystr))
                 except Exception:
+                    if os.path.exists(tmp_fnam):
+                        os.remove(tmp_fnam)
                     continue
-        """
                 df = pd.read_csv(tmp_fnam,comment='#')
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
                 df.columns = df.columns.str.strip()
                 inds = []
                 for index,row in df.iterrows():
@@ -65,7 +66,9 @@ class Download(Satellite_Process):
                     inds.append(index)
                 if len(inds) < 1:
                     continue
+                tmp_fnam = self.mktemp(suffix='.csv')
                 df.loc[inds].to_csv(tmp_fnam,index=False)
+        """
                 # Download Data
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
