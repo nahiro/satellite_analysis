@@ -115,12 +115,6 @@ if mask_shape != src_shape:
 mask_data = ds.ReadAsArray().reshape(mask_ny,mask_nx)
 band = ds.GetRasterBand(1)
 mask_nodata = band.GetNoDataValue()
-if np.isnan(mask_nodata):
-    mask_nodata = -(2**63)
-elif mask_nodata < 0.0:
-    mask_nodata = -int(-mask_nodata+0.5)
-else:
-    mask_nodata = int(mask_nodata+0.5)
 ds = None
 
 # Get OBJECTID
