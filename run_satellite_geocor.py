@@ -153,7 +153,7 @@ class Geocor(Satellite_Process):
         geocor_fnams = []
         geocor_dstrs = []
         orders = {'1st':1,'2nd':2,'3rd':3}
-        for dstr in subset_dstrs:
+        for fnam,dstr in zip(subset_fnams,subset_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_analysis,'geocor',ystr)
@@ -169,7 +169,6 @@ class Geocor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
-                fnam = os.path.join(self.s2_analysis,'subset',ystr,'{}_subset.tif'.format(dstr))
                 se1_fnam = os.path.join(dnam,'{}_geocor_selected1.dat'.format(dstr))
                 se2_fnam = os.path.join(dnam,'{}_geocor_selected2.dat'.format(dstr))
                 tmp_fnam = os.path.join(dnam,'{}_geocor_temp.dat'.format(dstr))
@@ -314,7 +313,7 @@ class Geocor(Satellite_Process):
             self.run_command(command,message='Read band names')
         resample_fnams = []
         resample_dstrs = []
-        for dstr in geocor_dstrs:
+        for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_analysis,'resample',ystr)
@@ -327,7 +326,6 @@ class Geocor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
-                fnam = os.path.join(self.s2_analysis,'geocor',ystr,'{}_geocor.tif'.format(dstr))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel_resample.py'))
                 command += ' --inp_fnam "{}"'.format(fnam)
