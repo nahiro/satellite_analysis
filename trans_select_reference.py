@@ -3,12 +3,18 @@ import os
 import sys
 import re
 import json
-import gdal
-import osr
+try:
+    import gdal
+except Exception:
+    from osgeo import gdal
+try:
+    import osr
+except Exception:
+    from osgeo import osr
 from datetime import datetime
 import numpy as np
 from matplotlib.dates import date2num,num2date
-from optparse import OptionParser,IndentedHelpFormatter
+from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 TMIN = '20200216'
@@ -19,15 +25,13 @@ MASK_FNAM = '/home/naohiro/Work/SATREPS/Transplanting_date/Cihea/paddy_mask.tif'
 PERIOD_NUM = 0
 
 # Read options
-parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
-parser.add_option('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%default)')
-parser.add_option('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%default)')
-parser.add_option('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%default)')
-parser.add_option('-D','--datdir',default=DATDIR,help='Input data directory (%default)')
-parser.add_option('--mask_fnam',default=MASK_FNAM,help='Mask file name (%default)')
-parser.add_option('-f','--period_fnam',default=None,help='Period file name (%default)')
-parser.add_option('-i','--period_num',default=PERIOD_NUM,type='int',help='Period number from 1 to 3 (%default)')
-(opts,args) = parser.parse_args()
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
+parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
+args = parser.parse_args()
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
@@ -40,25 +44,9 @@ def all_close(a,b,rtol=0.01,atol=1.0):
         sys.stderr.write('{} {}\n'.format(dif/avg,dif))
         return False
 
-if opts.period_fnam is not None:
-    lines = []
-    with open(opts.period_fnam,'r') as fp:
-        lines = fp.readlines()
-    if len(lines) < opts.period_num+1:
-        raise ValueError('Error, len(lines)={}, period_num={}'.format(len(lines),opts.period_num))
-    m = re.search('tref\s*:\s*('+'\d'*8+')\s*$',lines[0])
-    if not m:
-        raise ValueError('Error in reading tref >>> '+lines[0])
-    opts.tref = m.group(1)
-    m = re.search('period{}'.format(opts.period_num)+'\s*:\s*('+'\d'*8+')\s+('+'\d'*8+')\s*$',lines[opts.period_num])
-    if not m:
-        raise ValueError('Error in reading period {} >>> '.format(opts.period_num)+lines[opts.period_num])
-    opts.tmin = m.group(1)
-    opts.tmax = m.group(2)
-
-dmin = datetime.strptime(opts.tmin,'%Y%m%d')
-dmax = datetime.strptime(opts.tmax,'%Y%m%d')
-dref = datetime.strptime(opts.tref,'%Y%m%d')
+dmin = datetime.strptime(args.tmin,'%Y%m%d')
+dmax = datetime.strptime(args.tmax,'%Y%m%d')
+dref = datetime.strptime(args.tref,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
@@ -70,7 +58,7 @@ post_avg_min = 2.2
 risetime_max = 30.0
 offset = -9.0 # day
 
-ds = gdal.Open(opts.mask_fnam)
+ds = gdal.Open(args.mask_fnam)
 mask = ds.ReadAsArray()
 mask_shape = mask.shape
 ds = None
@@ -79,13 +67,13 @@ gnams = []
 tmins = []
 tmaxs = []
 dstrs = []
-for d in sorted(os.listdir(opts.datdir)):
+for d in sorted(os.listdir(args.datdir)):
     m = re.search('^('+'\d'*8+')$',d)
     if not m:
         continue
     dstr = m.group(1)
-    fnam = os.path.join(opts.datdir,d,'trans_date_cihea_{}_final.json'.format(dstr))
-    gnam = os.path.join(opts.datdir,d,'trans_date_cihea_{}_final.tif'.format(dstr))
+    fnam = os.path.join(args.datdir,d,'trans_date_cihea_{}_final.json'.format(dstr))
+    gnam = os.path.join(args.datdir,d,'trans_date_cihea_{}_final.tif'.format(dstr))
     if not os.path.exists(fnam) or not os.path.exists(gnam):
         continue
     #print(dstr)

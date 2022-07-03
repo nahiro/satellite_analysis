@@ -2,11 +2,17 @@
 import os
 import sys
 import re
-import gdal
-import osr
+try:
+    import gdal
+except Exception:
+    from osgeo import gdal
+try:
+    import osr
+except Exception:
+    from osgeo import osr
 from datetime import datetime
 import numpy as np
-from optparse import OptionParser,IndentedHelpFormatter
+from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 TMIN = '20200216'
@@ -16,36 +22,22 @@ MASK_FNAM = '/home/naohiro/Work/SATREPS/Transplanting_date/Cihea/paddy_mask.tif'
 PERIOD_NUM = 0
 
 # Read options
-parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
-parser.add_option('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%default)')
-parser.add_option('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%default)')
-parser.add_option('-D','--datdir',default=DATDIR,help='Input data directory (%default)')
-parser.add_option('--mask_fnam',default=MASK_FNAM,help='Mask file name (%default)')
-parser.add_option('-f','--period_fnam',default=None,help='Period file name (%default)')
-parser.add_option('-i','--period_num',default=PERIOD_NUM,type='int',help='Period number from 1 to 3 (%default)')
-(opts,args) = parser.parse_args()
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
+parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
+args = parser.parse_args()
 
-if opts.period_fnam is not None:
-    lines = []
-    with open(opts.period_fnam,'r') as fp:
-        lines = fp.readlines()
-    if len(lines) < opts.period_num+1:
-        raise ValueError('Error, len(lines)={}, period_num={}'.format(len(lines),opts.period_num))
-    m = re.search('period{}'.format(opts.period_num)+'\s*:\s*('+'\d'*8+')\s+('+'\d'*8+')\s*$',lines[opts.period_num])
-    if not m:
-        raise ValueError('Error in reading period {} >>> '.format(opts.period_num)+lines[opts.period_num])
-    opts.tmin = m.group(1)
-    opts.tmax = m.group(2)
+dmin = datetime.strptime(args.tmin,'%Y%m%d')
+dmax = datetime.strptime(args.tmax,'%Y%m%d')
 
-dmin = datetime.strptime(opts.tmin,'%Y%m%d')
-dmax = datetime.strptime(opts.tmax,'%Y%m%d')
-
-ds = gdal.Open(opts.mask_fnam)
+ds = gdal.Open(args.mask_fnam)
 mask = ds.ReadAsArray()
 mask_shape = mask.shape
 ds = None
 
-gnam = os.path.join(opts.datdir,'ref_{:%Y%m%d}_{:%Y%m%d}.tif'.format(dmin,dmax))
+gnam = os.path.join(args.datdir,'ref_{:%Y%m%d}_{:%Y%m%d}.tif'.format(dmin,dmax))
 ds = gdal.Open(gnam)
 data = ds.ReadAsArray()
 data_shape = data[0].shape
