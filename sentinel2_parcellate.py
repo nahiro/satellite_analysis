@@ -226,7 +226,7 @@ if args.debug:
                 shp = shaperec.shape
                 z = getattr(rec,param)
                 if not np.isnan(z):
-                    ax1.add_patch(plt.Polygon(shp.points,edgecolor='k',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
+                    ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
             im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
         else:
             if args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
