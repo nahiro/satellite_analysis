@@ -26,7 +26,6 @@ TMIN = '20200216'
 TMAX = '20200730'
 DATDIR = os.path.join(HOME,'Sentinel-1_Analysis','planting')
 MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
-PERIOD_NUM = 0
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
