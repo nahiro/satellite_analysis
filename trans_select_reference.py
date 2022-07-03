@@ -30,11 +30,11 @@ MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
+parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
-parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
 args = parser.parse_args()
 
 def all_close(a,b,rtol=0.01,atol=1.0):
@@ -54,6 +54,7 @@ dref = datetime.strptime(args.tref,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
+years = np.arange(dmin.year,dmax.year+1,1)
 
 trans_n_max = 4.0
 bsc_min_max = -18.0
@@ -67,78 +68,99 @@ mask = ds.ReadAsArray()
 mask_shape = mask.shape
 ds = None
 
-gnams = []
+fnams = []
 tmins = []
 tmaxs = []
 dstrs = []
-for d in sorted(os.listdir(args.datdir)):
-    m = re.search('^('+'\d'*8+')$',d)
-    if not m:
+for year in years:
+    ystr = '{}'.format(year)
+    dnam = os.path.join(args.datdir,ystr)
+    if not os.path.isdir(dnam):
         continue
-    dstr = m.group(1)
-    fnam = os.path.join(args.datdir,d,'trans_date_cihea_{}_final.json'.format(dstr))
-    gnam = os.path.join(args.datdir,d,'trans_date_cihea_{}_final.tif'.format(dstr))
-    if not os.path.exists(fnam) or not os.path.exists(gnam):
-        continue
-    #print(dstr)
-    with open(fnam,'r') as fp:
-        data_info = json.load(fp)
-    #t = datetime.strptime(dstr,'%Y%m%d')
-    tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
-    tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
-    if tmin < dmax and tmax > dmin:
-        sys.stderr.write('{} {}\n'.format(tmin,tmax))
-        gnams.append(gnam)
-        tmins.append(tmin)
-        tmaxs.append(tmax)
-        dstrs.append(dstr)
+    for f in sorted(os.listdir(dnam)):
+        m = re.search('^(\S+)_('+'\d'*8+')_final.tif$',f)
+        if not m:
+            continue
+        bnam = m.group(1)
+        dstr = m.group(2)
+        fnam = os.path.join(args.datdir,dnam,f)
+        gnam = os.path.join(args.datdir,dnam,'{}_{}_final.json'.format(bnam,dstr))
+        if not os.path.exists(gnam):
+            continue
+        #print(dstr)
+        with open(gnam,'r') as fp:
+            data_info = json.load(fp)
+        #t = datetime.strptime(dstr,'%Y%m%d')
+        tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
+        tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+        if tmin < dmax and tmax > dmin:
+            sys.stderr.write('{} {}\n'.format(tmin,tmax))
+            fnams.append(fnam)
+            tmins.append(tmin)
+            tmaxs.append(tmax)
+            dstrs.append(dstr)
 tmins = date2num(np.array(tmins))
 tmaxs = date2num(np.array(tmaxs))
 tvals = 0.5*(tmins+tmaxs)
 dstrs = np.array(dstrs)
 
-data_shape = None
-data_trans = None
-data_epsg = None
-data = []
-for gnam in gnams:
-    ds = gdal.Open(gnam)
-    dtmp = ds.ReadAsArray()
-    if data_shape is None:
-        data_shape = dtmp[0].shape
-        if data_shape != mask_shape:
-            raise ValueError('Error, data_shape={}, mask_shape={}'.format(data_shape,mask_shape))
-    elif dtmp[0].shape != data_shape:
-        raise ValueError('Error, dtmp[0].shape={}, data_shape={}'.format(dtmp[0].shape,data_shape))
-    if data_trans is None:
-        data_trans = ds.GetGeoTransform()
-    elif ds.GetGeoTransform() != data_trans:
-        raise ValueError('Error, different transform')
-    prj = ds.GetProjection()
-    srs = osr.SpatialReference(wkt=prj)
-    estr = srs.GetAttrValue('AUTHORITY',1)
-    if re.search('\D',estr):
-        raise ValueError('Error in EPSG >>> '+estr)
-    epsg = int(estr)
-    if data_epsg is None:
-        data_epsg = epsg
-    elif epsg != data_epsg:
-        raise ValueError('Error, epsg={}, data_epsg={}'.format(epsg,data_epsg))
-    data.append(dtmp)
-data = np.array(data)
-ndat = len(data)
-nx = data_shape[1]
-ny = data_shape[0]
-nb = 8*2
-output_data = np.full((nb,ny,nx),np.nan)
-cnd = (data[:,0,:,:] < nmin-1.0e-4) | (data[:,0,:,:] > nmax+1.0e-4)
-data[:,0,:,:][cnd] = np.nan
+src_nx = None
+src_ny = None
+src_nb = None
+src_shape = None
+src_prj = None
+src_trans = None
+src_data = []
+for fnam in fnams:
+    ds = gdal.Open(fnam)
+    tmp_nx = ds.RasterXSize
+    tmp_ny = ds.RasterYSize
+    tmp_nb = ds.RasterCount
+    tmp_shape = (tmp_ny,tmp_nx)
+    tmp_prj = ds.GetProjection()
+    tmp_trans = ds.GetGeoTransform()
+    tmp_data = ds.ReadAsArray()
+    if src_shape is None:
+        src_shape = tmp_shape
+        if src_shape != mask_shape:
+            raise ValueError('Error, src_shape={}, mask_shape={}'.format(src_shape,mask_shape))
+    elif tmp_shape != src_shape:
+        raise ValueError('Error, tmp_shape={}, src_shape={}'.format(tmp_shape,src_shape))
+    if src_prj is None:
+        src_prj = tmp_prj
+    elif tmp_prj != src_prj:
+        raise ValueError('Error, tmp_prj={}, src_prj={}'.format(tmp_prj,src_prj))
+    if src_trans is None:
+        src_trans = tmp_trans
+    elif tmp_trans != src_trans:
+        raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
+    src_data.append(tmp_data)
+src_data = np.array(src_data)
+cnd = (src_data[:,0,:,:] < nmin-1.0e-4) | (src_data[:,0,:,:] > nmax+1.0e-4)
+src_data[:,0,:,:][cnd] = np.nan
+
+dst_nx = src_nx
+dst_ny = src_ny
+dst_nb = 8*2
+dst_meta = {}
+dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
+dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
+dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
+dst_meta['trans_n_max'] = '{:.1f}'.format(trans_n_max)
+dst_meta['bsc_min_max'] = '{:.1f}'.format(bsc_min_max)
+dst_meta['post_min_min'] = '{:.1f}'.format(post_min_min)
+dst_meta['post_avg_min'] = '{:.1f}'.format(post_avg_min)
+dst_meta['risetime_max'] = '{:.1f}'.format(risetime_max)
+dst_meta['offset'] = '{:.4f}'.format(offset)
+dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
+dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
+dst_nodata = np.nan
 
 #flag = False
-for iy in range(data_shape[0]):
-    if iy%100 == 0:
-        sys.stderr.write('{}/{}\n'.format(iy,data_shape[0]))
-    for ix in range(data_shape[1]):
+for iy in range(src_ny):
+    #if iy%100 == 0:
+    #    sys.stderr.write('{}/{}\n'.format(iy,src_ny))
+    for ix in range(src_nx):
         if mask[iy,ix] < 0.5:
             continue
         isrt = np.argsort(data[:,0,iy,ix])
@@ -253,60 +275,46 @@ for iy in range(data_shape[0]):
             else:
                 i1 = 0
                 i2 = 1
-            output_data[0,iy,ix] = trans_d[i1]
-            output_data[1,iy,ix] = trans_s[i1]
-            output_data[2,iy,ix] = trans_n[i1]
-            output_data[3,iy,ix] = bsc_min[i1]
-            output_data[4,iy,ix] = post_avg[i1]
-            output_data[5,iy,ix] = post_min[i1]
-            output_data[6,iy,ix] = post_max[i1]
-            output_data[7,iy,ix] = risetime[i1]
-            output_data[8,iy,ix] = trans_d[i2]
-            output_data[9,iy,ix] = trans_s[i2]
-            output_data[10,iy,ix] = trans_n[i2]
-            output_data[11,iy,ix] = bsc_min[i2]
-            output_data[12,iy,ix] = post_avg[i2]
-            output_data[13,iy,ix] = post_min[i2]
-            output_data[14,iy,ix] = post_max[i2]
-            output_data[15,iy,ix] = risetime[i2]
+            dst_data[0,iy,ix] = trans_d[i1]
+            dst_data[1,iy,ix] = trans_s[i1]
+            dst_data[2,iy,ix] = trans_n[i1]
+            dst_data[3,iy,ix] = bsc_min[i1]
+            dst_data[4,iy,ix] = post_avg[i1]
+            dst_data[5,iy,ix] = post_min[i1]
+            dst_data[6,iy,ix] = post_max[i1]
+            dst_data[7,iy,ix] = risetime[i1]
+            dst_data[8,iy,ix] = trans_d[i2]
+            dst_data[9,iy,ix] = trans_s[i2]
+            dst_data[10,iy,ix] = trans_n[i2]
+            dst_data[11,iy,ix] = bsc_min[i2]
+            dst_data[12,iy,ix] = post_avg[i2]
+            dst_data[13,iy,ix] = post_min[i2]
+            dst_data[14,iy,ix] = post_max[i2]
+            dst_data[15,iy,ix] = risetime[i2]
         else:
-            output_data[0,iy,ix] = trans_d[0]
-            output_data[1,iy,ix] = trans_s[0]
-            output_data[2,iy,ix] = trans_n[0]
-            output_data[3,iy,ix] = bsc_min[0]
-            output_data[4,iy,ix] = post_avg[0]
-            output_data[5,iy,ix] = post_min[0]
-            output_data[6,iy,ix] = post_max[0]
-            output_data[7,iy,ix] = risetime[0]
+            dst_data[0,iy,ix] = trans_d[0]
+            dst_data[1,iy,ix] = trans_s[0]
+            dst_data[2,iy,ix] = trans_n[0]
+            dst_data[3,iy,ix] = bsc_min[0]
+            dst_data[4,iy,ix] = post_avg[0]
+            dst_data[5,iy,ix] = post_min[0]
+            dst_data[6,iy,ix] = post_max[0]
+            dst_data[7,iy,ix] = risetime[0]
         #flag = True
         #if flag:
         #    break
     #if flag:
     #    break
 
-comments = {}
-comments['tmin'] = '{:%Y%m%d}'.format(dmin)
-comments['tmax'] = '{:%Y%m%d}'.format(dmax)
-comments['tref'] = '{:%Y%m%d}'.format(dref)
-comments['trans_n_max'] = '{:.1f}'.format(trans_n_max)
-comments['bsc_min_max'] = '{:.1f}'.format(bsc_min_max)
-comments['post_min_min'] = '{:.1f}'.format(post_min_min)
-comments['post_avg_min'] = '{:.1f}'.format(post_avg_min)
-comments['risetime_max'] = '{:.1f}'.format(risetime_max)
-comments['offset'] = '{:.4f}'.format(offset)
-out_fnam = 'ref_{:%Y%m%d}_{:%Y%m%d}.tif'.format(dmin,dmax)
 drv = gdal.GetDriverByName('GTiff')
-ds = drv.Create(out_fnam,nx,ny,nb,gdal.GDT_Float32)
-ds.SetGeoTransform(data_trans)
-srs = osr.SpatialReference()
-srs.ImportFromEPSG(data_epsg)
-ds.SetProjection(srs.ExportToWkt())
-ds.SetMetadata(comments)
-band_name = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
-for i in range(nb):
+ds = drv.Create(args.dst_fnam,dst_nx,dst_ny,dst_nb,gdal.GDT_Float32)
+ds.SetProjection(dst_prj)
+ds.SetGeoTransform(dst_trans)
+ds.SetMetadata(dst_meta)
+for i in range(dst_nb):
     band = ds.GetRasterBand(i+1)
-    band.WriteArray(output_data[i])
-    band.SetDescription(band_name[i])
-band.SetNoDataValue(np.nan) # The TIFFTAG_GDAL_NODATA only support one value per dataset
+    band.WriteArray(dst_data[i])
+    band.SetDescription(dst_band[i])
+band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
 ds.FlushCache()
 ds = None # close dataset
