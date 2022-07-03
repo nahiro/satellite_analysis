@@ -14,11 +14,16 @@ from datetime import datetime
 import numpy as np
 from argparse import ArgumentParser,RawTextHelpFormatter
 
+# Constants
+HOME = os.environ.get('HOME')
+if HOME is None:
+    HOME = os.environ.get('USERPROFILE')
+
 # Default values
 TMIN = '20200216'
 TMAX = '20200730'
 DATDIR = '.'
-MASK_FNAM = '/home/naohiro/Work/SATREPS/Transplanting_date/Cihea/paddy_mask.tif'
+MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
 PERIOD_NUM = 0
 
 # Read options
