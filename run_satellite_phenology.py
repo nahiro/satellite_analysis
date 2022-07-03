@@ -13,15 +13,17 @@ class Phenology(Satellite_Process):
         # Start process
         super().run()
 
-        # Check files
-        if not os.path.exists(self.values['inp_fnam']):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['inp_fnam']))
-        trg_bnam = '{}_{}'.format(self.current_block,self.current_date)
-        wrk_dir = os.path.join(self.drone_analysis,self.proc_name)
-        if not os.path.exists(wrk_dir):
-            os.makedirs(wrk_dir)
-        if not os.path.isdir(wrk_dir):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
+        # Check files/folders
+        start_dtim = datetime.strptime(self.start_date,self.date_fmt)
+        end_dtim = datetime.strptime(self.end_date,self.date_fmt)
+        first_dtim = datetime.strptime(self.first_date,self.date_fmt)
+        last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
+        if not os.path.exists(self.s2_analysis):
+            os.makedirs(self.s2_analysis)
+        if not os.path.isdir(self.s2_analysis):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
+
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
