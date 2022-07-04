@@ -128,7 +128,7 @@ if args.debug:
     dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
     dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
-    dst_band = args.param
+dst_band = args.param
 src_band_index = {}
 dst_band_index = {}
 for param in args.param:
