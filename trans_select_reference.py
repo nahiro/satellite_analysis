@@ -110,7 +110,7 @@ for year in years:
         if np.abs(tofs-args.offset) > 1.0e-6:
             raise ValueError('Error, tofs={}, args.offset={}'.format(tofs,args.offset))
         if tmin < dmax and tmax > dmin:
-            sys.stderr.write('{} {}\n'.format(tmin,tmax))
+            sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(f,tmin,tmax))
             fnams.append(fnam)
             tmins.append(tmin)
             tmaxs.append(tmax)
