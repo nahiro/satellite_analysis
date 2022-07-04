@@ -165,6 +165,7 @@ for fnam in fnams:
 src_data = np.array(src_data)
 cnd = (src_data[:,0,:,:] < nmin-1.0e-4) | (src_data[:,0,:,:] > nmax+1.0e-4)
 src_data[:,0,:,:][cnd] = np.nan
+ndat = len(src_data)
 
 dst_nx = src_nx
 dst_ny = src_ny
@@ -195,7 +196,7 @@ for iy in range(src_ny):
         stmp = dstrs[isrt]
         inds = None
         i0 = 0
-        while i0 < len(data):
+        while i0 < ndat:
             if not np.isnan(dtmp[i0,0]):
                 inds = [[i0]]
                 break
@@ -204,7 +205,7 @@ for iy in range(src_ny):
             continue
         #if i0 != 0:
         #    print(i0)
-        for idat in range(i0+1,len(data)):
+        for idat in range(i0+1,ndat):
             if np.isnan(dtmp[idat,0]):
                 continue
             elif np.abs(dtmp[idat,0]-dtmp[inds[-1][0],0]) > 2.0:
