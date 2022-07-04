@@ -23,13 +23,11 @@ if HOME is None:
 TMIN = '20200216'
 TMAX = '20200730'
 DATDIR = os.curdir
-MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-r','--ref_fnam',default=None,help='Reference file name (%(default)s)')
 parser.add_argument('-d','--dst_fnam',default=None,help='Destination file name (%(default)s)')
-parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 args = parser.parse_args()
@@ -41,23 +39,11 @@ if args.dst_fnam is None:
 dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 
-ds = gdal.Open(args.mask_fnam)
-mask_nx = ds.RasterXSize
-mask_ny = ds.RasterYSize
-mask_nb = ds.RasterCount
-if mask_nb != 1:
-    raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_fnam))
-mask_shape = (mask_ny,mask_nx)
-mask = ds.ReadAsArray().reshape(mask_shape)
-ds = None
-
 ds = gdal.Open(args.ref_fnam)
 ref_nx = ds.RasterXSize
 ref_ny = ds.RasterYSize
 ref_nb = ds.RasterCount
 ref_shape = (ref_ny,ref_nx)
-if ref_shape != mask_shape:
-    raise ValueError('Error, ref_shape={}, mask_shape={}'.format(ref_shape,mask_shape))
 ref_prj = ds.GetProjection()
 ref_trans = ds.GetGeoTransform()
 ref_meta = ds.GetMetadata()
@@ -84,8 +70,6 @@ for iy in range(ref_ny):
     #if iy%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iy,ref_ny))
     for ix in range(ref_nx):
-        #if mask[iy,ix] < 0.5:
-        #    continue
         dtmp = ref_data[0,max(iy-5,0):min(iy+6,ref_ny),max(ix-5,0):min(ix+6,ref_nx)].copy()
         ntmp = (~np.isnan(dtmp)).sum()
         if ntmp < 10:

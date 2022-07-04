@@ -186,8 +186,8 @@ for iy in range(src_ny):
     #if iy%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iy,src_ny))
     for ix in range(src_nx):
-        #if mask[iy,ix] < 0.5:
-        #    continue
+        if mask[iy,ix] < 0.5:
+            continue
         if np.isnan(stat_data[0,iy,ix]) or stat_data[4,iy,ix] < args.rthr:
             continue
         isrt = np.argsort(src_data[:,0,iy,ix])
