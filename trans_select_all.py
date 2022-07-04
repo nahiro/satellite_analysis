@@ -142,11 +142,17 @@ for fnam in fnams:
     tmp_trans = ds.GetGeoTransform()
     tmp_data = ds.ReadAsArray()
     if src_shape is None:
+        src_nx = tmp_nx
+        src_ny = tmp_ny
         src_shape = tmp_shape
         if src_shape != mask_shape:
             raise ValueError('Error, src_shape={}, mask_shape={}'.format(src_shape,mask_shape))
     elif tmp_shape != src_shape:
         raise ValueError('Error, tmp_shape={}, src_shape={}'.format(tmp_shape,src_shape))
+    if src_nb is None:
+        src_nb = tmp_nb
+    elif tmp_nb != src_nb:
+        raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
     if src_prj is None:
         src_prj = tmp_prj
     elif tmp_prj != src_prj:
@@ -170,7 +176,7 @@ dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
-dst_meta['offset'] = '{:.4f}'.format(offset)
+dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
 
@@ -181,9 +187,9 @@ for iy in range(src_ny):
     for ix in range(src_nx):
         #if mask[iy,ix] < 0.5:
         #    continue
-        if np.isnan(dsta[0,iy,ix]) or dsta[4,iy,ix] < rthr:
+        if np.isnan(stat_data[0,iy,ix]) or stat_data[4,iy,ix] < args.rthr:
             continue
-        isrt = np.argsort(data[:,0,iy,ix])
+        isrt = np.argsort(src_data[:,0,iy,ix])
         dtmp = src_data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,reserved
         ttmp = tvals[isrt]
         stmp = dstrs[isrt]
@@ -273,7 +279,7 @@ for iy in range(src_ny):
         post_min = post_min[cnd]
         post_max = post_max[cnd]
         risetime = risetime[cnd]
-        dt = np.abs(trans_d-dsta[0,iy,ix])
+        dt = np.abs(trans_d-stat_data[0,iy,ix])
         cnd = dt < 30.1
         ncnd = cnd.sum()
         if ncnd < 1:
@@ -289,7 +295,7 @@ for iy in range(src_ny):
         risetime = risetime[cnd]
         dt = []
         for tv in tvals_d:
-            dt.append(np.nanmin(np.abs(tv-dsta[0,iy,ix])))
+            dt.append(np.nanmin(np.abs(tv-stat_data[0,iy,ix])))
         dt = np.array(dt)
         isrt = np.argsort(dt)
         if ncnd > 1:

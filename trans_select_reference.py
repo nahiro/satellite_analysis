@@ -134,11 +134,17 @@ for fnam in fnams:
     tmp_trans = ds.GetGeoTransform()
     tmp_data = ds.ReadAsArray()
     if src_shape is None:
+        src_nx = tmp_nx
+        src_ny = tmp_ny
         src_shape = tmp_shape
         if src_shape != mask_shape:
             raise ValueError('Error, src_shape={}, mask_shape={}'.format(src_shape,mask_shape))
     elif tmp_shape != src_shape:
         raise ValueError('Error, tmp_shape={}, src_shape={}'.format(tmp_shape,src_shape))
+    if src_nb is None:
+        src_nb = tmp_nb
+    elif tmp_nb != src_nb:
+        raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
     if src_prj is None:
         src_prj = tmp_prj
     elif tmp_prj != src_prj:
@@ -178,7 +184,7 @@ for iy in range(src_ny):
     for ix in range(src_nx):
         if mask_data[iy,ix] < 0.5:
             continue
-        isrt = np.argsort(data[:,0,iy,ix])
+        isrt = np.argsort(src_data[:,0,iy,ix])
         dtmp = src_data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,risetime
         ttmp = tvals[isrt]
         stmp = dstrs[isrt]
