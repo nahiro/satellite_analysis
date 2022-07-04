@@ -34,6 +34,7 @@ class Phenology(Satellite_Process):
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
         command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
+        command += ' --dst_fnam "{}"'.format(os.path.join(self.s1_analysis,'planting','ref_{:%Y%m%d}_{:%Y%m%d}.tif'.format(start_dtim,end_dtim)))
         command += ' --mask_fnam "{}"'.format(mask_fnam)
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
         command += ' --tmax {:%Y%m%d}'.format(end_dtim)

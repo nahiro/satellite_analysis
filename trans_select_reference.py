@@ -37,6 +37,7 @@ OFFSET = -9.0       # day
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
+parser.add_argument('-O','--dst_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
@@ -48,6 +49,8 @@ parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min p
 parser.add_argument('--risetime_max',default=RISETIME_MAX,type=float,help='Max risetime in day (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 args = parser.parse_args()
+if args.dst_fnam is None:
+    raise ValueError('Error, args.dst_fnam={}'.format(args.dst_fnam))
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
