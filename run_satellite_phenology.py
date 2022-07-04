@@ -70,16 +70,16 @@ class Phenology(Satellite_Process):
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
         command += ' --tmax {:%Y%m%d}'.format(end_dtim)
         #command += ' --tref {:%Y%m%d}'.format(pref_dtim)
-        #if not np.isnan(self.values['trans_thr3'][0]):
-        #    command += ' --trans_n_max {}'.format(self.values['trans_thr3'][0])
-        if not np.isnan(self.values['trans_thr1'][0]):
-            command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
-        #if not np.isnan(self.values['trans_thr1'][2]):
-        #    command += ' --post_min_min {}'.format(self.values['trans_thr1'][2])
-        if not np.isnan(self.values['trans_thr1'][3]):
-            command += ' --post_avg_min {}'.format(self.values['trans_thr1'][3])
-        #if not np.isnan(self.values['trans_thr3'][1]):
-        #    command += ' --risetime_max {}'.format(self.values['trans_thr3'][1])
+        if not np.isnan(self.values['trans_thr4'][0]):
+            command += ' --trans_n_max {}'.format(self.values['trans_thr4'][0])
+        if not np.isnan(self.values['trans_thr2'][0]):
+            command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
+        if not np.isnan(self.values['trans_thr2'][2]):
+            command += ' --post_min_min {}'.format(self.values['trans_thr2'][2])
+        if not np.isnan(self.values['trans_thr2'][3]):
+            command += ' --post_avg_min {}'.format(self.values['trans_thr2'][3])
+        if not np.isnan(self.values['trans_thr4'][1]):
+            command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
         self.run_command(command,message='<<< Select planting >>>')
 
         # Finish process

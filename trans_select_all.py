@@ -34,16 +34,19 @@ RTHR = 0.02
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
-parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
+parser.add_argument('-O','--dst_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(default)s)')
 parser.add_argument('--stat_fnam',default=STAT_FNAM,help='Stat file name (%(default)s)')
+parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 parser.add_argument('--rthr',default=RTHR,type=float,help='Min reference density (%(default)s)')
 args = parser.parse_args()
+if args.dst_fnam is None:
+    raise ValueError('Error, args.dst_fnam={}'.format(args.dst_fnam))
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
@@ -60,6 +63,7 @@ dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
+years = np.arange(dmin.year,dmax.year+1,1)
 
 ds = gdal.Open(args.mask_fnam)
 mask_nx = ds.RasterXSize
@@ -180,13 +184,14 @@ dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
+dst_nodata = np.nan
 
 flag = False
 for iy in range(src_ny):
     #if iy%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iy,src_ny))
     for ix in range(src_nx):
-        if mask[iy,ix] < 0.5:
+        if mask_data[iy,ix] < 0.5:
             continue
         if np.isnan(stat_data[0,iy,ix]) or stat_data[4,iy,ix] < args.rthr:
             continue
