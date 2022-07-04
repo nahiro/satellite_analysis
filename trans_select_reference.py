@@ -27,6 +27,12 @@ TMAX = '20200730'
 TREF = '20200501'
 DATDIR = os.path.join(HOME,'Sentinel-1_Analysis','planting')
 MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
+TRANS_N_MAX = 4.0   # day
+BSC_MIN_MAX = -18.0 # dB
+POST_MIN_MIN = -0.6 # dB
+POST_AVG_MIN = 2.2  # dB
+RISETIME_MAX = 30.0 # day
+OFFSET = -9.0       # day
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -35,6 +41,12 @@ parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(defa
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--trans_n_max',default=TRANS_N_MAX,type=float,help='Max |trans_n-trans_d| in day (%(default)s)')
+parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
+parser.add_argument('--post_min_min',default=POST_MIN_MIN,type=float,help='Min post_min in dB (%(default)s)')
+parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
+parser.add_argument('--risetime_max',default=RISETIME_MAX,type=float,help='Max risetime in day (%(default)s)')
+parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 args = parser.parse_args()
 
 def all_close(a,b,rtol=0.01,atol=1.0):
@@ -56,16 +68,14 @@ nmax = date2num(dmax)
 trans_ref = date2num(dref)
 years = np.arange(dmin.year,dmax.year+1,1)
 
-trans_n_max = 4.0
-bsc_min_max = -18.0
-post_min_min = -0.6
-post_avg_min = 2.2
-risetime_max = 30.0
-offset = -9.0 # day
-
 ds = gdal.Open(args.mask_fnam)
-mask = ds.ReadAsArray()
-mask_shape = mask.shape
+mask_nx = ds.RasterXSize
+mask_ny = ds.RasterYSize
+mask_nb = ds.RasterCount
+if mask_nb != 1:
+    raise ValueError('Error, mask_nb={}'.format(mask_nb))
+mask_shape = (mask_ny,mask_nx)
+mask_data = ds.ReadAsArray().reshape(mask_shape)
 ds = None
 
 fnams = []
@@ -93,6 +103,9 @@ for year in years:
         #t = datetime.strptime(dstr,'%Y%m%d')
         tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
         tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+        tofs = data_info['offset']
+        if np.abs(tofs-args.offset) > 1.0e-6:
+            raise ValueError('Error, tofs={}, args.offset={}'.format(tofs,args.offset))
         if tmin < dmax and tmax > dmin:
             sys.stderr.write('{} {}\n'.format(tmin,tmax))
             fnams.append(fnam)
@@ -146,12 +159,12 @@ dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
 dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
-dst_meta['trans_n_max'] = '{:.1f}'.format(trans_n_max)
-dst_meta['bsc_min_max'] = '{:.1f}'.format(bsc_min_max)
-dst_meta['post_min_min'] = '{:.1f}'.format(post_min_min)
-dst_meta['post_avg_min'] = '{:.1f}'.format(post_avg_min)
-dst_meta['risetime_max'] = '{:.1f}'.format(risetime_max)
-dst_meta['offset'] = '{:.4f}'.format(offset)
+dst_meta['trans_n_max'] = '{:.1f}'.format(args.trans_n_max)
+dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
+dst_meta['post_min_min'] = '{:.1f}'.format(args.post_min_min)
+dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
+dst_meta['risetime_max'] = '{:.1f}'.format(args.risetime_max)
+dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
 dst_nodata = np.nan
@@ -161,16 +174,16 @@ for iy in range(src_ny):
     #if iy%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iy,src_ny))
     for ix in range(src_nx):
-        if mask[iy,ix] < 0.5:
+        if mask_data[iy,ix] < 0.5:
             continue
         isrt = np.argsort(data[:,0,iy,ix])
-        dtmp = data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,risetime
+        dtmp = src_data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,risetime
         ttmp = tvals[isrt]
         stmp = dstrs[isrt]
         inds = None
         i0 = 0
         while i0 < len(data):
-            if not np.isnan(dtmp[i0,0]) and not np.isnan(dtmp[i0,2]) and not np.isnan(dtmp[i0,7]) and (np.abs(dtmp[i0,2]-dtmp[i0,0]) < trans_n_max):
+            if not np.isnan(dtmp[i0,0]) and not np.isnan(dtmp[i0,2]) and not np.isnan(dtmp[i0,7]) and (np.abs(dtmp[i0,2]-dtmp[i0,0]) < args.trans_n_max):
                 inds = [[i0]]
                 break
             i0 += 1
@@ -185,7 +198,7 @@ for iy in range(src_ny):
                 continue
             elif np.isnan(dtmp[idat,7]):
                 continue
-            elif np.abs(dtmp[idat,2]-dtmp[idat,0]) > trans_n_max:
+            elif np.abs(dtmp[idat,2]-dtmp[idat,0]) > args.trans_n_max:
                 continue
             elif np.abs(dtmp[idat,0]-dtmp[inds[-1][0],0]) > 2.0:
                 inds.append([idat])
@@ -237,11 +250,11 @@ for iy in range(src_ny):
         post_min = np.array(post_min)
         post_max = np.array(post_max)
         risetime = np.array(risetime)
-        cnd1 = np.abs(trans_n-trans_d) < trans_n_max
-        cnd2 = bsc_min < bsc_min_max
-        cnd3 = post_min > post_min_min
-        cnd4 = post_avg > post_avg_min
-        cnd5 = risetime < risetime_max
+        cnd1 = np.abs(trans_n-trans_d) < args.trans_n_max
+        cnd2 = bsc_min < args.bsc_min_max
+        cnd3 = post_min > args.post_min_min
+        cnd4 = post_avg > args.post_avg_min
+        cnd5 = risetime < args.risetime_max
         cnd = cnd1 & cnd2 & cnd3 & cnd4 & cnd5
         ncnd = cnd.sum()
         if ncnd < 1:
