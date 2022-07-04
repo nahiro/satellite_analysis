@@ -25,7 +25,7 @@ if HOME is None:
 TMIN = '20200216'
 TMAX = '20200730'
 TREF = '20200501'
-DATDIR = os.path.join(HOME,'Sentinel-1_Analysis','planting')
+DATDIR = os.path.join(HOME,'Work','Sentinel-1_Analysis','planting')
 MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
 TRANS_N_MAX = 4.0   # day
 BSC_MIN_MAX = -18.0 # dB
@@ -155,6 +155,8 @@ src_data[:,0,:,:][cnd] = np.nan
 dst_nx = src_nx
 dst_ny = src_ny
 dst_nb = 8*2
+dst_prj = src_prj
+dst_trans = src_trans
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)

@@ -56,12 +56,12 @@ ref_nx = ds.RasterXSize
 ref_ny = ds.RasterYSize
 ref_nb = ds.RasterCount
 ref_shape = (ref_ny,ref_nx)
+if ref_shape != mask_shape:
+    raise ValueError('Error, ref_shape={}, mask_shape={}'.format(ref_shape,mask_shape))
 ref_prj = ds.GetProjection()
 ref_trans = ds.GetGeoTransform()
 ref_meta = ds.GetMetadata()
 ref_data = ds.ReadAsArray()
-if ref_shape != mask_shape:
-    raise ValueError('Error, ref_shape={}, mask_shape={}'.format(ref_shape,mask_shape))
 ds = None
 ref_tmin = ref_meta['tmin']
 ref_tmax = ref_meta['tmax']
