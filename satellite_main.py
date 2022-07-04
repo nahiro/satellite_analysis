@@ -70,6 +70,13 @@ def set_title(pnam):
     if proc_interp.center_var is not None:
         proc_interp.center_var[proc_pnam][0].set(data_tmin)
         proc_interp.center_var[proc_pnam][1].set(data_tmax)
+    # phenology
+    dt = (end_dtim-start_dtim).total_seconds()
+    trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
+    proc_pnam = 'trans_pref'
+    proc_phenology.values[proc_pnam] = trans_pref
+    if proc_phenology.center_var is not None:
+        proc_phenology.center_var[proc_pnam].set(trans_pref)
     # extract
     proc_pnam = 'obs_fnam'
     proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))

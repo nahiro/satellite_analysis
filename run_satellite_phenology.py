@@ -24,6 +24,13 @@ class Phenology(Satellite_Process):
         if not os.path.isdir(self.s2_analysis):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
 
+        mask_fnam = os.path.join(self.s1_analysis,'paddy_mask.tif')
+        command = self.python_path
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
+        command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
+        command += ' --mask_fnam "{}"'.format(mask_fnam)
+        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+        command += ' --tmax {:%Y%m%d}'.format(end_dtim)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))

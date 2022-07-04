@@ -183,6 +183,7 @@ config_defaults.update({
 'phenology.assess_fnam'               : '',
 'phenology.trans_select'              : 'Around Probable Planting',
 'phenology.trans_indicator'           : '\u03C3 Min',
+'phenology.trans_pref'                : '',
 'phenology.trans_thr1'                : [-18.0,np.nan,-0.6,2.2,np.nan],
 'phenology.trans_thr2'                : [-13.0,np.nan,np.nan,0.0,np.nan],
 'phenology.trans_thr3'                : [4.0,30.0],
@@ -333,7 +334,11 @@ for proc in pnams:
         elif modules[proc].param_types[pnam] in ['float_list','float_select_list']:
             modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan'))
         else:
-            modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)))
+            v = config[proc].get('{}.{}'.format(proc,pnam))
+            if len(v) < 1:
+                modules[proc].values[pnam] = v
+            else:
+                modules[proc].values[pnam] = eval(v)
     modules[proc].python_path = config[proc].get('{}.python_path'.format(proc))
     modules[proc].scr_dir = config[proc].get('{}.scr_dir'.format(proc))
     modules[proc].date_fmt = date_fmt

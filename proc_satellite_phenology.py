@@ -12,6 +12,7 @@ proc_phenology.pnams.append('harvest_fnam')
 proc_phenology.pnams.append('assess_fnam')
 proc_phenology.pnams.append('trans_select')
 proc_phenology.pnams.append('trans_indicator')
+proc_phenology.pnams.append('trans_pref')
 proc_phenology.pnams.append('trans_thr1')
 proc_phenology.pnams.append('trans_thr2')
 proc_phenology.pnams.append('trans_thr3')
@@ -28,6 +29,7 @@ proc_phenology.params['harvest_fnam'] = 'Harvesting Date File'
 proc_phenology.params['assess_fnam'] = 'Assessment Date File'
 proc_phenology.params['trans_select'] = 'Planting Date Selection'
 proc_phenology.params['trans_indicator'] = 'Probable Planting Indicator'
+proc_phenology.params['trans_pref'] = 'Preferable Planting Date'
 proc_phenology.params['trans_thr1'] = '\u03C3 Thres. for Prob. Planting (dB)'
 proc_phenology.params['trans_thr2'] = '\u03C3 Thres. for Improb. Planting (dB)'
 proc_phenology.params['trans_thr3'] = 'T Thres. for Prob. Planting (day)'
@@ -44,6 +46,7 @@ proc_phenology.param_types['harvest_fnam'] = 'string'
 proc_phenology.param_types['assess_fnam'] = 'string'
 proc_phenology.param_types['trans_select'] = 'string'
 proc_phenology.param_types['trans_indicator'] = 'string'
+proc_phenology.param_types['trans_pref'] = 'date'
 proc_phenology.param_types['trans_thr1'] = 'float_list'
 proc_phenology.param_types['trans_thr2'] = 'float_list'
 proc_phenology.param_types['trans_thr3'] = 'float_list'
@@ -68,6 +71,7 @@ proc_phenology.defaults['harvest_fnam'] = ''
 proc_phenology.defaults['assess_fnam'] = ''
 proc_phenology.defaults['trans_select'] = 'Around Probable Planting'
 proc_phenology.defaults['trans_indicator'] = '\u03C3 Min'
+proc_phenology.defaults['trans_pref'] = ''
 proc_phenology.defaults['trans_thr1'] = [-18.0,np.nan,-0.6,2.2,np.nan]
 proc_phenology.defaults['trans_thr2'] = [-13.0,np.nan,np.nan,0.0,np.nan]
 proc_phenology.defaults['trans_thr3'] = [4.0,30.0]
@@ -104,6 +108,7 @@ proc_phenology.input_types['harvest_fnam'] = 'ask_file'
 proc_phenology.input_types['assess_fnam'] = 'ask_file'
 proc_phenology.input_types['trans_select'] = 'string_select'
 proc_phenology.input_types['trans_indicator'] = 'string_select'
+proc_phenology.input_types['trans_pref'] = 'date'
 proc_phenology.input_types['trans_thr1'] = 'float_list'
 proc_phenology.input_types['trans_thr2'] = 'float_list'
 proc_phenology.input_types['trans_thr3'] = 'float_list'
