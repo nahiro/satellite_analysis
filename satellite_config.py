@@ -192,6 +192,8 @@ config_defaults.update({
 'phenology.atc_params'                : [90.0,10.0],
 'phenology.atc_ithrs'                 : [30,35],
 'phenology.atc_nthrs'                 : [-0.0005,-0.0005,-0.0003],
+'phenology.python_path'               : python_path,
+'phenology.scr_dir'                   : scr_dir,
 'phenology.middle_left_frame_width'   : 1000,
 #----------- extract -----------
 'extract.obs_fnam'                    : os.path.join(main_field_data,'observation.xls'),

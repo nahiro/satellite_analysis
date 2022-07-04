@@ -138,7 +138,7 @@ class Geocor(Satellite_Process):
                                                                                           self.values['trg_subset'][0],self.values['trg_subset'][2])
                 command += ' --resolution {}'.format(int(self.values['trg_pixel']+0.5))
                 command += ' --geotiff'
-                call(command,shell=True)
+                self.run_command(command,message='<<< Subset for {} >>>'.format(dstr))
                 if unzip_flag:
                     shutil.rmtree(rnam)
                 # Remove cache
@@ -242,7 +242,7 @@ class Geocor(Satellite_Process):
                 command += ' --feps 0.01'
                 command += ' --exp'
                 try:
-                    self.run_command(command,message='Find GCPs for {}'.format(dstr))
+                    self.run_command(command,message='<<< Find GCPs for {} >>>'.format(dstr))
                 except Exception:
                     continue
                 x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
@@ -269,7 +269,7 @@ class Geocor(Satellite_Process):
                 command += ' --replace'
                 command += ' --exp'
                 try:
-                    self.run_command(command,message='Select GCPs for {}'.format(dstr))
+                    self.run_command(command,message='<<< Select GCPs for {} >>>'.format(dstr))
                 except Exception:
                     continue
                 command = self.python_path
@@ -288,7 +288,7 @@ class Geocor(Satellite_Process):
                 command += ' --minimum_number {}'.format(self.values['nmin'])
                 command += ' --optfile "{}"'.format(tmp_fnam)
                 try:
-                    self.run_command(command,message='Geometric Correction for {}'.format(dstr))
+                    self.run_command(command,message='<<< Geometric Correction for {} >>>'.format(dstr))
                 except Exception:
                     continue
             #if os.path.exists(se2_fnam):
@@ -310,7 +310,7 @@ class Geocor(Satellite_Process):
             command += ' "{}"'.format(os.path.join(self.scr_dir,'snap_bandname.py'))
             command += ' --inp_fnam "{}"'.format(l2a_fnams[0])
             command += ' --out_fnam "{}"'.format(self.values['band_fnam'])
-            self.run_command(command,message='Read band names')
+            self.run_command(command,message='<<< Read band names >>>')
         resample_fnams = []
         resample_dstrs = []
         for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
@@ -336,7 +336,7 @@ class Geocor(Satellite_Process):
                 command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
                 command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
-                self.run_command(command,message='Resampling for {}'.format(dstr))
+                self.run_command(command,message='<<< Resampling for {} >>>'.format(dstr))
             if os.path.exists(gnam):
                 resample_fnams.append(gnam)
                 resample_dstrs.append(dstr)
