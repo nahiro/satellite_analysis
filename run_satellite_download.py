@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from datetime import datetime
+from datetime import datetime,timedelta
 from glob import glob
 import numpy as np
 import pandas as pd
@@ -22,6 +22,8 @@ class Download(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        d1 = start_dtim+timedelta(days=60)
+        d2 = end_dtim+timedelta(days=240)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         l2a_dir = os.path.join(self.s2_data)
         if not os.path.exists(l2a_dir):
@@ -63,7 +65,7 @@ class Download(Satellite_Process):
                             continue
                     dstr = m.group(1)
                     d = datetime.strptime(dstr,'%Y%m%d')
-                    if d < first_dtim or d > last_dtim:
+                    if d < d1 or d > d2:
                         continue
                     df.loc[index,'fileName'] = src_fnam
                     df.loc[index,'nLayer'] = 0
