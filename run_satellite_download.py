@@ -86,13 +86,10 @@ class Download(Satellite_Process):
                 self.run_command(command,message='<<< Download Planting data ({}) >>>'.format(ystr))
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
-        """
 
         # Download Sentinel-2 L2A
         itarg = 1
         if args.dflag[itarg]:
-            sys.stderr.write('\nDownload Sentinel-2 L2A\n')
-            sys.stderr.flush()
             keys = []
             for key in [s.strip() for s in self.values['search_key'].split(',')]:
                 if key:
@@ -103,8 +100,7 @@ class Download(Satellite_Process):
             for year in data_years:
                 ystr = '{}'.format(year)
                 # Make file list
-                if os.path.exists(tmp_fnam):
-                    os.remove(tmp_fnam)
+                tmp_fnam = self.mktemp(suffix='.csv')
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
                 command += ' --drvdir {}'.format(self.values['drv_dir'])
@@ -114,8 +110,12 @@ class Download(Satellite_Process):
                 try:
                     self.run_command(command,message='<<< Make Sentinel-2 L2A list ({}) >>>'.format(ystr))
                 except Exception:
+                    if os.path.exists(tmp_fnam):
+                        os.remove(tmp_fnam)
                     continue
                 df = pd.read_csv(tmp_fnam,comment='#')
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
                 df.columns = df.columns.str.strip()
                 inds = []
                 for index,row in df.iterrows():
@@ -139,6 +139,7 @@ class Download(Satellite_Process):
                     inds.append(index)
                 if len(inds) < 1:
                     continue
+                tmp_fnam = self.mktemp(suffix='.csv')
                 df.loc[inds].to_csv(tmp_fnam,index=False)
                 # Download Data
                 command = self.python_path
@@ -150,10 +151,8 @@ class Download(Satellite_Process):
                 if self.values['oflag'][itarg]:
                     command += ' --overwrite'
                 self.run_command(command,message='<<< Download Sentinel-2 L2A ({}) >>>'.format(ystr))
-        """
-
-        #if os.path.exists(tmp_fnam):
-        #    os.remove(tmp_fnam)
+                if os.path.exists(tmp_fnam):
+                    os.remove(tmp_fnam)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
