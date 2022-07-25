@@ -124,6 +124,8 @@ def set_title(pnam):
     elif pnam in top_box:
         top_box[pnam].config(foreground='black')
     #top_err[pnam].pack(pady=(0,3),side=tk.LEFT)
+    for proc in pnams:
+        check_child(proc)
     return
 
 def change_color(pnam):
