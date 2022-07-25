@@ -89,7 +89,7 @@ class Download(Satellite_Process):
 
         # Download Sentinel-2 L2A
         itarg = 1
-        if args.dflag[itarg]:
+        if self.values['dflag'][itarg]:
             keys = []
             for key in [s.strip() for s in self.values['search_key'].split(',')]:
                 if key:
@@ -153,6 +153,60 @@ class Download(Satellite_Process):
                 self.run_command(command,message='<<< Download Sentinel-2 L2A ({}) >>>'.format(ystr))
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
+
+        # Download Sentinel-2 resample/parcel/atcor/interp
+        for i,(targ,enam) in enumerate(zip(['resample','parcel','atcor','interp'],['.tif','.csv','.csv','.csv'])):
+            itarg = i+2
+            if self.values['dflag'][itarg]:
+                data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
+                for year in data_years:
+                    ystr = '{}'.format(year)
+                    # Make file list
+                    tmp_fnam = self.mktemp(suffix='.csv')
+                    command = self.python_path
+                    command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
+                    command += ' --drvdir {}'.format(self.values['drv_dir'])
+                    command += ' --srcdir {}'.format('{}/{}'.format(self.values['{}_path'.format(target)],year))
+                    command += ' --out_csv {}'.format(tmp_fnam)
+                    command += ' --max_layer 0'
+                    try:
+                        self.run_command(command,message='<<< Make Sentinel-2 {} list ({}) >>>'.format(targ,ystr))
+                    except Exception:
+                        if os.path.exists(tmp_fnam):
+                            os.remove(tmp_fnam)
+                        continue
+                    df = pd.read_csv(tmp_fnam,comment='#')
+                    if os.path.exists(tmp_fnam):
+                        os.remove(tmp_fnam)
+                    df.columns = df.columns.str.strip()
+                    inds = []
+                    for index,row in df.iterrows():
+                        #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                        src_fnam = row['fileName']
+                        m = re.search('^('+'\d'*8+')_'+targ+enam+'$',src_fnam)
+                        if not m:
+                            continue
+                        dstr = m.group(1)
+                        d = datetime.strptime(dstr,'%Y%m%d')
+                        if d < first_dtim or d > last_dtim:
+                            continue
+                        inds.append(index)
+                    if len(inds) < 1:
+                        continue
+                    tmp_fnam = self.mktemp(suffix='.csv')
+                    df.loc[inds].to_csv(tmp_fnam,index=False)
+                    # Download Data
+                    command = self.python_path
+                    command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
+                    command += ' --drvdir {}'.format(self.values['drv_dir'])
+                    command += ' --inp_list {}'.format(tmp_fnam)
+                    command += ' --dstdir {}'.format(os.path.join(self.s2_analysis,targ,ystr))
+                    command += ' --verbose'
+                    if self.values['oflag'][itarg]:
+                        command += ' --overwrite'
+                    self.run_command(command,message='<<< Download Sentinel-2 {} ({}) >>>'.format(targ,ystr))
+                    if os.path.exists(tmp_fnam):
+                        os.remove(tmp_fnam)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))

@@ -76,7 +76,7 @@ config_defaults.update({
 'download.drv_dir'                    : drv_dir,
 'download.trans_path'                 : '/Spatial-Information/Transplanting_date/Cihea/final/v1.4',
 'download.l2a_path'                   : '/Spatial-Information/Sentinel-2/Cihea/L2A',
-'download.geocor_path'                : '/Spatial-Information/Sentinel-2/Cihea/geocor',
+'download.resample_path'              : '/Spatial-Information/Sentinel-2/Cihea/resample',
 'download.parcel_path'                : '/Spatial-Information/Sentinel-2/Cihea/parcel',
 'download.atcor_path'                 : '/Spatial-Information/Sentinel-2/Cihea/atcor',
 'download.interp_path'                : '/Spatial-Information/Sentinel-2/Cihea/interp',
