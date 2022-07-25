@@ -21,7 +21,7 @@ top_dir = os.path.join(HOME,'Work')
 if not os.path.isdir(top_dir):
     top_dir = os.path.join(HOME,'Documents')
 python_path = sys.executable
-scr_dir = os.path.join(HOME,'Script')
+scr_dir = os.path.join(HOME,'SatelliteTool')
 drv_dir = os.path.join(top_dir,'GoogleDrive')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 now_dtim = datetime.now()
