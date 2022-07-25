@@ -27,8 +27,6 @@ cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 now_dtim = datetime.now()
 main_start_date = (now_dtim-timedelta(days=230)).strftime('%Y-%m%b-%d')
 main_end_date = (now_dtim-timedelta(days=140)).strftime('%Y-%m%b-%d')
-main_first_date = (now_dtim-timedelta(days=260)).strftime('%Y-%m%b-%d')
-main_last_date = now_dtim.strftime('%Y-%m%b-%d')
 main_field_data = os.path.join(top_dir,'Field_Data','Current')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis','Current')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
@@ -48,8 +46,8 @@ config_defaults.update({
 'main.date_format'                    : 'yyyy-mm&mmm-dd',
 'main.start_date'                     : main_start_date,
 'main.end_date'                       : main_end_date,
-'main.first_date'                     : main_first_date,
-'main.last_date'                      : main_last_date,
+'main.first_date'                     : '',
+'main.last_date'                      : '',
 'main.current_block'                  : '',
 'main.current_date'                   : '',
 'main.field_data'                     : main_field_data,
@@ -272,7 +270,16 @@ date_fmt = date_format.replace('yyyy','%Y').replace('yy','%y').replace('mmm','%b
 start_date = config['main'].get('main.start_date')
 end_date = config['main'].get('main.end_date')
 first_date = config['main'].get('main.first_date')
+if first_date == '':
+    start_dtim = datetime.strptime(start_date,date_fmt)
+    first_date = (start_dtim-timedelta(days=30)).strftime(date_fmt)
 last_date = config['main'].get('main.last_date')
+if last_date == '':
+    end_dtim = datetime.strptime(end_date,date_fmt)
+    last_dtim = end_dtim+timedelta(days=140)
+    if last_dtim > now_dtim:
+        last_dtim = now_dtim
+    last_date = last_dtim.strftime(date_fmt)
 current_block = config['main'].get('main.current_block')
 current_date = config['main'].get('main.current_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
