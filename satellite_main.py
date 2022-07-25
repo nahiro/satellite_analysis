@@ -335,10 +335,7 @@ for pnam,title in zip(['planting','download','observation','field_data','drone_a
         top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
     else:
         top_var[pnam] = tk.StringVar()
-        if pnam in ['s1_analysis','s2_data','s2_analysis']:
-            top_var[pnam].set(os.path.join(eval(pnam)))
-        else:
-            top_var[pnam].set(os.path.join(eval(pnam),'Current'))
+        top_var[pnam].set(eval(pnam))
         top_box[pnam] = tk.Entry(top_center_right_cnv[pnam],textvariable=top_var[pnam])
         top_box[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=(3,0),anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
         top_box[pnam].config(validatecommand=eval('lambda:change_color("{}")'.format(pnam)),validate='focusout')
