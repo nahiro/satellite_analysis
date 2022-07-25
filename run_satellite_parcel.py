@@ -55,11 +55,11 @@ class Parcel(Satellite_Process):
                 fnam = os.path.join(dnam,f)
                 resample_fnams.append(fnam)
                 resample_dstrs.append(dstr)
-        if len(resample_dstrs) < 1:
-            return
         inds = np.argsort(resample_dstrs)#[::-1]
         resample_fnams = [resample_fnams[i] for i in inds]
         resample_dstrs = [resample_dstrs[i] for i in inds]
+        if len(resample_fnams) < 1:
+            self.print_message('No resample data for process.',print_time=False)
 
         # Calculate indices
         indices_fnams = []
