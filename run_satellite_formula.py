@@ -23,7 +23,7 @@ class Formula(Satellite_Process):
             if not os.path.exists(fnam):
                 raise IOError('{}: error, no such file >>> "{}"'.format(self.proc_name,fnam))
             fnams.append(fnam)
-        trg_bnam = '{}_{}'.format(self.current_block,self.current_date)
+        trg_bnam = '{}_{}'.format(self.obs_block,self.obs_date)
         wrk_dir = os.path.join(self.drone_analysis,self.proc_name)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)

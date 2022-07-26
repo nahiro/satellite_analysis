@@ -57,8 +57,8 @@ class Process:
         self.python_path = sys.executable
         self.scr_dir = os.path.join(HOME,'Script')
         self.date_format = 'yyyy-mm&mmm-dd'
-        self.current_block = None
-        self.current_date = None
+        self.obs_block = None
+        self.obs_date = None
         self.field_data = None
         self.drone_data = None
         self.drone_analysis = None

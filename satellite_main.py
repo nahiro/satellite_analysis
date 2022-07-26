@@ -11,24 +11,28 @@ from custom_calendar import CustomDateEntry
 from satellite_config import *
 
 def set_title(pnam):
-    start_date = top_start.get()
-    end_date = top_end.get()
-    first_date = top_first.get()
-    last_date = top_last.get()
-    block = top_cmb.get()
-    dstr = top_cde.get()
-    field_data = top_var['field_data'].get()
-    drone_analysis = top_var['drone_analysis'].get()
-    s1_analysis = top_var['s1_analysis'].get()
-    s2_data = top_var['s2_data'].get()
-    s2_analysis = top_var['s2_analysis'].get()
+    if pnam is None:
+        block = obs_block
+        dstr = obs_date
+    else:
+        start_date = top_start.get()
+        end_date = top_end.get()
+        first_date = top_first.get()
+        last_date = top_last.get()
+        block = top_cmb.get()
+        dstr = top_cde.get()
+        field_data = top_var['field_data'].get()
+        drone_analysis = top_var['drone_analysis'].get()
+        s1_analysis = top_var['s1_analysis'].get()
+        s2_data = top_var['s2_data'].get()
+        s2_analysis = top_var['s2_analysis'].get()
     for proc in pnams:
         modules[proc].start_date = start_date
         modules[proc].end_date = end_date
         modules[proc].first_date = first_date
         modules[proc].last_date = last_date
-        modules[proc].current_block = block
-        modules[proc].current_date = dstr
+        modules[proc].obs_block = block
+        modules[proc].obs_date = dstr
         modules[proc].field_data = field_data
         modules[proc].drone_analysis = drone_analysis
         modules[proc].s1_analysis = s1_analysis
@@ -105,6 +109,8 @@ def set_title(pnam):
         except Exception:
             pass
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
+    if pnam is None:
+        return
     # change color
     root.focus_set()
     if pnam == 'planting':
@@ -210,6 +216,12 @@ def exit():
     sys.exit()
     return
 
+if no_gui:
+    set_title(None)
+    for pnam in pnams:
+        if defaults[pnam]:
+            modules[pnam].run()
+    exit()
 root = tk.Tk()
 root.title('BLB Damage Estimation - Satellite version')
 root.geometry('{}x{}'.format(window_width,275+30*len(pnams)))
@@ -323,16 +335,16 @@ for pnam,title in zip(['planting','download','observation','field_data','drone_a
         style.map('top_cmb.TCombobox',
                   fieldbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],
                   selectbackground=[('!readonly','!focus','white'),('!readonly','focus','white')],)
-        if current_block != '':
-            top_cmb.set(current_block)
+        if obs_block != '':
+            top_cmb.set(obs_block)
         else:
             top_cmb.current(0)
         top_cmb.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
         top_cmb.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
         box_pnam = 'date'
         top_cde = CustomDateEntry(top_center_right_cnv[pnam],width=10,date_pattern=date_format,style='top_cde.DateEntry')
-        if current_date != '':
-            top_cde.set_date(current_date)
+        if obs_date != '':
+            top_cde.set_date(obs_date)
         top_cde.pack(ipadx=0,ipady=0,padx=(0,1),pady=(0,0),fill=tk.X,side=tk.LEFT,expand=True)
         top_cde.config(validatecommand=eval('lambda:change_color("{}")'.format(box_pnam)),validate='focusout')
     else:

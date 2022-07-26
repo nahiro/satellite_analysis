@@ -48,8 +48,8 @@ config_defaults.update({
 'main.end_date'                       : main_end_date,
 'main.first_date'                     : '',
 'main.last_date'                      : '',
-'main.current_block'                  : '',
-'main.current_date'                   : '',
+'main.obs_block'                      : '',
+'main.obs_date'                       : '',
 'main.field_data'                     : main_field_data,
 'main.drone_analysis'                 : main_drone_analysis,
 'main.s1_analysis'                    : main_s1_analysis,
@@ -65,6 +65,7 @@ config_defaults.update({
 'main.extract'                        : False,
 'main.formula'                        : False,
 'main.estimate'                       : True,
+'main.no_gui'                         : False,
 'main.window_width'                   : 650,
 'main.top_frame_height'               : 248,
 'main.left_frame_width'               : 30,
@@ -280,14 +281,15 @@ if last_date == '':
     if last_dtim > now_dtim:
         last_dtim = now_dtim
     last_date = last_dtim.strftime(date_fmt)
-current_block = config['main'].get('main.current_block')
-current_date = config['main'].get('main.current_date')
+obs_block = config['main'].get('main.obs_block')
+obs_date = config['main'].get('main.obs_date')
 field_data = os.path.normpath(config['main'].get('main.field_data'))
 drone_analysis = os.path.normpath(config['main'].get('main.drone_analysis'))
 s1_analysis = os.path.normpath(config['main'].get('main.s1_analysis'))
 s2_data = os.path.normpath(config['main'].get('main.s2_data'))
 s2_analysis = os.path.normpath(config['main'].get('main.s2_analysis'))
 browse_image = os.path.normpath(config['main'].get('main.browse_image'))
+no_gui = config['main'].getboolean('main.no_gui')
 window_width = config['main'].getint('main.window_width')
 top_frame_height = config['main'].getint('main.top_frame_height')
 left_frame_width = config['main'].getint('main.left_frame_width')
@@ -356,8 +358,8 @@ for proc in pnams:
     modules[proc].end_date = end_date
     modules[proc].first_date = first_date
     modules[proc].last_date = last_date
-    modules[proc].current_block = current_block
-    modules[proc].current_date = current_date
+    modules[proc].obs_block = obs_block
+    modules[proc].obs_date = obs_date
     modules[proc].field_data = field_data
     modules[proc].drone_analysis = drone_analysis
     modules[proc].s1_analysis = s1_analysis
