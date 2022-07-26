@@ -84,16 +84,16 @@ class Parcel(Satellite_Process):
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_indices.pdf'.format(dstr)))
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
-                        command += ' --param S{}'.format(param)
+                        command += ' --param S{}'.format(param.strip())
                 for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
                     if flag:
-                        command += ' --param {}'.format(param)
+                        command += ' --param {}'.format(param.strip())
                 for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
                     if flag:
-                        command += ' --param {}'.format(param)
+                        command += ' --param {}'.format(param.strip())
                 for band,flag in zip(self.list_labels['norm_bands'],self.values['norm_bands']):
                     if flag:
-                        command += ' --norm_band {}'.format(band)
+                        command += ' --norm_band {}'.format(band.strip())
                 command += ' --rgi_red_band {}'.format(self.values['rgi_red_band'])
                 #for value,flag in zip(self.ax1_zmin,self.values['out_refs']):
                 #    if flag:
@@ -149,13 +149,13 @@ class Parcel(Satellite_Process):
                 command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
-                        command += ' --param S{}'.format(param)
+                        command += ' --param S{}'.format(param.strip())
                 for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
                     if flag:
-                        command += ' --param {}'.format(param)
+                        command += ' --param {}'.format(param.strip())
                 for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
                     if flag:
-                        command += ' --param {}'.format(param)
+                        command += ' --param {}'.format(param.strip())
                 command += ' --rmax 0.01'
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_parcel.pdf'.format(dstr)))
                 #for value,flag in zip(self.ax1_zmin[2],self.values['out_refs']):
