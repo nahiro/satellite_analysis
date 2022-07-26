@@ -11,6 +11,15 @@ from custom_calendar import CustomDateEntry
 from satellite_config import *
 
 def set_title(pnam):
+    global start_date
+    global end_date
+    global first_date
+    global last_date
+    global field_data
+    global drone_analysis
+    global s1_analysis
+    global s2_data
+    global s2_analysis
     if pnam is None:
         block = obs_block
         dstr = obs_date
