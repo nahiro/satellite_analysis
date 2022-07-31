@@ -246,6 +246,7 @@ class Geocor(Satellite_Process):
                 except Exception:
                     continue
                 if not os.path.exists(dat_fnam):
+                    self.print_message('No GCPs found.',print_time=False)
                     continue
                 x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
                 indx0 = np.arange(r.size)[(r90<self.values['rmax'])]
