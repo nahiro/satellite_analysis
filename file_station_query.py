@@ -186,14 +186,14 @@ if query_folder(args.srcdir) is None:
 qs = [args.srcdir]
 ns = [0]
 if args.out_csv is None:
-    sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
+    sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,srcPath,md5Checksum\n')
 else:
     if args.append:
         with open(args.out_csv,'a') as fp:
             fp.write('# {}\n'.format(args.srcdir))
     else:
         with open(args.out_csv,'w') as fp:
-            fp.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
+            fp.write('fileName,nLayer,fileSize,modifiedDate,srcPath,md5Checksum\n')
             fp.write('# {}\n'.format(args.srcdir))
 while len(qs) != 0:
     srcdir = qs.pop(0)
@@ -204,6 +204,8 @@ while len(qs) != 0:
             continue
         if srcdir == '':
             fnam = f
+        elif srcdir == '/':
+            fnam = srcdir+f
         else:
             fnam = srcdir+'/'+f
         v = query_file(fnam)
@@ -218,7 +220,10 @@ while len(qs) != 0:
         if args.max_layer is not None and nlayer >= args.max_layer:
             continue
         if srcdir == '':
-            qs.append(d)
+            dnam = d
+        elif srcdir == '/':
+            dnam = srcdir+d
         else:
-            qs.append(srcdir+'/'+d)
+            dnam = srcdir+'/'+d
+        qs.append(dnam)
         ns.append(nlayer+1)
