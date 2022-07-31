@@ -181,10 +181,9 @@ if args.logging:
     log.addHandler(stream)
     HTTPConnection.debuglevel = 1
 
-"""
-src_id = folders[args.srcdir]['id']
-qs = [src_id]
-ds = ['']
+if query_folder(args.srcdir) is None:
+    sys.exit()
+qs = [args.srcdir]
 ns = [0]
 if args.out_csv is None:
     sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
@@ -197,30 +196,29 @@ else:
             fp.write('fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum\n')
             fp.write('# {}\n'.format(args.srcdir))
 while len(qs) != 0:
-    src_id = qs.pop(0)
-    srcdir = ds.pop(0)
+    srcdir = qs.pop(0)
     nlayer = ns.pop(0)
-    fs = drive.ListFile({'q':'"{}" in parents and trashed = false'.format(src_id)}).GetList()
+    ds,fs = list_file(srcdir)
     for f in fs:
-        if f['mimeType'] == 'application/vnd.google-apps.folder':
-            if args.max_layer is not None and nlayer >= args.max_layer:
-                continue
-            qs.append(f['id'])
-            if srcdir == '':
-                ds.append(f['title'])
-            else:
-                ds.append(srcdir+'/'+f['title'])
-            ns.append(nlayer+1)
+        if args.max_layer is not None and nlayer > args.max_layer:
+            continue
+        if srcdir == '':
+            fnam = f
         else:
-            if args.max_layer is not None and nlayer > args.max_layer:
-                continue
-            if srcdir == '':
-                fnam = f['title']
-            else:
-                fnam = srcdir+'/'+f['title']
-            if args.out_csv is None:
-                sys.stdout.write('{},{},{},{},{},{}\n'.format(fnam,nlayer,f['fileSize'],f['modifiedDate'],f['id'],f['md5Checksum']))
-            else:
-                with open(args.out_csv,'a') as fp:
-                    fp.write('{},{},{},{},{},{}\n'.format(fnam,nlayer,f['fileSize'],f['modifiedDate'],f['id'],f['md5Checksum']))
-"""
+            fnam = srcdir+'/'+f
+        v = query_file(fnam)
+        if v is None:
+            continue
+        elif args.out_csv is None:
+            sys.stdout.write('{},{},{},{},{},{}\n'.format(f,nlayer,v[1],v[2],srcdir,v[3]))
+        else:
+            with open(args.out_csv,'a') as fp:
+                fp.write('{},{},{},{},{},{}\n'.format(f,nlayer,v[1],v[2],srcdir,v[3]))
+    for d in ds:
+        if args.max_layer is not None and nlayer >= args.max_layer:
+            continue
+        if srcdir == '':
+            qs.append(d)
+        else:
+            qs.append(srcdir+'/'+d)
+        ns.append(nlayer+1)
