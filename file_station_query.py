@@ -40,22 +40,6 @@ args = parser.parse_args()
 if args.out_csv is not None:
     args.out_csv = os.path.abspath(args.out_csv)
 
-def get_size(fnam):
-    s = 'None'
-    if os.path.exists(fnam):
-        size = os.path.getsize(fnam)
-        if size > TB:
-            s = '{:.2f} TB'.format(size/TB)
-        elif size > GB:
-            s = '{:.2f} GB'.format(size/GB)
-        elif size > MB:
-            s = '{:.2f} MB'.format(size/MB)
-        elif size > KB:
-            s = '{:.2f} KB'.format(size/KB)
-        else:
-            s = '{} B'.format(size)
-    return s
-
 def get_time(s):
     try:
         t = datetime.utcfromtimestamp(s).replace(tzinfo=pytz.UTC)
