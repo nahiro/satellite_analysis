@@ -167,47 +167,48 @@ if args.logging:
 
 if query_folder(args.srcdir) is None:
     sys.exit()
-qs = [args.srcdir]
+rel_dnams = ['']
 ns = [0]
 if args.out_csv is None:
-    sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,srcPath,md5Checksum\n')
+    sys.stdout.write('fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum\n')
 else:
     if args.append:
         with open(args.out_csv,'a') as fp:
             fp.write('# {}\n'.format(args.srcdir))
     else:
         with open(args.out_csv,'w') as fp:
-            fp.write('fileName,nLayer,fileSize,modifiedDate,srcPath,md5Checksum\n')
+            fp.write('fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum\n')
             fp.write('# {}\n'.format(args.srcdir))
-while len(qs) != 0:
-    srcdir = qs.pop(0)
+while len(rel_dnams) != 0:
+    rel_dnam = rel_dnams.pop(0)
+    if rel_dnam == '':
+        abs_dnam = args.srcdir
+    else:
+        abs_dnam = args.srcdir+'/'+rel_dnam
     nlayer = ns.pop(0)
-    ds,fs = list_file(srcdir)
+    ds,fs = list_file(abs_dnam)
     for f in fs:
         if args.max_layer is not None and nlayer > args.max_layer:
             continue
-        if srcdir == '':
-            fnam = f
-        elif srcdir == '/':
-            fnam = srcdir+f
+        if rel_dnam == '':
+            rel_fnam = f
         else:
-            fnam = srcdir+'/'+f
-        v = query_file(fnam)
+            rel_fnam = rel_dnam+'/'+f
+        abs_fnam = args.srcdir+'/'+rel_fnam
+        v = query_file(abs_fnam)
         if v is None:
             continue
         elif args.out_csv is None:
-            sys.stdout.write('{},{},{},{},{},{}\n'.format(f,nlayer,v[1],v[2],srcdir,v[3]))
+            sys.stdout.write('{},{},{},{},{},{}\n'.format(rel_fnam,nlayer,v[1],v[2],args.srcdir,v[3]))
         else:
             with open(args.out_csv,'a') as fp:
-                fp.write('{},{},{},{},{},{}\n'.format(f,nlayer,v[1],v[2],srcdir,v[3]))
+                fp.write('{},{},{},{},{},{}\n'.format(rel_fnam,nlayer,v[1],v[2],args.srcdir,v[3]))
     for d in ds:
         if args.max_layer is not None and nlayer >= args.max_layer:
             continue
-        if srcdir == '':
+        if rel_dnam == '':
             dnam = d
-        elif srcdir == '/':
-            dnam = srcdir+d
         else:
-            dnam = srcdir+'/'+d
-        qs.append(dnam)
+            dnam = rel_dnam+'/'+d
+        rel_dnams.append(dnam)
         ns.append(nlayer+1)
