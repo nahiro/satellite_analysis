@@ -59,7 +59,11 @@ class Download(Satellite_Process):
                 inds = []
                 for index,row in df.iterrows():
                     #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
-                    src_fnam = row['fileName'].split('/')[-1]
+                    items = row['fileName'].strip().split('/')
+                    if len(items) != 2:
+                        continue
+                    src_dnam = items[0]
+                    src_fnam = items[1]
                     m = re.search('_('+'\d'*8+')_final.tif$',src_fnam)
                     if not m:
                         m = re.search('_('+'\d'*8+')_final.json$',src_fnam)
@@ -69,7 +73,9 @@ class Download(Satellite_Process):
                     d = datetime.strptime(dstr,'%Y%m%d')
                     if d < d1 or d > d2:
                         continue
+                    src_pnam = row['folderName'].strip()
                     df.loc[index,'fileName'] = src_fnam
+                    df.loc[index,'folderName'] = '{}/{}'.format(src_pnam,src_dnam)
                     df.loc[index,'nLayer'] = 0
                     inds.append(index)
                 if len(inds) < 1:
