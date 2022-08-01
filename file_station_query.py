@@ -184,7 +184,7 @@ while len(rel_dnams) != 0:
     else:
         abs_dnam = args.srcdir+'/'+rel_dnam
     ds,fs = list_file(abs_dnam)
-    for f in fs:
+    for f in sorted(fs):
         if args.max_layer is not None and nlayer > args.max_layer:
             continue
         if rel_dnam == '':
@@ -200,7 +200,7 @@ while len(rel_dnams) != 0:
         else:
             with open(args.out_csv,'a') as fp:
                 fp.write('{},{},{},{},{},{}\n'.format(rel_fnam,nlayer,v[1],v[2],args.srcdir,v[3]))
-    for d in ds:
+    for d in sorted(ds):
         if args.max_layer is not None and nlayer >= args.max_layer:
             continue
         if rel_dnam == '':
