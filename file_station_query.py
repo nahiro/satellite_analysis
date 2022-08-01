@@ -98,7 +98,7 @@ def query_folder(path):
             raise ValueError('Error, status={}'.format(status))
     except Exception as e:
         sys.stderr.write(str(e)+'\n')
-        sys.stderr.write('Error in querying file >>> {}\n'.format(path))
+        sys.stderr.write('Error in querying folder >>> {}\n'.format(path))
         sys.stderr.flush()
         return None
     if item['isfolder'] != 1:
