@@ -9,11 +9,8 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from http.client import HTTPConnection
-import time
-from datetime import datetime,timedelta
-from dateutil.parser import parse
+from datetime import datetime
 import pytz
-from subprocess import call
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values

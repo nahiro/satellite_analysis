@@ -9,8 +9,7 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from http.client import HTTPConnection
-import time
-from datetime import datetime,timedelta
+from datetime import datetime
 from dateutil.parser import parse
 import pytz
 import pandas as pd
