@@ -1,28 +1,42 @@
 #!/usr/bin/env python
 import os
 import sys
+import re
+import shutil
 import hashlib
+from base64 import b64encode
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import logging
+from http.client import HTTPConnection
+import time
+from datetime import datetime,timedelta
 from dateutil.parser import parse
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
+import pytz
 import pandas as pd
-from subprocess import call
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 HOME = os.environ.get('HOME')
 if HOME is None:
     HOME = os.environ.get('USERPROFILE')
-DRVDIR = os.path.join(HOME,'Work','GoogleDrive')
+RCDIR = HOME
+PORT = 443
+MAX_ITEM = 10000
 MAX_RETRY = 10
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--inp_list',default=None,help='Input file list (%(default)s)')
 parser.add_argument('-D','--dstdir',default=None,help='Local destination directory (%(default)s)')
-parser.add_argument('--drvdir',default=DRVDIR,help='GoogleDrive directory (%(default)s)')
-parser.add_argument('-M','--max_retry',default=MAX_RETRY,type=int,help='Maximum number of retries to download data (%(default)s)')
+parser.add_argument('-s','--srcdir',default=None,help='NAS source directory (%(default)s)')
+parser.add_argument('--rcdir',default=RCDIR,help='Directory where .netrc exists (%(default)s)')
+parser.add_argument('-S','--server',default=None,help='Name of the server (%(default)s)')
+parser.add_argument('-P','--port',default=PORT,type=int,help='Port# of the server (%(default)s)')
+parser.add_argument('-M','--max_item',default=MAX_ITEM,type=int,help='Max# of items for listing (%(default)s)')
+parser.add_argument('-R','--max_retry',default=MAX_RETRY,type=int,help='Maximum number of retries to download data (%(default)s)')
 parser.add_argument('-m','--modify_time',default=False,action='store_true',help='Modify last modification time (%(default)s)')
+parser.add_argument('-l','--logging',default=False,action='store_true',help='Logging mode (%(default)s)')
 parser.add_argument('-v','--verbose',default=False,action='store_true',help='Verbose mode (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 args = parser.parse_args()
@@ -121,18 +135,21 @@ def check_folder(row):
     if nlayer < 1:
         return
     fnam = row['fileName']
-    dnam = row['srcPath']
+    pnam = row['folderName']
+    indx = fnam.rfind('/')
+    if indx < 0:
+        raise ValueError('Error, indx={}, nlayer={} >>> {}'.format(indx,nlayer,fnam))
+    dnam = fnam[:indx]
     if dnam in folders:
         return
     dnams = dnam.split('/')
-    ntotal = len(dnams)
-    if ntotal < nlayer:
-        raise ValueError('Error, ntotal={}, nlayer={} >>> {}'.format(ntotal,nlayer,dnam))
+    if len(dnams) != nlayer:
+        raise ValueError('Error, len(dnams)={}, nlayer={} >>> {}'.format(len(dnams),nlayer,fnam))
     for n in range(nlayer):
-        dnam = '/'.join(dnams[:ntotal-n])
+        dnam = '/'.join(dnams[:nlayer-n])
         if dnam in folders:
             break
-        v = query_folder(dnam)
+        v = query_folder(pnam+'/'+dnam)
         if v is None:
             raise IOError('Error in finding {}'.format(dnam))
         folders[dnam] = v[2]
@@ -196,10 +213,10 @@ df.columns = df.columns.str.strip()
 
 for index,row in df.iterrows():
     check_folder(row)
-    #fileName,nLayer,fileSize,modifiedDate,srcPath,md5Checksum
+    #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
     nlayer = row['nLayer']
     src_fnam = row['fileName']
-    src_dnam = row['srcPath']
+    src_dnam = row['folderName']
     #src_size = row['fileSize']
     #src_time = parse(row['modifiedDate']).timestamp()
     #src_md5 = row['md5Checksum']
