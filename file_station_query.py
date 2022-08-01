@@ -181,11 +181,11 @@ else:
             fp.write('# {}\n'.format(args.srcdir))
 while len(rel_dnams) != 0:
     rel_dnam = rel_dnams.pop(0)
+    nlayer = ns.pop(0)
     if rel_dnam == '':
         abs_dnam = args.srcdir
     else:
         abs_dnam = args.srcdir+'/'+rel_dnam
-    nlayer = ns.pop(0)
     ds,fs = list_file(abs_dnam)
     for f in fs:
         if args.max_layer is not None and nlayer > args.max_layer:
