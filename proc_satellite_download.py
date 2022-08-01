@@ -40,6 +40,7 @@ proc_download.param_types['interp_path'] = 'string'
 proc_download.param_types['search_key'] = 'string'
 proc_download.param_types['dflag'] = 'boolean_list'
 proc_download.param_types['oflag'] = 'boolean_list'
+proc_download.param_range['port'] = (1,1000000)
 proc_download.defaults['server'] = 'satreps-nas'
 proc_download.defaults['port'] = 443
 proc_download.defaults['netrc_dir'] = 'Home'
