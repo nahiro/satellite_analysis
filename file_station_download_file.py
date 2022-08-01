@@ -103,7 +103,7 @@ def query_folder(path):
             raise ValueError('Error, status={}'.format(status))
     except Exception as e:
         sys.stderr.write(str(e)+'\n')
-        sys.stderr.write('Error in querying file >>> {}\n'.format(path))
+        sys.stderr.write('Error in querying folder >>> {}\n'.format(path))
         sys.stderr.flush()
         return None
     if item['isfolder'] != 1:
@@ -122,7 +122,7 @@ def download_file(src_path,dst_path):
             raise ValueError('Error, status={}'.format(resp.status_code))
     except Exception as e:
         sys.stderr.write(str(e)+'\n')
-        sys.stderr.write('Error in querying file >>> {}\n'.format(path))
+        sys.stderr.write('Error in downloading file >>> {}\n'.format(path))
         sys.stderr.flush()
         return None
     with open(dst_path,'wb') as fp:
@@ -265,13 +265,9 @@ for index,row in df.iterrows():
     if not flag:
         sys.stderr.write('Warning, faild in downloading >>> {}\n'.format(dst_fnam))
         sys.stderr.flush()
-"""
 for dnam in folders.keys():
-    src_id = folders[dnam]
-    f = drive.CreateFile({'id':src_id})
-    src_time = parse(f['modifiedDate']).timestamp()
+    src_time = folders[dnam].timestamp()
     dst_dnam = os.path.normpath(os.path.join(args.dstdir,dnam))
     if not os.path.isdir(dst_dnam):
         raise IOError('Error, no such directory >>> {}'.format(dst_dnam))
     os.utime(dst_dnam,(src_time,src_time))
-"""
