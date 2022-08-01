@@ -29,7 +29,6 @@ MAX_RETRY = 10
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--inp_list',default=None,help='Input file list (%(default)s)')
 parser.add_argument('-D','--dstdir',default=None,help='Local destination directory (%(default)s)')
-parser.add_argument('-s','--srcdir',default=None,help='NAS source directory (%(default)s)')
 parser.add_argument('--rcdir',default=RCDIR,help='Directory where .netrc exists (%(default)s)')
 parser.add_argument('-S','--server',default=None,help='Name of the server (%(default)s)')
 parser.add_argument('-P','--port',default=PORT,type=int,help='Port# of the server (%(default)s)')
@@ -117,7 +116,7 @@ def download_file(src_path,dst_path):
     parent = os.path.dirname(src_path)
     target = os.path.basename(src_path)
     try:
-        resp = session.get(common_url+'&func=download&source_total=1&source_path={}&source_file={}'.format(parent,target))
+        resp = session.get(common_url+'&func=download&source_total=1&source_path={}&source_file={}'.format(parent,target),stream=True)
         if resp.status_code != 200:
             raise ValueError('Error, status={}'.format(resp.status_code))
     except Exception as e:
@@ -126,7 +125,7 @@ def download_file(src_path,dst_path):
         sys.stderr.flush()
         return None
     with open(dst_path,'wb') as fp:
-        fp.write(resp.text)
+        shutil.copyfileobj(resp.raw,fp)
 
 folders = {}
 def check_folder(row):
