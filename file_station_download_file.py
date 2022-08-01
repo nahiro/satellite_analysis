@@ -132,8 +132,8 @@ def check_folder(row):
     nlayer = row['nLayer']
     if nlayer < 1:
         return
-    fnam = row['fileName']
-    pnam = row['folderName']
+    fnam = row['fileName'].strip()
+    pnam = row['folderName'].strip()
     indx = fnam.rfind('/')
     if indx < 0:
         raise ValueError('Error, indx={}, nlayer={} >>> {}'.format(indx,nlayer,fnam))
@@ -213,8 +213,8 @@ for index,row in df.iterrows():
     check_folder(row)
     #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
     nlayer = row['nLayer']
-    src_fnam = row['fileName']
-    src_dnam = row['folderName']
+    src_fnam = row['fileName'].strip()
+    src_dnam = row['folderName'].strip()
     #src_size = row['fileSize']
     #src_time = parse(row['modifiedDate']).timestamp()
     #src_md5 = row['md5Checksum']
