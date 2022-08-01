@@ -39,8 +39,10 @@ class Download(Satellite_Process):
                 # Make file list
                 tmp_fnam = self.mktemp(suffix='.csv')
                 command = self.python_path
-                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
-                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
+                command += ' --server "{}"'.format(self.values['server'])
+                command += ' --port "{}"'.format(self.values['port'])
+                command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --srcdir {}'.format('{}/{}'.format(self.values['trans_path'],year))
                 command += ' --out_csv {}'.format(tmp_fnam)
                 command += ' --max_layer 1'
@@ -56,7 +58,7 @@ class Download(Satellite_Process):
                 df.columns = df.columns.str.strip()
                 inds = []
                 for index,row in df.iterrows():
-                    #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                    #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
                     src_fnam = row['fileName'].split('/')[-1]
                     m = re.search('_('+'\d'*8+')_final.tif$',src_fnam)
                     if not m:
@@ -76,8 +78,10 @@ class Download(Satellite_Process):
                 df.loc[inds].to_csv(tmp_fnam,index=False)
                 # Download Data
                 command = self.python_path
-                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
-                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
+                command += ' --server "{}"'.format(self.values['server'])
+                command += ' --port "{}"'.format(self.values['port'])
+                command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --inp_list {}'.format(tmp_fnam)
                 command += ' --dstdir {}'.format(os.path.join(self.s1_analysis,'planting',ystr))
                 command += ' --verbose'
@@ -102,8 +106,10 @@ class Download(Satellite_Process):
                 # Make file list
                 tmp_fnam = self.mktemp(suffix='.csv')
                 command = self.python_path
-                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
-                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
+                command += ' --server "{}"'.format(self.values['server'])
+                command += ' --port "{}"'.format(self.values['port'])
+                command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --srcdir {}'.format('{}/{}'.format(self.values['l2a_path'],year))
                 command += ' --out_csv {}'.format(tmp_fnam)
                 command += ' --max_layer 0'
@@ -119,7 +125,7 @@ class Download(Satellite_Process):
                 df.columns = df.columns.str.strip()
                 inds = []
                 for index,row in df.iterrows():
-                    #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                    #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
                     src_fnam = row['fileName']
                     m = re.search('^S2[AB]_MSIL2A_('+'\d'*8+')T\S+\.zip$',src_fnam)
                     if not m:
@@ -143,8 +149,10 @@ class Download(Satellite_Process):
                 df.loc[inds].to_csv(tmp_fnam,index=False)
                 # Download Data
                 command = self.python_path
-                command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
-                command += ' --drvdir {}'.format(self.values['drv_dir'])
+                command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
+                command += ' --server "{}"'.format(self.values['server'])
+                command += ' --port "{}"'.format(self.values['port'])
+                command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --inp_list {}'.format(tmp_fnam)
                 command += ' --dstdir {}'.format(os.path.join(self.s2_data,ystr))
                 command += ' --verbose'
@@ -164,8 +172,10 @@ class Download(Satellite_Process):
                     # Make file list
                     tmp_fnam = self.mktemp(suffix='.csv')
                     command = self.python_path
-                    command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_query.py'))
-                    command += ' --drvdir {}'.format(self.values['drv_dir'])
+                    command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
+                    command += ' --server "{}"'.format(self.values['server'])
+                    command += ' --port "{}"'.format(self.values['port'])
+                    command += ' --rcdir {}'.format(self.values['netrc_dir'])
                     command += ' --srcdir {}'.format('{}/{}'.format(self.values['{}_path'.format(target)],year))
                     command += ' --out_csv {}'.format(tmp_fnam)
                     command += ' --max_layer 0'
@@ -181,7 +191,7 @@ class Download(Satellite_Process):
                     df.columns = df.columns.str.strip()
                     inds = []
                     for index,row in df.iterrows():
-                        #fileName,nLayer,fileSize,modifiedDate,fileId,md5Checksum
+                        #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
                         src_fnam = row['fileName']
                         m = re.search('^('+'\d'*8+')_'+targ+enam+'$',src_fnam)
                         if not m:
@@ -197,8 +207,10 @@ class Download(Satellite_Process):
                     df.loc[inds].to_csv(tmp_fnam,index=False)
                     # Download Data
                     command = self.python_path
-                    command += ' {}'.format(os.path.join(self.scr_dir,'google_drive_download_file.py'))
-                    command += ' --drvdir {}'.format(self.values['drv_dir'])
+                    command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
+                    command += ' --server "{}"'.format(self.values['server'])
+                    command += ' --port "{}"'.format(self.values['port'])
+                    command += ' --rcdir {}'.format(self.values['netrc_dir'])
                     command += ' --inp_list {}'.format(tmp_fnam)
                     command += ' --dstdir {}'.format(os.path.join(self.s2_analysis,targ,ystr))
                     command += ' --verbose'
