@@ -24,7 +24,6 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
 CFLAG_SC = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
 CFLAG_REF = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
-RMAX = 0.01
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -37,7 +36,6 @@ parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-c','--cflag_sc',default=None,action='append',help='Cloud removal by SC ({})'.format(CFLAG_SC))
 parser.add_argument('-C','--cflag_ref',default=None,action='append',help='Cloud removal by Reflectance ({})'.format(CFLAG_REF))
-parser.add_argument('-r','--rmax',default=RMAX,type=float,help='Maximum exclusion ratio (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
@@ -98,11 +96,11 @@ if args.ax1_zstp is not None:
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
     bnam,enam = os.path.splitext(args.src_geotiff)
     if args.out_csv is None:
-        args.out_csv = bnam+'_calculate.csv'
+        args.out_csv = bnam+'_parcel.csv'
     if args.out_shp is None:
-        args.out_shp = bnam+'_calculate.shp'
+        args.out_shp = bnam+'_parcel.shp'
     if args.fignam is None:
-        args.fignam = bnam+'_calculate.pdf'
+        args.fignam = bnam+'_parcel.pdf'
 
 # Read Source GeoTIFF
 ds = gdal.Open(args.src_geotiff)
@@ -125,10 +123,10 @@ for param in args.param:
         raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
     iband = src_band.index(param)
     band = ds.GetRasterBand(iband+1)
-    src_data.append(band.ReadAsArray().astype(np.float64).reshape(src_ny,src_nx))
+    src_data.append(band.ReadAsArray().astype(np.float64).reshape(-1))
 src_data = np.array(src_data)
 src_band = args.param
-src_nb = len(src_data)
+src_nb = len(args.param)
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 src_xmin = src_trans[0]
@@ -203,7 +201,7 @@ out_data = np.full((nobject,dst_nb),np.nan)
 dst_band = args.param
 
 for iband,param in enumerate(args.param):
-    data = src_data[iband].flatten()
+    data = src_data[iband]
     #if cflag_sc[param]:
     #    data
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
