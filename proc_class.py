@@ -318,7 +318,7 @@ class Process:
             sys.stderr.write('\nEnd: {} ({})\n'.format(t2,t2-t1))
             sys.stderr.flush()
         if ret != 0:
-            sys.stderr.write('\nTerminated process {}.\n'.format(self.proc_name))
+            sys.stderr.write('\nTerminated command in process {}.\n'.format(self.proc_name))
             sys.stderr.write('\n')
             sys.stderr.flush()
             raise ValueError('ERROR')

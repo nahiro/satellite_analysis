@@ -182,7 +182,7 @@ class Download(Satellite_Process):
                     command += ' --server "{}"'.format(self.values['server'])
                     command += ' --port "{}"'.format(self.values['port'])
                     command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                    command += ' --srcdir {}'.format('{}/{}'.format(self.values['{}_path'.format(target)],year))
+                    command += ' --srcdir {}'.format('{}/{}'.format(self.values['{}_path'.format(targ)],year))
                     command += ' --out_csv {}'.format(tmp_fnam)
                     command += ' --max_layer 0'
                     try:
