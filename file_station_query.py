@@ -101,7 +101,11 @@ def query_folder(path):
         sys.stderr.write('Error in querying folder >>> {}\n'.format(path))
         sys.stderr.flush()
         return None
-    if item['isfolder'] != 1:
+    if item['exist'] != 1:
+        sys.stderr.write('No such folder >>> {}\n'.format(path))
+        sys.stderr.flush()
+        return None
+    elif item['isfolder'] != 1:
         sys.stderr.write('Error, not a folder >>> {}\n'.format(path))
         sys.stderr.flush()
         return None
@@ -163,7 +167,7 @@ if args.logging:
     HTTPConnection.debuglevel = 1
 
 if query_folder(args.srcdir) is None:
-    sys.exit()
+    sys.exit(1)
 rel_dnams = ['']
 ns = [0]
 if args.out_csv is None:
