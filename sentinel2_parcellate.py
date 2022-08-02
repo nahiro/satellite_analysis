@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import shutil
 import zlib # import zlib before gdal to prevent segmentation fault when saving pdf
 try:
@@ -21,16 +22,21 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
+CFLAG_SC = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
+CFLAG_REF = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
 RMAX = 0.01
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-R','--res_geotiff',default=None,help='Resample GeoTIFF name (%(default)s)')
 parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
+parser.add_argument('-c','--cflag_sc',default=None,action='append',help='Cloud removal by SC ({})'.format(CFLAG_SC))
+parser.add_argument('-C','--cflag_ref',default=None,action='append',help='Cloud removal by Reflectance ({})'.format(CFLAG_REF))
 parser.add_argument('-r','--rmax',default=RMAX,type=float,help='Maximum exclusion ratio (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
@@ -47,6 +53,30 @@ if args.param is None:
 for param in args.param:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter >>> {}'.format(param))
+if args.cflag_sc is None:
+    args.cflag_sc = CFLAG_SC
+cflag_sc = {}
+for s in args.cflag_sc:
+    m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+    if not m:
+        raise ValueError('Error, invalid max >>> {}'.format(s))
+    param = m.group(1)
+    value = eval(m.group(2))
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter for cflag_sc ({}) >>> {}'.format(param,s))
+    cflag_sc[param] = value
+if args.cflag_ref is None:
+    args.cflag_ref = CFLAG_REF
+cflag_ref = {}
+for s in args.cflag_ref:
+    m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+    if not m:
+        raise ValueError('Error, invalid max >>> {}'.format(s))
+    param = m.group(1)
+    value = eval(m.group(2))
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter for cflag_ref ({}) >>> {}'.format(param,s))
+    cflag_ref[param] = value
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
@@ -85,11 +115,20 @@ src_trans = ds.GetGeoTransform()
 if src_trans[2] != 0.0 or src_trans[4] != 0.0:
     raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
 src_meta = ds.GetMetadata()
-src_data = ds.ReadAsArray().astype(np.float64).reshape(src_nb,src_ny,src_nx)
 src_band = []
 for iband in range(src_nb):
     band = ds.GetRasterBand(iband+1)
     src_band.append(band.GetDescription())
+src_data = []
+for param in args.param:
+    if not param in src_band:
+        raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
+    iband = src_band.index(param)
+    band = ds.GetRasterBand(iband+1)
+    src_data.append(band.ReadAsArray().astype(np.float64).reshape(src_ny,src_nx))
+src_data = np.array(src_data)
+src_band = args.param
+src_nb = len(src_data)
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 src_xmin = src_trans[0]
@@ -101,6 +140,31 @@ src_ymin = src_ymax+src_ny*src_ystp
 ds = None
 if src_nodata is not None and not np.isnan(src_nodata):
     src_data[src_data == src_nodata] = np.nan
+
+# Read Resample GeoTIFF
+ds = gdal.Open(args.res_geotiff)
+res_nx = ds.RasterXSize
+res_ny = ds.RasterYSize
+res_nb = ds.RasterCount
+res_shape = (res_ny,res_nx)
+if res_shape != src_shape:
+    raise ValueError('Error, res_shape={}, src_shape={} >>> {}'.format(res_shape,src_shape,args.res_geotiff))
+res_data = ds.ReadAsArray().reshape(res_nb,res_ny,res_nx)
+res_band = []
+for iband in range(res_nb):
+    band = ds.GetRasterBand(iband+1)
+    res_band.append(band.GetDescription())
+res_nodata = band.GetNoDataValue()
+ds = None
+
+if True in cflag_sc.values():
+    if not 'quality_scene_classification' in res_band:
+        raise ValueError('Error in finding SC band in {}'.format(args.res_geotiff))
+    iband = res_band.index('quality_scene_classification')
+    scl = res_data[iband]
+    sc_mask = cnd = (scl < 1.9) | ((scl > 2.1) & (scl < 3.9)) | (scl > 7.1)
+else:
+    sc_mask = None
 
 # Read Mask GeoTIFF
 ds = gdal.Open(args.mask_geotiff)
@@ -119,47 +183,35 @@ ds = None
 
 # Get OBJECTID
 object_ids = np.unique(mask_data[mask_data != mask_nodata])
+object_inds = []
+indp = np.arange(src_nx*src_ny).reshape(src_shape)
+for object_id in object_ids:
+    cnd = (mask_data == object_id)
+    object_inds.append(indp[cnd])
+object_inds = np.array(object_inds,dtype='object')
+nobject = object_ids.size
 
 # Calculate mean indices
-out_data = {}
 if args.debug:
     dst_nx = src_nx
     dst_ny = src_ny
     dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
-    dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
+    dst_data = np.full((dst_nb,dst_ny*dst_nx),np.nan)
+    #dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
+out_data = np.full((nobject,dst_nb),np.nan)
 dst_band = args.param
-src_band_index = {}
-dst_band_index = {}
-for param in args.param:
-    if not param in src_band:
-        raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
-    src_band_index[param] = src_band.index(param)
-    dst_band_index[param] = dst_band.index(param)
-for object_id in object_ids:
-    cnd1 = (mask_data == object_id)
-    n1 = cnd1.sum()
-    if n1 < 1:
-        continue
-    data = []
-    flag = False
-    for param in args.param:
-        src_iband = src_band_index[param]
-        dst_iband = dst_band_index[param]
-        d1 = src_data[src_iband,cnd1]
-        cnd2 = np.isnan(d1)
-        d2 = d1[cnd2]
-        n2 = d2.size
-        if n2/n1 > args.rmax:
-            data.append(np.nan)
-        else:
-            v = d1[~cnd2].mean()
-            data.append(v)
-            flag = True
-            if args.debug:
-                dst_data[dst_iband,cnd1] = v
-    if flag:
-        out_data[object_id] = data
+
+for iband,param in enumerate(args.param):
+    data = src_data[iband].flatten()
+    #if cflag_sc[param]:
+    #    data
+    out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
+    if args.debug:
+        for i,inds in enumerate(object_inds):
+            dst_data[iband,inds] = out_data[i,iband]
+if args.debug:
+    dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
 # Output results
 with open(args.out_csv,'w') as fp:
@@ -167,12 +219,11 @@ with open(args.out_csv,'w') as fp:
     for param in args.param:
         fp.write(', {:>13s}'.format(param))
     fp.write('\n')
-    for object_id in object_ids:
-        if object_id in out_data:
-            fp.write('{:8d}'.format(object_id))
-            for param in args.param:
-                fp.write(', {:>13.6e}'.format(out_data[object_id][dst_band_index[param]]))
-            fp.write('\n')
+    for iobj,object_id in enumerate(object_ids):
+        fp.write('{:8d}'.format(object_id))
+        for iband,param in enumerate(args.param):
+            fp.write(', {:>13.6e}'.format(out_data[iobj,iband])) # assuming OBJECTID = FID + 1
+        fp.write('\n')
 
 if args.shp_fnam is not None:
     r = shapefile.Reader(args.shp_fnam)
@@ -184,14 +235,9 @@ if args.shp_fnam is not None:
     for iobj,shaperec in enumerate(r.iterShapeRecords()):
         rec = shaperec.record
         shp = shaperec.shape
-        if args.use_index:
-            object_id = iobj+1
-        else:
-            object_id = getattr(rec,'OBJECTID')
-        if object_id in out_data:
-            rec.extend(out_data[object_id])
-            w.shape(shp)
-            w.record(*rec)
+        rec.extend(list(out_data[iobj])) # assuming OBJECTID = FID + 1
+        w.shape(shp)
+        w.record(*rec)
     w.close()
     shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
@@ -204,8 +250,7 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
-    for param in args.param:
-        iband = dst_band_index[param]
+    for iband,param in enumerate(args.param):
         data = dst_data[iband]
         fig.clear()
         ax1 = plt.subplot(111)
