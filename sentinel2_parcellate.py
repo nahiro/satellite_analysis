@@ -19,11 +19,14 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
+S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
 CFLAG_SC = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
 CFLAG_REF = ['Nb:True','Ng:True','Nr:True','Ne1:True','Ne2:True','Ne3:True','Nn1:True','Nn2:True','Ns1:True','Ns2:True','NDVI:True','GNDVI:True','RGI:True','NRGI:True']
+CLOUD_BAND = 'r'
+CLOUD_THR = 0.35
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -36,6 +39,8 @@ parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-c','--cflag_sc',default=None,action='append',help='Cloud removal by SC ({})'.format(CFLAG_SC))
 parser.add_argument('-C','--cflag_ref',default=None,action='append',help='Cloud removal by Reflectance ({})'.format(CFLAG_REF))
+parser.add_argument('--cloud_band',default=CLOUD_BAND,help='Band for cloud removal (%(default)s)')
+parser.add_argument('--cloud_thr',default=CLOUD_THR,help='Threshold for cloud removal (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
@@ -83,6 +88,8 @@ for s in args.cflag_ref:
 for param in args.param:
     if not param in cflag_ref:
         cflag_ref[param] = not args.cflag_ref_off
+if not args.cloud_band in S2_BAND:
+    raise ValueError('Error, unknown parameter for cloud_band >>> {}'.format(args.cloud_band))
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
@@ -163,15 +170,23 @@ for iband in range(res_nb):
     res_band.append(band.GetDescription())
 res_nodata = band.GetNoDataValue()
 ds = None
-
 if True in cflag_sc.values():
     if not 'quality_scene_classification' in res_band:
         raise ValueError('Error in finding SC band in {}'.format(args.res_geotiff))
     iband = res_band.index('quality_scene_classification')
     scl = res_data[iband]
-    sc_mask = cnd = (scl < 1.9) | ((scl > 2.1) & (scl < 3.9)) | (scl > 7.1)
+    mask_sc = ((scl < 1.9) | ((scl > 2.1) & (scl < 3.9)) | (scl > 7.1))
 else:
-    sc_mask = None
+    mask_sc = None
+if True in cflag_ref.values():
+    band = S2_BAND[args.cloud_band]
+    if not band in res_band:
+        raise ValueError('Error in finding {} band in {}'.format(band,args.res_geotiff))
+    iband = res_band.index(band)
+    v = res_data[iband]
+    mask_ref = (v > args.cloud_thr)
+else:
+    mask_ref = None
 
 # Read Mask GeoTIFF
 ds = gdal.Open(args.mask_geotiff)
@@ -222,7 +237,9 @@ dst_band = args.param
 for iband,param in enumerate(args.param):
     data = src_data[iband]
     if cflag_sc[param]:
-        data[sc_mask] = np.nan
+        data[mask_sc] = np.nan
+    if cflag_ref[param]:
+        data[mask_ref] = np.nan
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
     if args.debug:
         for i,inds in enumerate(object_inds):
