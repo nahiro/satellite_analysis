@@ -41,6 +41,8 @@ parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',he
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
 parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
+parser.add_argument('--cflag_sc_off',default=False,action='store_true',help='Turn off default cloud removal by SC (%(default)s)')
+parser.add_argument('--cflag_ref_off',default=False,action='store_true',help='Turn off default cloud removal by Reflectance (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
@@ -63,6 +65,9 @@ for s in args.cflag_sc:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter for cflag_sc ({}) >>> {}'.format(param,s))
     cflag_sc[param] = value
+for param in args.param:
+    if not param in cflag_sc:
+        cflag_sc[param] = not args.cflag_sc_off
 if args.cflag_ref is None:
     args.cflag_ref = CFLAG_REF
 cflag_ref = {}
@@ -75,6 +80,9 @@ for s in args.cflag_ref:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter for cflag_ref ({}) >>> {}'.format(param,s))
     cflag_ref[param] = value
+for param in args.param:
+    if not param in cflag_ref:
+        cflag_ref[param] = not args.cflag_ref_off
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
@@ -107,6 +115,7 @@ ds = gdal.Open(args.src_geotiff)
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
 src_nb = ds.RasterCount
+ngrd = src_nx*src_ny
 src_shape = (src_ny,src_nx)
 src_prj = ds.GetProjection()
 src_trans = ds.GetGeoTransform()
@@ -123,7 +132,7 @@ for param in args.param:
         raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
     iband = src_band.index(param)
     band = ds.GetRasterBand(iband+1)
-    src_data.append(band.ReadAsArray().astype(np.float64).reshape(-1))
+    src_data.append(band.ReadAsArray().astype(np.float64).reshape(ngrd))
 src_data = np.array(src_data)
 src_band = args.param
 src_nb = len(args.param)
@@ -147,7 +156,7 @@ res_nb = ds.RasterCount
 res_shape = (res_ny,res_nx)
 if res_shape != src_shape:
     raise ValueError('Error, res_shape={}, src_shape={} >>> {}'.format(res_shape,src_shape,args.res_geotiff))
-res_data = ds.ReadAsArray().reshape(res_nb,res_ny,res_nx)
+res_data = ds.ReadAsArray().reshape(res_nb,ngrd)
 res_band = []
 for iband in range(res_nb):
     band = ds.GetRasterBand(iband+1)
@@ -174,20 +183,30 @@ if mask_nb != 1:
 mask_shape = (mask_ny,mask_nx)
 if mask_shape != src_shape:
     raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_geotiff))
-mask_data = ds.ReadAsArray().reshape(mask_ny,mask_nx)
+mask_data = ds.ReadAsArray().reshape(ngrd)
 band = ds.GetRasterBand(1)
+mask_dtype = band.DataType
 mask_nodata = band.GetNoDataValue()
+if mask_dtype in [gdal.GDT_Int16,gdal.GDT_Int32]:
+    if mask_nodata < 0.0:
+        mask_nodata = -int(abs(mask_nodata)+0.5)
+    else:
+        mask_nodata = int(mask_nodata+0.5)
+elif mask_dtype in [gdal.GDT_UInt16,gdal.GDT_UInt32]:
+    mask_nodata = int(mask_nodata+0.5)
 ds = None
 
 # Get OBJECTID
 object_ids = np.unique(mask_data[mask_data != mask_nodata])
+nobject = object_ids.size
+if not np.all(object_ids == np.arange(nobject)+1):
+    raise ValueError('Error, OBJECTID != FID + 1')
 object_inds = []
-indp = np.arange(src_nx*src_ny).reshape(src_shape)
+indp = np.arange(ngrd)
 for object_id in object_ids:
     cnd = (mask_data == object_id)
     object_inds.append(indp[cnd])
 object_inds = np.array(object_inds,dtype='object')
-nobject = object_ids.size
 
 # Calculate mean indices
 if args.debug:
@@ -195,15 +214,15 @@ if args.debug:
     dst_ny = src_ny
     dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
-    dst_data = np.full((dst_nb,dst_ny*dst_nx),np.nan)
     #dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
+    dst_data = np.full((dst_nb,ngrd),np.nan)
 out_data = np.full((nobject,dst_nb),np.nan)
 dst_band = args.param
 
 for iband,param in enumerate(args.param):
     data = src_data[iband]
-    #if cflag_sc[param]:
-    #    data
+    if cflag_sc[param]:
+        data[sc_mask] = np.nan
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
     if args.debug:
         for i,inds in enumerate(object_inds):
