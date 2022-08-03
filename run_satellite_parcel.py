@@ -63,6 +63,7 @@ class Parcel(Satellite_Process):
 
         # Calculate indices
         indices_fnams = []
+        indices_rnams = []
         indices_dstrs = []
         for fnam,dstr in zip(resample_fnams,resample_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
@@ -112,10 +113,11 @@ class Parcel(Satellite_Process):
                 self.run_command(command,message='<<< Calculate indices for {} >>>'.format(dstr))
             if os.path.exists(gnam):
                 indices_fnams.append(gnam)
+                indices_rnams.append(fnam)
                 indices_dstrs.append(dstr)
 
         # Parcellate data
-        for fnam,dstr in zip(indices_fnams,indices_dstrs):
+        for fnam,rnam,dstr in zip(indices_fnams,indices_rnams,indices_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_analysis,'parcel',ystr)
@@ -143,6 +145,7 @@ class Parcel(Satellite_Process):
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_parcellate.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
+                command += ' --res_geotiff "{}"'.format(rnam)
                 command += ' --mask_geotiff "{}"'.format(mask_fnam)
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                 command += ' --out_csv "{}"'.format(gnam)
@@ -174,6 +177,8 @@ class Parcel(Satellite_Process):
                 for param,flag,value in zip(self.list_labels['out_inds'],self.values['out_inds'],self.values['cr_ref_inds']):
                     if flag:
                         command += ' --cflag_ref "{}:{}"'.format(param.strip(),value)
+                command += ' --cloud_band {}'.format(self.values['cloud_band'])
+                command += ' --cloud_thr {}'.format(self.values['cloud_thr'])
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_parcel.pdf'.format(dstr)))
                 #for value,flag in zip(self.ax1_zmin[2],self.values['out_refs']):
                 #    if flag:
