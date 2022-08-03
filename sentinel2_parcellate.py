@@ -40,7 +40,7 @@ parser.add_argument('-p','--param',default=None,action='append',help='Output par
 parser.add_argument('-c','--cflag_sc',default=None,action='append',help='Cloud removal by SC ({})'.format(CFLAG_SC))
 parser.add_argument('-C','--cflag_ref',default=None,action='append',help='Cloud removal by Reflectance ({})'.format(CFLAG_REF))
 parser.add_argument('--cloud_band',default=CLOUD_BAND,help='Band for cloud removal (%(default)s)')
-parser.add_argument('--cloud_thr',default=CLOUD_THR,help='Threshold for cloud removal (%(default)s)')
+parser.add_argument('--cloud_thr',default=CLOUD_THR,type=float,help='Threshold for cloud removal (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
