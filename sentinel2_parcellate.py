@@ -252,14 +252,34 @@ with open(args.out_csv,'w') as fp:
     for iobj,object_id in enumerate(object_ids):
         fp.write('{:8d}'.format(object_id))
         for iband,param in enumerate(args.param):
-            fp.write(', {:>13.6e}'.format(out_data[iobj,iband])) # assuming OBJECTID = FID + 1
+            fp.write(', {:>13.6e}'.format(out_data[iobj,iband]))
         fp.write('\n')
 
 if args.shp_fnam is not None:
     r = shapefile.Reader(args.shp_fnam)
     nobject = len(r)
-    if not np.all(object_ids == np.arange(nobject)+1):
-        raise ValueError('Error, OBJECTID != FID + 1')
+    if args.use_index:
+        if np.all(object_ids == np.arange(nobject)+1):
+            all_data = out_data
+        else:
+            if (object_ids[0] < 1) or (object_ids[-1] > nobject):
+                raise ValueError('Error, object_ids[0]={}, object_ids[-1]={}, nobject={} >>> {}'.format(object_ids[0],object_ids[-1],nobject,args.mask_geotiff))
+            indx = object_ids-1
+            all_data = np.full((nobject,src_nb),np.nan)
+            all_data[indx] = out_data
+    else:
+        all_ids = []
+        for rec in r.iterRecords():
+            all_ids.append(rec.OBJECTID)
+        if np.all(object_ids == np.array(all_ids)):
+            all_data = out_data
+        else:
+            try:
+                indx = np.array([all_ids.index(object_id) for object_id in object_ids])
+            except Exception:
+                raise ValueError('Error in finding OBJECTID {} in {}'.format(args.shp_fnam))
+            all_data = np.full((nobject,src_nb),np.nan)
+            all_data[indx] = out_data
     w = shapefile.Writer(args.out_shp)
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
@@ -268,7 +288,7 @@ if args.shp_fnam is not None:
     for iobj,shaperec in enumerate(r.iterShapeRecords()):
         rec = shaperec.record
         shp = shaperec.shape
-        rec.extend(list(out_data[iobj])) # assuming OBJECTID = FID + 1
+        rec.extend(list(all_data[iobj]))
         w.shape(shp)
         w.record(*rec)
     w.close()
