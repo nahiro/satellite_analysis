@@ -183,7 +183,7 @@ if True in cflag_ref.values():
     if not band in res_band:
         raise ValueError('Error in finding {} band in {}'.format(band,args.res_geotiff))
     iband = res_band.index(band)
-    v = res_data[iband]
+    v = res_data[iband]*1.0e-4
     mask_ref = (v > args.cloud_thr)
 else:
     mask_ref = None
@@ -295,10 +295,14 @@ if args.debug:
                 zmin = ax1_zmin[param]
             else:
                 zmin = np.nanmin(data)
+                if np.isnan(zmin):
+                    zmin = 0.0
             if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
                 zmax = ax1_zmax[param]
             else:
                 zmax = np.nanmax(data)
+                if np.isnan(zmax):
+                    zmax = 1.0
             zdif = zmax-zmin
             for iobj,shaperec in enumerate(r.iterShapeRecords()):
                 rec = shaperec.record
@@ -338,12 +342,18 @@ if args.debug:
             src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
             src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
             cnd = ~np.isnan(data)
-            xp = src_xp[cnd]
-            yp = src_yp[cnd]
-            fig_xmin = xp.min()
-            fig_xmax = xp.max()
-            fig_ymin = yp.min()
-            fig_ymax = yp.max()
+            if cnd.sum() < 1:
+                fig_xmin = src_xmin
+                fig_xmax = src_xmax
+                fig_ymin = src_ymin
+                fig_ymax = src_ymax
+            else:
+                xp = src_xp[cnd]
+                yp = src_yp[cnd]
+                fig_xmin = xp.min()
+                fig_xmax = xp.max()
+                fig_ymin = yp.min()
+                fig_ymax = yp.max()
         else:
             fig_xmin = src_xmin
             fig_xmax = src_xmax
