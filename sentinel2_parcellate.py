@@ -213,15 +213,14 @@ ds = None
 
 # Get OBJECTID
 object_ids = np.unique(mask_data[mask_data != mask_nodata])
-nobject = object_ids.size
-if not np.all(object_ids == np.arange(nobject)+1):
-    raise ValueError('Error, OBJECTID != FID + 1')
+ndat = object_ids.size
 object_inds = []
 indp = np.arange(ngrd)
 for object_id in object_ids:
     cnd = (mask_data == object_id)
     object_inds.append(indp[cnd])
 object_inds = np.array(object_inds,dtype='object')
+out_data = np.full((ndat,src_nb),np.nan)
 
 # Calculate mean indices
 if args.debug:
@@ -230,8 +229,7 @@ if args.debug:
     dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
     dst_data = np.full((dst_nb,ngrd),np.nan)
-out_data = np.full((nobject,dst_nb),np.nan)
-dst_band = args.param
+    dst_band = args.param
 
 for iband,param in enumerate(args.param):
     data = src_data[iband]
@@ -260,6 +258,9 @@ with open(args.out_csv,'w') as fp:
 
 if args.shp_fnam is not None:
     r = shapefile.Reader(args.shp_fnam)
+    nobject = len(r)
+    if not np.all(object_ids == np.arange(nobject)+1):
+        raise ValueError('Error, OBJECTID != FID + 1')
     w = shapefile.Writer(args.out_shp)
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
