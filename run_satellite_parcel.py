@@ -156,32 +156,24 @@ class Parcel(Satellite_Process):
                 for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
                     if flag:
                         command += ' --param {}'.format(param.strip())
-                if self.values['sc_flag'][0]:
-                    for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
-                        if flag:
-                            command += ' --cflag_sc "S{}:True"'.format(param.strip())
-                else:
-                    for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
-                        if flag:
-                            command += ' --cflag_sc "S{}:False"'.format(param.strip())
-                if self.values['sc_flag'][1]:
-                    for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
-                        if flag:
-                            command += ' --cflag_sc "{}:True"'.format(param.strip())
-                else:
-                    for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
-                        if flag:
-                            command += ' --cflag_sc "{}:False"'.format(param.strip())
-                if self.values['sc_flag'][2]:
-                    for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
-                        if flag:
-                            command += ' --cflag_sc "{}:True"'.format(param.strip())
-                else:
-                    for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
-                        if flag:
-                            command += ' --cflag_sc "{}:False"'.format(param.strip())
-
-
+                for param,flag,value in zip(self.list_labels['out_refs'],self.values['out_refs'],self.values['cr_sc_refs']):
+                    if flag:
+                        command += ' --cflag_sc "S{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['out_nrefs'],self.values['out_nrefs'],self.values['cr_sc_nrefs']):
+                    if flag:
+                        command += ' --cflag_sc "{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['out_inds'],self.values['out_inds'],self.values['cr_sc_inds']):
+                    if flag:
+                        command += ' --cflag_sc "{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['out_refs'],self.values['out_refs'],self.values['cr_ref_refs']):
+                    if flag:
+                        command += ' --cflag_ref "S{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['out_nrefs'],self.values['out_nrefs'],self.values['cr_ref_nrefs']):
+                    if flag:
+                        command += ' --cflag_ref "{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['out_inds'],self.values['out_inds'],self.values['cr_ref_inds']):
+                    if flag:
+                        command += ' --cflag_ref "{}:{}"'.format(param.strip(),value)
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_parcel.pdf'.format(dstr)))
                 #for value,flag in zip(self.ax1_zmin[2],self.values['out_refs']):
                 #    if flag:
