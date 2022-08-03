@@ -238,10 +238,9 @@ for iband,param in enumerate(args.param):
     if cflag_ref[param]:
         data[mask_ref] = np.nan
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
-    if args.debug:
-        for i,inds in enumerate(object_inds):
-            dst_data[iband,inds] = out_data[i,iband]
 if args.debug:
+    for i,inds in enumerate(object_inds):
+        dst_data[:,inds] = out_data[i,:].reshape(-1,1)
     dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
 # Output results
