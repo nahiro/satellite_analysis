@@ -229,7 +229,6 @@ if args.debug:
     dst_ny = src_ny
     dst_nb = len(args.param)
     dst_shape = (dst_ny,dst_nx)
-    #dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
     dst_data = np.full((dst_nb,ngrd),np.nan)
 out_data = np.full((nobject,dst_nb),np.nan)
 dst_band = args.param
