@@ -26,6 +26,8 @@ class Interp(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        d1 = start_dtim
+        d2 = end_dtim+timedelta(days=120)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         if not os.path.exists(self.s2_analysis):
             os.makedirs(self.s2_analysis)
@@ -57,6 +59,11 @@ class Interp(Satellite_Process):
         if len(parcel_fnams) < 1:
             self.print_message('No parcel data for process.',print_time=False)
 
+        # Make file list
+        tmp_fnam = self.mktemp(suffix='.txt')
+        with open(tmp_fnam,'w') as fp:
+            fp.write('\n'.join(parcel_fnams)+'\n')
+
         # Interpolate data
         for year in data_years:
             ystr = '{}'.format(year)
@@ -65,6 +72,14 @@ class Interp(Satellite_Process):
                 os.makedirs(dnam)
             if not os.path.isdir(dnam):
                 raise IOError('Error, no such folder >>> {}'.format(dnam))
+        command = self.python_path
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
+        command += ' --inp_list "{}"'.format(tmp_fnam)
+        command += ' --dstdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
+        command += ' --tmin {:%Y-%m-%d}'.format(d1)
+        command += ' --tmax {:%Y-%m-%d}'.format(d2)
+        command += ' --tstp 1.0'
+        self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(dstr,d1,d2))
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
