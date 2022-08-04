@@ -94,7 +94,7 @@ if not args.no_check_grid:
     indx2 = np.argmin(np.abs(src_xp[0,:]-dst_xp[0,-1]))+1
     indy1 = np.argmin(np.abs(src_yp[:,0]-dst_yp[0,0]))
     indy2 = np.argmin(np.abs(src_yp[:,0]-dst_yp[-1,0]))+1
-    if np.all(dst_xp[0,:] == src_xp[0,indx1:indx2]) and np.all(dst_yp[:,0] == src_yp[indy1:indy2,0]):
+    if np.array_equal(dst_xp[0,:],src_xp[0,indx1:indx2]) and np.array_equal(dst_yp[:,0],src_yp[indy1:indy2,0]):
         flag_grid = True
     else:
         flag_grid = False

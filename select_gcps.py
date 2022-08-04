@@ -46,9 +46,9 @@ xi_uniq_step = np.diff(xi_uniq).min()
 yi_uniq_step = np.diff(yi_uniq).min()
 xc_offset = xc_uniq[0]-xi_uniq[0]
 yc_offset = yc_uniq[0]-yi_uniq[0]
-if not np.all(xc_uniq[1:]-xi_uniq[1:] == xc_offset):
+if not np.array_equal(xc_uniq[1:]-xi_uniq[1:],xc_offset):
     raise ValueError('Error, different xc offset >>> {}'.format(args.inp_fnam))
-if not np.all(yc_uniq[1:]-yi_uniq[1:] == yc_offset):
+if not np.array_equal(yc_uniq[1:]-yi_uniq[1:],yc_offset):
     raise ValueError('Error, different yc offset >>> {}'.format(args.inp_fnam))
 xmin = xi.min()
 xmax = xi.max()

@@ -251,7 +251,7 @@ elif len(args.src_geotiff) == len(plots):
             rest = rest_bunch[indx]
             size = len(indx)
             indx_member = np.arange(size)
-            if not np.all(np.argsort(ng) == indx_member): # wrong order
+            if not np.array_equal(np.argsort(ng),indx_member): # wrong order
                 raise ValueError('Error, plot={}, ng={} >>> {}'.format(plot,ng,args.csv_fnam))
             # Read Source GeoTIFF
             ds = gdal.Open(fnam)
