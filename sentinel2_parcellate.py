@@ -259,7 +259,7 @@ if args.shp_fnam is not None:
     r = shapefile.Reader(args.shp_fnam)
     nobject = len(r)
     if args.use_index:
-        if np.all(object_ids == np.arange(nobject)+1):
+        if np.array_equal(object_ids,np.arange(nobject)+1):
             all_data = out_data
         else:
             if (object_ids[0] < 1) or (object_ids[-1] > nobject):
@@ -271,7 +271,7 @@ if args.shp_fnam is not None:
         all_ids = []
         for rec in r.iterRecords():
             all_ids.append(rec.OBJECTID)
-        if np.all(object_ids == np.array(all_ids)):
+        if np.array_equal(object_ids,np.array(all_ids)):
             all_data = out_data
         else:
             try:
