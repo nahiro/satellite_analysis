@@ -146,14 +146,14 @@ def set_title(pnam):
 def change_color(pnam):
     if pnam == 'start_date':
         start_dtim = datetime.strptime(top_start.get(),date_fmt)
-        first_dtim = start_dtim-timedelta(days=30)
+        first_dtim = start_dtim-timedelta(days=60)
         top_first.set_date(first_dtim)
         style = ttk.Style()
         style.configure('top_start.DateEntry',foreground='red')
         style.configure('top_first.DateEntry',foreground='red')
     elif pnam == 'end_date':
         end_dtim = datetime.strptime(top_end.get(),date_fmt)
-        last_dtim = end_dtim+timedelta(days=140)
+        last_dtim = end_dtim+timedelta(days=180)
         top_last.set_date(last_dtim)
         style = ttk.Style()
         style.configure('top_end.DateEntry',foreground='red')
