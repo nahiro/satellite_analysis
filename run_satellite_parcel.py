@@ -2,13 +2,7 @@ import os
 import sys
 import re
 from datetime import datetime
-try:
-    import gdal
-except Exception:
-    from osgeo import gdal
-from glob import glob
 import numpy as np
-from subprocess import call
 from proc_satellite_class import Satellite_Process
 
 class Parcel(Satellite_Process):

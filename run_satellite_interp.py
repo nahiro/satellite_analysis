@@ -1,14 +1,8 @@
 import os
 import sys
 import re
-from datetime import datetime
-try:
-    import gdal
-except Exception:
-    from osgeo import gdal
-from glob import glob
+from datetime import datetime,timedelta
 import numpy as np
-from subprocess import call
 from proc_satellite_class import Satellite_Process
 
 class Interp(Satellite_Process):
@@ -79,7 +73,9 @@ class Interp(Satellite_Process):
         command += ' --tmin {:%Y-%m-%d}'.format(d1)
         command += ' --tmax {:%Y-%m-%d}'.format(d2)
         command += ' --tstp 1.0'
-        self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(dstr,d1,d2))
+        self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(d1,d2))
+        if os.path.exists(tmp_fnam):
+            os.remove(tmp_fnam)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
