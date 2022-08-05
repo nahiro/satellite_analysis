@@ -222,15 +222,11 @@ for object_id in object_ids:
 object_inds = np.array(object_inds,dtype='object')
 out_data = np.full((ndat,src_nb),np.nan)
 
-# Calculate mean indices
-if args.debug:
-    dst_nx = src_nx
-    dst_ny = src_ny
-    dst_nb = len(args.param)
-    dst_shape = (dst_ny,dst_nx)
-    dst_data = np.full((dst_nb,ngrd),np.nan)
-    dst_band = args.param
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
 
+# Calculate mean indices
 for iband,param in enumerate(args.param):
     data = src_data[iband]
     if cflag_sc[param]:
@@ -238,14 +234,7 @@ for iband,param in enumerate(args.param):
     if cflag_ref[param]:
         data[mask_ref] = np.nan
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
-if args.debug:
-    for i,inds in enumerate(object_inds):
-        dst_data[:,inds] = out_data[i,:].reshape(-1,1)
-    dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
-# Read Shapefile
-r = shapefile.Reader(args.shp_fnam)
-nobject = len(r)
 if args.use_index:
     all_ids = np.arange(nobject)+1
     if np.array_equal(object_ids,all_ids):
@@ -269,6 +258,17 @@ else:
             raise ValueError('Error in finding OBJECTID in {}'.format(args.shp_fnam))
         all_data = np.full((nobject,src_nb),np.nan)
         all_data[indx] = out_data
+
+if args.debug:
+    dst_nx = src_nx
+    dst_ny = src_ny
+    dst_nb = len(args.param)
+    dst_shape = (dst_ny,dst_nx)
+    dst_data = np.full((dst_nb,ngrd),np.nan)
+    dst_band = args.param
+    for i,inds in enumerate(object_inds):
+        dst_data[:,inds] = out_data[i,:].reshape(-1,1)
+    dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
