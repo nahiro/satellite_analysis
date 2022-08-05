@@ -243,56 +243,59 @@ if args.debug:
         dst_data[:,inds] = out_data[i,:].reshape(-1,1)
     dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
-# Output results
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    all_ids = np.arange(nobject)+1
+    if np.array_equal(object_ids,all_ids):
+        all_data = out_data
+    else:
+        if (object_ids[0] < 1) or (object_ids[-1] > nobject):
+            raise ValueError('Error, object_ids[0]={}, object_ids[-1]={}, nobject={} >>> {}'.format(object_ids[0],object_ids[-1],nobject,args.mask_geotiff))
+        indx = object_ids-1
+        all_data = np.full((nobject,src_nb),np.nan)
+        all_data[indx] = out_data
+else:
+    all_ids = []
+    for rec in r.iterRecords():
+        all_ids.append(rec.OBJECTID)
+    if np.array_equal(object_ids,np.array(all_ids)):
+        all_data = out_data
+    else:
+        try:
+            indx = np.array([all_ids.index(object_id) for object_id in object_ids])
+        except Exception:
+            raise ValueError('Error in finding OBJECTID in {}'.format(args.shp_fnam))
+        all_data = np.full((nobject,src_nb),np.nan)
+        all_data[indx] = out_data
+
+# Output CSV
 with open(args.out_csv,'w') as fp:
     fp.write('{:>8s}'.format('OBJECTID'))
     for param in args.param:
         fp.write(', {:>13s}'.format(param))
     fp.write('\n')
-    for iobj,object_id in enumerate(object_ids):
+    for iobj,object_id in enumerate(all_ids):
         fp.write('{:8d}'.format(object_id))
         for iband,param in enumerate(args.param):
-            fp.write(', {:>13.6e}'.format(out_data[iobj,iband]))
+            fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
         fp.write('\n')
 
-if args.shp_fnam is not None:
-    r = shapefile.Reader(args.shp_fnam)
-    nobject = len(r)
-    if args.use_index:
-        if np.array_equal(object_ids,np.arange(nobject)+1):
-            all_data = out_data
-        else:
-            if (object_ids[0] < 1) or (object_ids[-1] > nobject):
-                raise ValueError('Error, object_ids[0]={}, object_ids[-1]={}, nobject={} >>> {}'.format(object_ids[0],object_ids[-1],nobject,args.mask_geotiff))
-            indx = object_ids-1
-            all_data = np.full((nobject,src_nb),np.nan)
-            all_data[indx] = out_data
-    else:
-        all_ids = []
-        for rec in r.iterRecords():
-            all_ids.append(rec.OBJECTID)
-        if np.array_equal(object_ids,np.array(all_ids)):
-            all_data = out_data
-        else:
-            try:
-                indx = np.array([all_ids.index(object_id) for object_id in object_ids])
-            except Exception:
-                raise ValueError('Error in finding OBJECTID {} in {}'.format(args.shp_fnam))
-            all_data = np.full((nobject,src_nb),np.nan)
-            all_data[indx] = out_data
-    w = shapefile.Writer(args.out_shp)
-    w.shapeType = shapefile.POLYGON
-    w.fields = r.fields[1:] # skip first deletion field
-    for param in args.param:
-        w.field(param,'F',13,6)
-    for iobj,shaperec in enumerate(r.iterShapeRecords()):
-        rec = shaperec.record
-        shp = shaperec.shape
-        rec.extend(list(all_data[iobj]))
-        w.shape(shp)
-        w.record(*rec)
-    w.close()
-    shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
+# Output Shapefile
+w = shapefile.Writer(args.out_shp)
+w.shapeType = shapefile.POLYGON
+w.fields = r.fields[1:] # skip first deletion field
+for param in args.param:
+    w.field(param,'F',13,6)
+for iobj,shaperec in enumerate(r.iterShapeRecords()):
+    rec = shaperec.record
+    shp = shaperec.shape
+    rec.extend(list(all_data[iobj]))
+    w.shape(shp)
+    w.record(*rec)
+w.close()
+shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
 # For debug
 if args.debug:
