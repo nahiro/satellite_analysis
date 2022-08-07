@@ -18,7 +18,7 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
 # Default values
 TMIN = '20190315'
 TMAX = '20190615'
-TSTP = 1.0 # day
+TSTP = 1 # day
 SMOOTH = 0.002
 
 # Read options
@@ -28,7 +28,7 @@ parser.add_argument('-I','--inp_fnam',default=None,action='append',help='Input f
 parser.add_argument('-D','--dstdir',default=None,help='Destination directory (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--tstp',default=TSTP,type=float,help='Time step in day (%(default)s)')
+parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
 args = parser.parse_args()
 if args.inp_list is None and args.inp_fnam is None:
@@ -76,12 +76,19 @@ inp_ntim = date2num(inp_dtim)
 inp_ndat = len(inp_dtim)
 nobject = len(object_ids)
 params = columns[1:]
+if inp_ndat < 5 or nobject < 1:
+    raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
 # Interpolate data
 d1 = datetime.strptime(args.tmin,'%Y%m%d')
 d2 = datetime.strptime(args.tmax,'%Y%m%d')
-out_ntim = np.arange(date2num(d1),date2num(d2)+0.1*args.tstp,args.tstp)
-out_dtim = num2date(out_ntim)
+out_dtim = []
+d = d1
+while d <= d2:
+    out_dtim.append(d)
+    d += timedelta(days=args.tstp)
+out_dtim = np.array(out_dtim)
+out_ntim = date2num(out_dtim)
 out_ndat = len(out_dtim)
 out_nb = len(params)
 out_data = np.full((out_ndat,nobject,out_nb),np.nan)
