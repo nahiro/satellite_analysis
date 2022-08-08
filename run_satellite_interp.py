@@ -34,10 +34,10 @@ class Interp(Satellite_Process):
         command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'parcel'))
         command += ' --dstdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
         command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
-        command += ' --tmin {:%Y-%m-%d}'.format(d1)
-        command += ' --tmax {:%Y-%m-%d}'.format(d2)
-        command += ' --data_tmin {:%Y-%m-%d}'.format(first_dtim)
-        command += ' --data_tmax {:%Y-%m-%d}'.format(last_dtim)
+        command += ' --tmin {:%Y%m%d}'.format(d1)
+        command += ' --tmax {:%Y%m%d}'.format(d2)
+        command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
+        command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
         command += ' --tstp 1'
         command += ' --smooth="{}"'.format(self.values['p_smooth'])
         if self.values['oflag'][2]:
