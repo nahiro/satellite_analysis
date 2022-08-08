@@ -13,65 +13,86 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 # Default values
 TMIN = '20190315'
 TMAX = '20190615'
-TSTP = 1.0 # day
+TSTP = 1 # day
+TMGN = 60
+SMOOTH = 0.02
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
+parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--tstp',default=TSTP,type=float,help='Time step in day (%(default)s)')
-parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
+parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
+parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
+parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor for 1st difference from 0 to 1 (%(default)s)')
 args = parser.parse_args()
-if args.inp_list is None and args.inp_fnam is None:
-    raise ValueError('Error, args.inp_list={}, args.inp_fnam={}'.format(args.inp_list,args.inp_fnam))
+tmin = datetime.strptime(args.tmin,'%Y%m%d')
+tmax = datetime.strptime(args.tmax,'%Y%m%d')
+if args.data_tmin is None:
+    d1 = tmin-timedelta(days=args.tmgn)
+else:
+    d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
+if args.data_tmax is None:
+    d2 = tmax+timedelta(days=args.tmgn)
+else:
+    d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 
 # Read data
-d1 = datetime.strptime(args.tmin,'%Y%m%d')
-d2 = datetime.strptime(args.tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
 columns = None
 object_ids = None
 iband = None
 inp_ndvi = []
 inp_dtim = []
-for year in data_years:
-    ystr = '{}'.format(year)
-    dnam = os.path.join(args.inpdir,ystr)
-    if not os.path.isdir(dnam):
-        continue
-    for f in sorted(os.listdir(dnam)):
-        m = re.search('^('+'\d'*8+')_interp\.csv$',f)
-        if not m:
-            continue
-        dstr = m.group(1)
-        d = datetime.strptime(dstr,'%Y%m%d')
-        if d < first_dtim or d > last_dtim:
-            continue
-        fnam = os.path.join(dnam,f)
-        inp_dtim.append(d)
-        df = pd.read_csv(fnam,comment='#')
-        df.columns = df.columns.str.strip()
-        if columns is None:
-            columns = df.columns
-            if columns[0].upper() != 'OBJECTID':
-                raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-            if not 'NDVI' in columns:
-                raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
-            iband = columns.index('NDVI')
-        elif not np.array_equal(df.columns,columns):
-            raise ValueError('Error, different columns >>> {}'.format(fnam))
-        if object_ids is None:
-            object_ids = df.iloc[:,0].astype(int)
-        elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-        inp_ndvi.append(df.iloc[:,1:].astype(float))
-inp_ndvi = np.array(inp_ndvi) # (NDAT,NOBJECT,NBAND)
+d = d1
+while d <= d2:
+    ystr = '{}'.format(d.year)
+    dstr = '{:%Y%m%d}'.format(d)
+    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
+    if not os.path.exists(fnam):
+        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
+        if not os.path.exists(gnam):
+            raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
+        else:
+            fnam = gnam
+    inp_dtim.append(d)
+    df = pd.read_csv(fnam,comment='#')
+    df.columns = df.columns.str.strip()
+    if columns is None:
+        columns = df.columns
+        if columns[0].upper() != 'OBJECTID':
+            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+        if not 'NDVI' in columns:
+            raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
+        iband = columns.to_list().index('NDVI')
+    elif not np.array_equal(df.columns,columns):
+        raise ValueError('Error, different columns >>> {}'.format(fnam))
+    if object_ids is None:
+        object_ids = df.iloc[:,0].astype(int)
+    elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    inp_ndvi.append(df.iloc[:,iband].astype(float))
+    d += timedelta(days=args.tstp)
+inp_ndvi = np.array(inp_ndvi) # (NDAT,NOBJECT)
 inp_dtim = np.array(inp_dtim)
 inp_ntim = date2num(inp_dtim)
 inp_ndat = len(inp_dtim)
 nobject = len(object_ids)
+if inp_ndat < 5 or nobject < 1:
+    raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
+
+for iobj,object_id in enumerate(object_ids):
+    x = inp_ntim
+    y = inp_ndvi[:,iobj]
+    if np.isnan(y[0]):
+        continue
+    y1 = csaps(x,np.gradient(y),x
+    ysmo = csaps(xc,yc,out_ntim,smooth=args.smooth)
+
 
 """
 # Interpolate data
