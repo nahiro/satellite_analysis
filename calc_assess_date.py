@@ -13,8 +13,8 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 # Default values
 TMIN = '20190315'
 TMAX = '20190615'
+TMGN = 90 # day
 TSTP = 1 # day
-TMGN = 60
 SMOOTH = 0.02
 
 # Read options

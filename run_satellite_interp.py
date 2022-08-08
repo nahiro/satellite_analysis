@@ -73,6 +73,10 @@ class Interp(Satellite_Process):
         command += ' --tmin {:%Y-%m-%d}'.format(d1)
         command += ' --tmax {:%Y-%m-%d}'.format(d2)
         command += ' --tstp 1'
+        if self.values['oflag'][2]:
+            command += ' --overwrite'
+        if self.values['oflag'][3]:
+            command += ' --tentative_overwrite'
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(d1,d2))
         if os.path.exists(tmp_fnam):
             os.remove(tmp_fnam)
