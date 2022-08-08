@@ -25,8 +25,8 @@ scr_dir = os.path.join(HOME,'SatelliteTool')
 netrc_dir = HOME
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 now_dtim = datetime.now()
-main_start_date = (now_dtim-timedelta(days=270)).strftime('%Y-%m%b-%d')
-main_end_date = (now_dtim-timedelta(days=180)).strftime('%Y-%m%b-%d')
+main_start_date = (now_dtim-timedelta(days=300)).strftime('%Y-%m%b-%d')
+main_end_date = (now_dtim-timedelta(days=210)).strftime('%Y-%m%b-%d')
 main_field_data = os.path.join(top_dir,'Field_Data','Current')
 main_drone_analysis = os.path.join(top_dir,'Drone_Analysis','Current')
 main_s1_analysis = os.path.join(top_dir,'Sentinel-1_Analysis')
@@ -279,11 +279,11 @@ end_date = config['main'].get('main.end_date')
 first_date = config['main'].get('main.first_date')
 if first_date == '':
     start_dtim = datetime.strptime(start_date,date_fmt)
-    first_date = (start_dtim-timedelta(days=60)).strftime(date_fmt)
+    first_date = (start_dtim-timedelta(days=90)).strftime(date_fmt)
 last_date = config['main'].get('main.last_date')
 if last_date == '':
     end_dtim = datetime.strptime(end_date,date_fmt)
-    last_dtim = end_dtim+timedelta(days=180)
+    last_dtim = end_dtim+timedelta(days=210)
     if last_dtim > now_dtim:
         last_dtim = now_dtim
     last_date = last_dtim.strftime(date_fmt)
