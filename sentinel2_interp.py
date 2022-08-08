@@ -91,7 +91,7 @@ params = columns[1:]
 if inp_ndat < 5 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
-# Interpolate data
+# Make output time list
 out_dtim = []
 d = d1
 while d <= d2:
@@ -99,19 +99,10 @@ while d <= d2:
     d += timedelta(days=args.tstp)
 out_dtim = np.array(out_dtim)
 out_ntim = date2num(out_dtim)
-out_ndat = len(out_dtim)
-out_nb = len(params)
-out_data = np.full((out_ndat,nobject,out_nb),np.nan)
-for iobj,object_id in enumerate(object_ids):
-    for iband,param in enumerate(params):
-        cnd = ~np.isnan(inp_data[:,iobj,iband])
-        xc = inp_ntim[cnd]
-        yc = inp_data[cnd,iobj,iband]
-        if xc.size > 4:
-            ys = csaps(xc,yc,out_ntim,smooth=args.smooth)
-            out_data[:,iobj,iband] = ys
 
-# Output CSV
+# Make output file list
+out_idats = []
+out_fnams = []
 for idat,dtim in enumerate(out_dtim):
     if dtim < tmin or dtim > tmax:
         dnam = os.path.join(args.tendir,'{}'.format(dtim.year))
@@ -129,6 +120,28 @@ for idat,dtim in enumerate(out_dtim):
         os.makedirs(dnam)
     if not os.path.isdir(dnam):
         raise IOError('No such folder >>> {}'.format(dnam))
+    out_idats.append(idat)
+    out_fnams.append(fnam)
+if len(out_idats) < 1:
+    sys.stderr.write('No need to interpolate data.\n')
+    sys.stderr.flush()
+    sys.exit()
+
+# Interpolate data
+out_ndat = len(out_dtim)
+out_nb = len(params)
+out_data = np.full((out_ndat,nobject,out_nb),np.nan)
+for iobj,object_id in enumerate(object_ids):
+    for iband,param in enumerate(params):
+        cnd = ~np.isnan(inp_data[:,iobj,iband])
+        xc = inp_ntim[cnd]
+        yc = inp_data[cnd,iobj,iband]
+        if xc.size > 4:
+            ys = csaps(xc,yc,out_ntim,smooth=args.smooth)
+            out_data[:,iobj,iband] = ys
+
+# Output CSV
+for idat,fnam in zip(out_idats,out_fnams):
     with open(fnam,'w') as fp:
         fp.write('{:>8s}'.format('OBJECTID'))
         for param in params:
