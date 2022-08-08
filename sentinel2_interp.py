@@ -108,17 +108,27 @@ for iobj,object_id in enumerate(object_ids):
         xc = inp_ntim[cnd]
         yc = inp_data[cnd,iobj,iband]
         if xc.size > 4:
-            ysmo = csaps(xc,yc,out_ntim,smooth=args.smooth)
-            out_data[:,iobj,iband] = ysmo
+            ys = csaps(xc,yc,out_ntim,smooth=args.smooth)
+            out_data[:,iobj,iband] = ys
 
 # Output CSV
 for idat,dtim in enumerate(out_dtim):
-    dnam = os.path.join(args.dstdir,'{}'.format(dtim.year))
+    if dtim < tmin or dtim > tmax:
+        dnam = os.path.join(args.tendir,'{}'.format(dtim.year))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+        if os.path.exists(fnam) and args.tentative_overwrite:
+            os.remove(fnam)
+    else:
+        dnam = os.path.join(args.dstdir,'{}'.format(dtim.year))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+        if os.path.exists(fnam) and args.overwrite:
+            os.remove(fnam)
+    if os.path.exists(fnam):
+        continue
     if not os.path.exists(dnam):
         os.makedirs(dnam)
     if not os.path.isdir(dnam):
         raise IOError('No such folder >>> {}'.format(dnam))
-    fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
     with open(fnam,'w') as fp:
         fp.write('{:>8s}'.format('OBJECTID'))
         for param in params:
