@@ -72,7 +72,7 @@ class Interp(Satellite_Process):
         command += ' --dstdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
         command += ' --tmin {:%Y-%m-%d}'.format(d1)
         command += ' --tmax {:%Y-%m-%d}'.format(d2)
-        command += ' --tstp 1.0'
+        command += ' --tstp 1'
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(d1,d2))
         if os.path.exists(tmp_fnam):
             os.remove(tmp_fnam)
