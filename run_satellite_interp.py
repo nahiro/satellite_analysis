@@ -28,58 +28,23 @@ class Interp(Satellite_Process):
         if not os.path.isdir(self.s2_analysis):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
 
-        # Check Parcel
-        parcel_fnams = []
-        parcel_dstrs = []
-        for year in data_years:
-            ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_analysis,'parcel',ystr)
-            if not os.path.isdir(dnam):
-                continue
-            for f in sorted(os.listdir(dnam)):
-                m = re.search('^('+'\d'*8+')_parcel\.csv$',f)
-                if not m:
-                    continue
-                dstr = m.group(1)
-                d = datetime.strptime(dstr,'%Y%m%d')
-                if d < first_dtim or d > last_dtim:
-                    continue
-                fnam = os.path.join(dnam,f)
-                parcel_fnams.append(fnam)
-                parcel_dstrs.append(dstr)
-        inds = np.argsort(parcel_dstrs)#[::-1]
-        parcel_fnams = [parcel_fnams[i] for i in inds]
-        parcel_dstrs = [parcel_dstrs[i] for i in inds]
-        if len(parcel_fnams) < 1:
-            self.print_message('No parcel data for process.',print_time=False)
-
-        # Make file list
-        tmp_fnam = self.mktemp(suffix='.txt')
-        with open(tmp_fnam,'w') as fp:
-            fp.write('\n'.join(parcel_fnams)+'\n')
-
         # Interpolate data
-        for year in data_years:
-            ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_analysis,'interp',ystr)
-            if not os.path.exists(dnam):
-                os.makedirs(dnam)
-            if not os.path.isdir(dnam):
-                raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
-        command += ' --inp_list "{}"'.format(tmp_fnam)
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'parcel'))
         command += ' --dstdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
         command += ' --tmin {:%Y-%m-%d}'.format(d1)
         command += ' --tmax {:%Y-%m-%d}'.format(d2)
+        command += ' --data_tmin {:%Y-%m-%d}'.format(first_dtim)
+        command += ' --data_tmax {:%Y-%m-%d}'.format(last_dtim)
         command += ' --tstp 1'
+        command += ' --smooth="{}"'.format(self.values['p_smooth'])
         if self.values['oflag'][2]:
             command += ' --overwrite'
         if self.values['oflag'][3]:
             command += ' --tentative_overwrite'
-        self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(d1,d2))
-        if os.path.exists(tmp_fnam):
-            os.remove(tmp_fnam)
+        self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(first_dtim,last_dtim))
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
