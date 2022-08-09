@@ -75,7 +75,6 @@ src_trans = ds.GetGeoTransform()
 if src_trans[2] != 0.0 or src_trans[4] != 0.0:
     raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
 src_meta = ds.GetMetadata()
-#src_data = ds.ReadAsArray().astype(np.float64).reshape(src_nb,src_ny,src_nx)
 src_data = ds.ReadAsArray().astype(np.float64).reshape(src_nb,ngrd)
 src_band = []
 for iband in range(src_nb):
@@ -131,7 +130,7 @@ out_data = np.full((ndat,src_nb),np.nan)
 r = shapefile.Reader(args.shp_fnam)
 nobject = len(r)
 
-# Calculate mean values
+# Calculate weighted mean values
 for iband,param in enumerate(PARAMS):
     data = src_data[iband]
     out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
