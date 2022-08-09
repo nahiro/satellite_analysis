@@ -2,7 +2,7 @@
 import os
 import sys
 import re
-from datetime import datetime
+from datetime import datetime,timedelta
 import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date
@@ -90,8 +90,7 @@ for iobj,object_id in enumerate(object_ids):
     y = inp_ndvi[:,iobj]
     if np.isnan(y[0]):
         continue
-    y1 = csaps(x,np.gradient(y),x
-    ysmo = csaps(xc,yc,out_ntim,smooth=args.smooth)
+    y1 = csaps(x,np.gradient(y),x,smooth=args.smooth)
 
 
 """
