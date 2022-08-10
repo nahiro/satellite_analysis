@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date
 from csaps import csaps
+from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser,RawTextHelpFormatter
 
@@ -16,12 +17,17 @@ TMAX = '20190615'
 TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.02
+GROW_PERIOD = 120.0 # day
+STHR = -0.0005
+DTHR1 = 30.0 # day
+DTHR2 = 35.0 # day
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-P','--plant',default=None,help='Planting CSV name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
@@ -29,7 +35,13 @@ parser.add_argument('--data_tmax',default=None,help='Max date of input data in t
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor for 1st difference from 0 to 1 (%(default)s)')
+parser.add_argument('--grow_period',default=GROW_PERIOD,type=float,help='Length of growing period in days (%(default)s)')
+parser.add_argument('--sthr',default=STHR,type=float,help='Threshold for second NDVI difference (%(default)s)')
+parser.add_argument('--dthr1',default=DTHR1,type=float,help='Threshold of days between peaks (%(default)s)')
+parser.add_argument('--dthr2',default=DTHR2,type=float,help='Threshold of days between peaks (%(default)s)')
 args = parser.parse_args()
+if args.plant is None or not os.path.exists(args.plant):
+    raise IOError('Error, no such file >>> {}'.format(args.plant))
 tmin = datetime.strptime(args.tmin,'%Y%m%d')
 tmax = datetime.strptime(args.tmax,'%Y%m%d')
 if args.data_tmin is None:
@@ -41,7 +53,7 @@ if args.data_tmax is None:
 else:
     d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 
-# Read data
+# Read NDVI data
 data_years = np.arange(d1.year,d2.year+1,1)
 columns = None
 object_ids = None
@@ -85,12 +97,87 @@ nobject = len(object_ids)
 if inp_ndat < 5 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
+# Read planting data
+df = pd.read_csv(args.plant,comment='#')
+df.columns = df.columns.str.strip()
+if df.columns[0].upper() != 'OBJECTID':
+    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.plant))
+elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.plant))
+if not 'trans_d' in df.columns:
+    raise ValueError('Error in finding trans_d >>> {}'.format(args.plant))
+iband = df.columns.to_list().index('trans_d')
+trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
+head_d = np.full(nobject,np.nan) # Heading date
+head_p = np.full(nobject,-1,dtype=np.int32) # Pattern of heading date
+harvest_d = np.full(nobject,np.nan) # Harvesting date
+harvest_p = np.full(nobject,-1,dtype=np.int32) # Pattern of harvesting date
+
 for iobj,object_id in enumerate(object_ids):
-    x = inp_ntim
-    y = inp_ndvi[:,iobj]
-    if np.isnan(y[0]):
+    if np.isnan(trans_d[iobj]):
         continue
-    y1 = csaps(x,np.gradient(y),x,smooth=args.smooth)
+    cnd = (inp_ntim >= trans_d[iobj]) & (inp_ntim <= trans_d[iobj]+args.grow_period)
+    x = inp_ntim[cnd]
+    y = inp_ndvi[cnd,iobj]
+    if (x.size < 5) or np.any(np.isnan(y)):
+        continue
+    x_peak = x[np.argmax(y)] # NDVI-peak date
+    y1 = np.gradient(y)
+    y2 = np.gradient(csaps(x,y1,x,smooth=args.smooth))
+    min_peaks,min_properties = find_peaks(-y2)
+    if min_peaks.size <= 1:
+        xp_1 = x_peak
+        xp_2 = x_peak
+        head_p[iobj] = 1
+    else:
+        max_peaks,max_properties = find_peaks(y2)
+        x_mins = x[min_peaks] 
+        x_maxs = x[max_peaks] 
+        y2_mins = y2[min_peaks] 
+        xp_1 = np.nan
+        xp_2 = np.nan
+        for x_min,y2_min in zip(x_mins,y2_mins):
+            if (x_min >= trans_d[iobj]+args.dthr1) and (y2_min < args.sthr):
+                cnd = (x_maxs > x_min)
+                x_cnd = x_maxs[cnd]
+                if x_cnd.size < 1:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                    head_p[iobj] = 2
+                    continue
+                xp_1 = x_min
+                xp_2 = x_cnd[0]
+                head_p[iobj] = 3
+                if xp_2-xp_1 > args.dthr2:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                    head_p[iobj] = 4
+                break
+            elif (x_min < trans_d[iobj]+args.dthr1) and (y2_min < args.sthr):
+                cnd = (x_maxs > x_min)
+                x_cnd = x_maxs[cnd]
+                if x_cnd.size < 1:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                    head_p[iobj] = 5
+                    continue
+                xp_1 = x_min
+                xp_2 = x_cnd[0]
+                head_p[iobj] = 6
+                if xp_2-xp_1 > args.dthr2:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                    head_p[iobj] = 7
+            elif ~np.isnan(xp_2) and ~np.isnan(xp_2):
+                head_p[iobj] = 8
+            else:
+                xp_1 = np.nan
+                xp_2 = np.nan
+                head_p[iobj] = 9
+    if np.isnan(xp_1) or np.isnan(xp_2):
+        xp_1 = x_peak
+        xp_2 = x_peak
+    x_head = (xp_1+xp_2)*0.5
 
 
 """
