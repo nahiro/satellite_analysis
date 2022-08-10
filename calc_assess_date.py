@@ -9,6 +9,7 @@ from matplotlib.dates import date2num,num2date
 from csaps import csaps
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
@@ -27,6 +28,7 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-P','--plant',default=None,help='Planting CSV name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
@@ -39,6 +41,9 @@ parser.add_argument('--grow_period',default=GROW_PERIOD,type=float,help='Length 
 parser.add_argument('--sthr',default=STHR,type=float,help='Threshold for second NDVI difference (%(default)s)')
 parser.add_argument('--dthr1',default=DTHR1,type=float,help='Threshold of days between peaks (%(default)s)')
 parser.add_argument('--dthr2',default=DTHR2,type=float,help='Threshold of days between peaks (%(default)s)')
+parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
 if args.plant is None or not os.path.exists(args.plant):
     raise IOError('Error, no such file >>> {}'.format(args.plant))
@@ -52,6 +57,14 @@ if args.data_tmax is None:
     d2 = tmax+timedelta(days=args.tmgn)
 else:
     d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
+if args.out_csv is None or args.out_shp is None or args.fignam is None:
+    bnam = 'assess_{:%Y%m%d}_{:%Y%m%d}'.format(d1,d2)
+    if args.out_csv is None:
+        args.out_csv = bnam+'_parcel.csv'
+    if args.out_shp is None:
+        args.out_shp = bnam+'_parcel.shp'
+    if args.fignam is None:
+        args.fignam = bnam+'_parcel.pdf'
 
 # Read NDVI data
 data_years = np.arange(d1.year,d2.year+1,1)
@@ -113,6 +126,12 @@ head_p = np.full(nobject,-1,dtype=np.int32) # Pattern of heading date
 harvest_d = np.full(nobject,np.nan) # Harvesting date
 harvest_p = np.full(nobject,-1,dtype=np.int32) # Pattern of harvesting date
 
+if args.debug:
+    if not args.batch:
+        plt.interactive(True)
+    fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
+    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+    pdf = PdfPages(args.fignam)
 for iobj,object_id in enumerate(object_ids):
     if np.isnan(trans_d[iobj]):
         continue
@@ -178,7 +197,22 @@ for iobj,object_id in enumerate(object_ids):
         xp_1 = x_peak
         xp_2 = x_peak
     x_head = (xp_1+xp_2)*0.5
-
+    if args.debug:
+        fig.clear()
+        ax1 = plt.subplot(111)
+        ax2 = ax1.twinx()
+        ax1.plot(x,y,'b-')
+        ax2.plot(x,y2*1.0e3,'g-')
+        ax1.axvline(xp_1,color='k',linestyle=':')
+        ax1.axvline(xp_2,color='k',linestyle=':')
+        ax1.axvline(x_head,color='r')
+        ax1.set_title('OBJECTID: {}, Pattern: {}'.format(object_id,head_p[iobj]))
+        if not args.batch:
+            plt.savefig(pdf,format='pdf')
+            plt.draw()
+            plt.pause(0.1)
+if args.debug:
+    pdf.close()
 
 """
 # Interpolate data
