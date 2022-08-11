@@ -161,7 +161,7 @@ if args.shp_fnam is not None and args.out_shp is not None:
     shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
 # For debug
-if args.debug:
+if args.shp_fnam is not None and args.debug:
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
