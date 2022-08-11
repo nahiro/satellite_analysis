@@ -19,9 +19,8 @@ TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.02
 GROW_PERIOD = 120.0 # day
-STHR = -0.0005
-DTHR1 = 30.0 # day
-DTHR2 = 35.0 # day
+DTHR1 = 10.0 # day
+DTHR2 = 24.0 # day
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -38,10 +37,10 @@ parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data 
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor for 1st difference from 0 to 1 (%(default)s)')
 parser.add_argument('--grow_period',default=GROW_PERIOD,type=float,help='Length of growing period in days (%(default)s)')
-parser.add_argument('--sthr',default=STHR,type=float,help='Threshold for second NDVI difference (%(default)s)')
-parser.add_argument('--dthr1',default=DTHR1,type=float,help='Threshold of days between peaks (%(default)s)')
-parser.add_argument('--dthr2',default=DTHR2,type=float,help='Threshold of days between peaks (%(default)s)')
+parser.add_argument('--dthr1',default=DTHR1,type=float,help='Max difference of heading from the peak in day (%(default)s)')
+parser.add_argument('--dthr2',default=DTHR2,type=float,help='Min number of days between heading and harvesting (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('--two_peak',default=False,action='store_true',help='Two-peak mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -122,7 +121,6 @@ if not 'trans_d' in df.columns:
 iband = df.columns.to_list().index('trans_d')
 trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
 head_d = np.full(nobject,np.nan) # Heading date
-head_p = np.full(nobject,-1,dtype=np.int32) # Pattern of heading date
 harvest_d = np.full(nobject,np.nan) # Harvesting date
 harvest_p = np.full(nobject,-1,dtype=np.int32) # Pattern of harvesting date
 
@@ -130,7 +128,10 @@ if args.debug:
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
-    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+    if args.two_peak:
+        plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.70)
+    else:
+        plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fignam)
 for iobj,object_id in enumerate(object_ids):
     if np.isnan(trans_d[iobj]):
@@ -140,77 +141,63 @@ for iobj,object_id in enumerate(object_ids):
     y = inp_ndvi[cnd,iobj]
     if (x.size < 5) or np.any(np.isnan(y)):
         continue
-    x_peak = x[np.argmax(y)] # NDVI-peak date
+    indx = np.argmax(y)
+    x_peak = x[indx] # NDVI-peak date
+    y_peak = y[indx] # NDVI-peak
     y1 = np.gradient(y)
-    y2 = np.gradient(csaps(x,y1,x,smooth=args.smooth))
-    min_peaks,min_properties = find_peaks(-y2)
-    if min_peaks.size <= 1:
-        xp_1 = x_peak
-        xp_2 = x_peak
-        head_p[iobj] = 1
-    else:
+    if args.two_peak:
+        y2 = np.gradient(csaps(x,y1,x,smooth=args.smooth))
+        min_peaks,min_properties = find_peaks(-y2)
         max_peaks,max_properties = find_peaks(y2)
-        x_mins = x[min_peaks] 
-        x_maxs = x[max_peaks] 
-        y2_mins = y2[min_peaks] 
-        xp_1 = np.nan
-        xp_2 = np.nan
-        for x_min,y2_min in zip(x_mins,y2_mins):
-            if (x_min >= trans_d[iobj]+args.dthr1) and (y2_min < args.sthr):
-                cnd = (x_maxs > x_min)
-                x_cnd = x_maxs[cnd]
-                if x_cnd.size < 1:
-                    xp_1 = x_peak
-                    xp_2 = x_peak
-                    head_p[iobj] = 2
-                    continue
-                xp_1 = x_min
-                xp_2 = x_cnd[0]
-                head_p[iobj] = 3
-                if xp_2-xp_1 > args.dthr2:
-                    xp_1 = x_peak
-                    xp_2 = x_peak
-                    head_p[iobj] = 4
-                break
-            elif (x_min < trans_d[iobj]+args.dthr1) and (y2_min < args.sthr):
-                cnd = (x_maxs > x_min)
-                x_cnd = x_maxs[cnd]
-                if x_cnd.size < 1:
-                    xp_1 = x_peak
-                    xp_2 = x_peak
-                    head_p[iobj] = 5
-                    continue
-                xp_1 = x_min
-                xp_2 = x_cnd[0]
-                head_p[iobj] = 6
-                if xp_2-xp_1 > args.dthr2:
-                    xp_1 = x_peak
-                    xp_2 = x_peak
-                    head_p[iobj] = 7
-            elif ~np.isnan(xp_2) and ~np.isnan(xp_2):
-                head_p[iobj] = 8
+        if (min_peaks.size < 1) or (max_peaks.size < 1):
+            xp_1 = x_peak
+            xp_2 = x_peak
+        else:
+            x_mins = x[min_peaks] 
+            cnd = (x_mins < x_peak)
+            x_mins = x_mins[cnd]
+            if x_mins.size < 1:
+                xp_1 = x_peak
+                xp_2 = x_peak
             else:
-                xp_1 = np.nan
-                xp_2 = np.nan
-                head_p[iobj] = 9
-    if np.isnan(xp_1) or np.isnan(xp_2):
-        xp_1 = x_peak
-        xp_2 = x_peak
-    x_head = (xp_1+xp_2)*0.5
+                x_min = x_mins[-1]
+                x_maxs = x[max_peaks] 
+                cnd = (x_maxs > x_min)
+                x_maxs = x_maxs[cnd]
+                if x_maxs.size < 1:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                else:
+                    x_max = x_maxs[0]
+                    xp_1 = x_min
+                    xp_2 = x_max
+        x_head = (xp_1+xp_2)*0.5
+        if np.abs(x_head-x_peak) > args.dthr1:
+            xp_1 = x_peak
+            xp_2 = x_peak
+            x_head = x_peak
+    else:
+        x_head = x_peak
     if args.debug:
         fig.clear()
         ax1 = plt.subplot(111)
         ax2 = ax1.twinx()
         ax1.plot(x,y,'b-')
-        ax2.plot(x,y2*1.0e3,'g-')
-        ax1.axvline(xp_1,color='k',linestyle=':')
-        ax1.axvline(xp_2,color='k',linestyle=':')
+        ax1.plot(x_peak,y_peak,'bo')
+        ax2.plot(x,y1*1.0e2,'g-')
+        if args.two_peak:
+            ax3 = ax1.twinx()
+            ax3.spines['right'].set_position(('outward',60))
+            ax3.plot(x,y2*1.0e3,'r-')
+            ax1.axvline(xp_1,color='k',linestyle=':')
+            ax1.axvline(xp_2,color='k',linestyle=':')
         ax1.axvline(x_head,color='r')
-        ax1.set_title('OBJECTID: {}, Pattern: {}'.format(object_id,head_p[iobj]))
+        ax1.set_title('OBJECTID: {}'.format(object_id))
         if not args.batch:
             plt.savefig(pdf,format='pdf')
             plt.draw()
             plt.pause(0.1)
+    break # for debug
 if args.debug:
     pdf.close()
 
