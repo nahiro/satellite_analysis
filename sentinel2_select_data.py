@@ -43,7 +43,7 @@ args = parser.parse_args()
 if args.phenology is None or not os.path.exists(args.phenology):
     raise IOError('Error, no such file >>> {}'.format(args.phenology))
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
-    bnam = 'assess_{:%Y%m%d}_{:%Y%m%d}'.format(d1,d2)
+    bnam = 'assess'
     if args.out_csv is None:
         args.out_csv = bnam+'_select.csv'
     if args.out_shp is None:
@@ -56,69 +56,23 @@ df = pd.read_csv(args.phenology,comment='#')
 df.columns = df.columns.str.strip()
 columns = df.columns.to_list()
 if not 'OBJECTID' in columns:
-    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.head))
+    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.phenology))
 iband = columns.index('OBJECTID')
 object_ids = df.iloc[:,iband].astype(int)
-if not 'assess_d' in columns:
-    raise ValueError('Error in finding assess_d >>> {}'.format(args.assess))
+nobject = len(object_ids)
+if not args.param in columns:
+    raise ValueError('Error in finding {} >>> {}'.format(args.param,args.phenology))
 iband = columns.index(args.param)
 assess_d = df.iloc[:,iband].astype(float).values # Assessment date
 if np.abs(args.offset) > EPSILON:
     assess_d += args.offset
-
-
-"""
-if df.columns[0].upper() != 'OBJECTID':
-    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.phenology))
-elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(args.phenology))
-if not 'trans_d' in df.columns:
-    raise ValueError('Error in finding trans_d >>> {}'.format(args.phenology))
-iband = df.columns.to_list().index('trans_d')
-trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
-
-# Read NDVI data
-data_years = np.arange(d1.year,d2.year+1,1)
-columns = None
-object_ids = None
-iband = None
-inp_ndvi = []
-inp_dtim = []
-d = d1
-while d <= d2:
-    ystr = '{}'.format(d.year)
-    dstr = '{:%Y%m%d}'.format(d)
-    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
-    if not os.path.exists(fnam):
-        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
-        if not os.path.exists(gnam):
-            raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
-        else:
-            fnam = gnam
-    inp_dtim.append(d)
-    df = pd.read_csv(fnam,comment='#')
-    df.columns = df.columns.str.strip()
-    if columns is None:
-        columns = df.columns
-        if columns[0].upper() != 'OBJECTID':
-            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-        if not 'NDVI' in columns:
-            raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
-        iband = columns.to_list().index('NDVI')
-    elif not np.array_equal(df.columns,columns):
-        raise ValueError('Error, different columns >>> {}'.format(fnam))
-    if object_ids is None:
-        object_ids = df.iloc[:,0].astype(int)
-    elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-    inp_ndvi.append(df.iloc[:,iband].astype(float))
-    d += timedelta(days=args.tstp)
-inp_ndvi = np.array(inp_ndvi) # (NDAT,NOBJECT)
-inp_dtim = np.array(inp_dtim)
-inp_ntim = date2num(inp_dtim)
-inp_ndat = len(inp_dtim)
-nobject = len(object_ids)
-if inp_ndat < 5 or nobject < 1:
+cnd = np.isnan(assess_d)
+assess_d = (assess_d+0.5).astype(np.int32)
+assess_d[cnd] = -1
+inp_ntim = np.unique(assess_d[~cnd])
+inp_dtim = num2date(inp_ntim)
+inp_ndat = len(inp_ntim)
+if inp_ndat < 1 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
 # Read Shapefile
@@ -136,78 +90,40 @@ if args.shp_fnam is not None:
     if not np.array_equal(all_ids,object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(args.shp_fnam))
 
-# Read heading date CSV
-if args.head is not None:
-    df = pd.read_csv(args.head,comment='#')
+# Read indices
+columns = None
+inp_data = []
+for d in inp_dtim:
+    ystr = '{}'.format(d.year)
+    dstr = '{:%Y%m%d}'.format(d)
+    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
+    if not os.path.exists(fnam):
+        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
+        if not os.path.exists(gnam):
+            raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
+        else:
+            fnam = gnam
+    df = pd.read_csv(fnam,comment='#')
     df.columns = df.columns.str.strip()
-    columns = df.columns.to_list()
-    if not 'OBJECTID' in columns:
-        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.head))
-    iband = columns.index('OBJECTID')
-    head_ids = df.iloc[:,iband].astype(int)
-    if not 'head_d' in columns:
-        raise ValueError('Error in finding head_d >>> {}'.format(args.head))
-    iband = columns.index('head_d')
-    head_data = df.iloc[:,iband].astype(float).values # Heading date
-    if np.array_equal(head_ids,object_ids):
-        head_d = head_data
-    else:
-        try:
-            list_ids = object_ids.to_list()
-            indx = np.array([list_ids.index(head_id) for head_id in head_ids])
-        except Exception:
-            raise ValueError('Error in finding OBJECTID in {}'.format(args.head))
-        head_d = np.full(nobject,np.nan)
-        head_d[indx] = head_data
+    if columns is None:
+        columns = df.columns
+        if columns[0].upper() != 'OBJECTID':
+            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+    elif not np.array_equal(df.columns,columns):
+        raise ValueError('Error, different columns >>> {}'.format(fnam))
+    if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    inp_data.append(df.iloc[:,1:].astype(float))
+inp_data = np.array(inp_data) # (NDAT,NOBJECT)
 
-# Read harvesting date CSV
-if args.harvest is not None:
-    df = pd.read_csv(args.harvest,comment='#')
-    df.columns = df.columns.str.strip()
-    columns = df.columns.to_list()
-    if not 'OBJECTID' in columns:
-        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.harvest))
-    iband = columns.index('OBJECTID')
-    harvest_ids = df.iloc[:,iband].astype(int)
-    if not 'harvest_d' in columns:
-        raise ValueError('Error in finding harvest_d >>> {}'.format(args.harvest))
-    iband = columns.index('harvest_d')
-    harvest_data = df.iloc[:,iband].astype(float).values # Harvesting date
-    if np.array_equal(harvest_ids,object_ids):
-        harvest_d = harvest_data
-    else:
-        try:
-            list_ids = object_ids.to_list()
-            indx = np.array([list_ids.index(harvest_id) for harvest_id in harvest_ids])
-        except Exception:
-            raise ValueError('Error in finding OBJECTID in {}'.format(args.harvest))
-        harvest_d = np.full(nobject,np.nan)
-        harvest_d[indx] = harvest_data
+for iobj,object_id in enumerate(object_ids):
+    x_assess = assess_d[iobj]
+    if x_assess < 0:
+        continue
+    d = num2date(x_assess+0.5)
 
-# Read assessment date CSV
-if args.assess is not None:
-    df = pd.read_csv(args.assess,comment='#')
-    df.columns = df.columns.str.strip()
-    columns = df.columns.to_list()
-    if not 'OBJECTID' in columns:
-        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.assess))
-    iband = columns.index('OBJECTID')
-    assess_ids = df.iloc[:,iband].astype(int)
-    if not 'assess_d' in columns:
-        raise ValueError('Error in finding assess_d >>> {}'.format(args.assess))
-    iband = columns.index('assess_d')
-    assess_data = df.iloc[:,iband].astype(float).values # Assessment date
-    if np.array_equal(assess_ids,object_ids):
-        assess_d = assess_data
-    else:
-        try:
-            list_ids = object_ids.to_list()
-            indx = np.array([list_ids.index(assess_id) for assess_id in assess_ids])
-        except Exception:
-            raise ValueError('Error in finding OBJECTID in {}'.format(args.assess))
-        assess_d = np.full(nobject,np.nan)
-        assess_d[indx] = assess_data
 
+"""
 # Estimate heading/harvesting/assessment dates
 if args.debug:
     if not args.batch:
