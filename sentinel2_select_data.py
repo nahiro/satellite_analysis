@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
@@ -36,6 +38,10 @@ parser.add_argument('-P','--phenology',default=None,help='Phenology CSV name (%(
 parser.add_argument('-p','--param',default=PARAM,help='Parameter for selection (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Offset in day (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
+parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
+parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
+parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
@@ -69,7 +75,7 @@ if np.abs(args.offset) > EPSILON:
 cnd = np.isnan(assess_d)
 assess_d = (assess_d+0.5).astype(np.int32)
 assess_d[cnd] = -1
-inp_ntim = np.unique(assess_d[~cnd])
+inp_ntim = np.unique(assess_d[~cnd]).tolist()
 inp_dtim = num2date(inp_ntim)
 inp_ndat = len(inp_ntim)
 if inp_ndat < 1 or nobject < 1:
@@ -114,162 +120,28 @@ for d in inp_dtim:
     if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
     inp_data.append(df.iloc[:,1:].astype(float))
+params = columns[1:]
 inp_data = np.array(inp_data) # (NDAT,NOBJECT)
 
+out_nb = len(params)
+out_data = np.full((nobject,out_nb),np.nan)
 for iobj,object_id in enumerate(object_ids):
     x_assess = assess_d[iobj]
     if x_assess < 0:
         continue
-    d = num2date(x_assess+0.5)
-
-
-"""
-# Estimate heading/harvesting/assessment dates
-if args.debug:
-    if not args.batch:
-        plt.interactive(True)
-    fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
-    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.70)
-    pdf = PdfPages(args.fignam)
-    fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
-all_data = np.full((nobject,len(PARAMS)),np.nan)
-for iobj,object_id in enumerate(object_ids):
-    if args.debug and (iobj%fig_interval == 0):
-        fig_flag = True
-    else:
-        fig_flag = False
-    x_trans = trans_d[iobj]
-    if np.isnan(x_trans):
-        continue
-    grow_cnd = (inp_ntim >= x_trans) & (inp_ntim <= x_trans+args.grow_period)
-    x = inp_ntim[grow_cnd]
-    y = inp_ndvi[grow_cnd,iobj]
-    if (x.size < 5) or np.any(np.isnan(y)):
-        continue
-    indx = np.argmax(y)
-    x_peak = x[indx] # NDVI-peak date
-    y_peak = y[indx] # NDVI-peak
-    if args.head is not None and not np.isnan(head_d[iobj]):
-        x_head = head_d[iobj]
-        if fig_flag:
-            y1 = np.gradient(inp_ndvi[:,iobj])
-            y2 = np.gradient(csaps(inp_ntim,y1,inp_ntim,smooth=args.smooth))
-            y1 = y1[grow_cnd]
-            y2 = y2[grow_cnd]
-            xp_1 = np.nan
-            xp_2 = np.nan
-        else:
-            y1 = None
-    else:
-        y1 = np.gradient(inp_ndvi[:,iobj])
-        y2 = np.gradient(csaps(inp_ntim,y1,inp_ntim,smooth=args.smooth))
-        y1 = y1[grow_cnd]
-        y2 = y2[grow_cnd]
-        min_peaks,min_properties = find_peaks(-y2)
-        max_peaks,max_properties = find_peaks(y2)
-        if (min_peaks.size < 1) or (max_peaks.size < 1):
-            xp_1 = x_peak
-            xp_2 = x_peak
-        else:
-            x_mins = x[min_peaks] 
-            cnd = (x_mins < x_peak)
-            x_mins = x_mins[cnd]
-            if x_mins.size < 1:
-                xp_1 = x_peak
-                xp_2 = x_peak
-            else:
-                x_min = x_mins[-1]
-                x_maxs = x[max_peaks] 
-                cnd = (x_maxs > x_min)
-                x_maxs = x_maxs[cnd]
-                if x_maxs.size < 1:
-                    xp_1 = x_peak
-                    xp_2 = x_peak
-                else:
-                    x_max = x_maxs[0]
-                    xp_1 = x_min
-                    xp_2 = x_max
-        x_head = (xp_1+xp_2)*0.5
-        if np.abs(x_head-x_peak) > args.dthr1:
-            xp_1 = x_peak
-            xp_2 = x_peak
-            x_head = x_peak
-    if args.harvest is not None and not np.isnan(harvest_d[iobj]):
-        x_harvest = harvest_d[iobj]
-        if fig_flag:
-            indx = np.argmin(np.abs(x-x_harvest))
-            y_harvest = y1[indx]
-    else:
-        if y1 is None:
-            y1 = np.gradient(inp_ndvi[:,iobj])
-            y1 = y1[grow_cnd]
-        cnd = (x >= x_peak+args.dthr2)
-        xc = x[cnd]
-        y1c = y1[cnd]
-        indx = np.argmin(y1c)
-        if y1c[indx] > args.sthr:
-            x_harvest = np.nan
-            y_harvest = np.nan
-        else:
-            x_harvest = xc[indx]
-            y_harvest = y1c[indx]
-    if args.assess is not None and not np.isnan(assess_d[iobj]):
-        x_assess = assess_d[iobj]
-    else:
-        x_assess = x_head+(x_harvest-x_head)*args.atc-args.offset
-        if x_assess-x_trans > args.grow_period:
-            x_assess = np.nan
-    all_data[iobj,0] = x_trans
-    all_data[iobj,1] = x_peak
-    all_data[iobj,2] = x_head
-    all_data[iobj,3] = x_harvest
-    all_data[iobj,4] = x_assess
-    if fig_flag:
-        dtim = num2date(x)
-        fig.clear()
-        ax1 = plt.subplot(111)
-        ax2 = ax1.twinx()
-        ax3 = ax1.twinx()
-        ax1.minorticks_on()
-        ax2.minorticks_on()
-        ax3.minorticks_on()
-        ax2.spines['right'].set_position(('outward',60))
-        ax1.plot(dtim,y,'b-',zorder=10)
-        ax1.plot(x_peak,y_peak,'bo',zorder=10)
-        ax2.plot(dtim,y1*1.0e2,'g-',zorder=5)
-        ax2.plot(x_harvest,y_harvest*1.0e2,'go',zorder=5)
-        ax3.plot(dtim,y2*1.0e3,'r-',zorder=1)
-        ax1.axvline(xp_1,color='k',linestyle=':',zorder=1)
-        ax1.axvline(xp_2,color='k',linestyle=':',zorder=1)
-        ax1.axvline(x_head,color='r',zorder=1)
-        ax1.axvline(x_assess,color='g',zorder=1)
-        ax1.xaxis.set_major_locator(MonthLocator())
-        ax1.xaxis.set_minor_locator(DayLocator(bymonthday=(15)))
-        ax1.zorder = 10
-        ax1.set_frame_on(False)
-        ax1.set_ylabel('NDVI')
-        ax2.set_ylabel(r'NDVI$^{\prime}$ $\times$ 10$^{2}$')
-        ax3.set_ylabel(r'NDVI$^{\prime\prime}$ $\times$ 10$^{3}$')
-        ax1.set_title('OBJECTID: {}'.format(object_id))
-        fig.autofmt_xdate()
-        if not args.batch:
-            plt.savefig(pdf,format='pdf')
-            plt.draw()
-            plt.pause(0.1)
-    #break # for debug
-if args.debug:
-    pdf.close()
+    indx = inp_ntim.index(x_assess)
+    out_data[iobj] = inp_data[indx,iobj]
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
     fp.write('{:>8s}'.format('OBJECTID'))
-    for param in PARAMS:
+    for param in params:
         fp.write(', {:>13s}'.format(param))
     fp.write('\n')
     for iobj,object_id in enumerate(object_ids):
         fp.write('{:8d}'.format(object_id))
-        for iband,param in enumerate(PARAMS):
-            fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
+        for iband,param in enumerate(params):
+            fp.write(', {:>13.6e}'.format(out_data[iobj,iband]))
         fp.write('\n')
 
 # Output Shapefile
@@ -277,14 +149,74 @@ if args.shp_fnam is not None and args.out_shp is not None:
     w = shapefile.Writer(args.out_shp)
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
-    for param in PARAMS:
+    for param in params:
         w.field(param,'F',13,6)
     for iobj,shaperec in enumerate(r.iterShapeRecords()):
         rec = shaperec.record
         shp = shaperec.shape
-        rec.extend(list(all_data[iobj]))
+        rec.extend(list(out_data[iobj]))
         w.shape(shp)
         w.record(*rec)
     w.close()
     shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
-"""
+
+# For debug
+if args.debug:
+    if not args.batch:
+        plt.interactive(True)
+    fig = plt.figure(1,facecolor='w',figsize=(5,5))
+    plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
+    pdf = PdfPages(args.fignam)
+    for iband,param in enumerate(params):
+        data = out_data[:,iband]
+        fig.clear()
+        ax1 = plt.subplot(111)
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+            zmin = ax1_zmin[param]
+        else:
+            zmin = np.nanmin(data)
+            if np.isnan(zmin):
+                zmin = 0.0
+        if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+            zmax = ax1_zmax[param]
+        else:
+            zmax = np.nanmax(data)
+            if np.isnan(zmax):
+                zmax = 1.0
+        zdif = zmax-zmin
+        for iobj,shaperec in enumerate(r.iterShapeRecords()):
+            rec = shaperec.record
+            shp = shaperec.shape
+            z = data[iobj]
+            if not np.isnan(z):
+                ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
+        im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
+        divider = make_axes_locatable(ax1)
+        cax = divider.append_axes('right',size='5%',pad=0.05)
+        if args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
+            if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+                zmin = (np.floor(ax1_zmin[param]/ax1_zstp[param])-1.0)*ax1_zstp[param]
+            else:
+                zmin = (np.floor(np.nanmin(data)/ax1_zstp[param])-1.0)*ax1_zstp[param]
+            if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+                zmax = ax1_zmax[param]+0.1*ax1_zstp[param]
+            else:
+                zmax = np.nanmax(data)+0.1*ax1_zstp[param]
+            ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,ax1_zstp[param])).ax
+        else:
+            ax2 = plt.colorbar(im,cax=cax).ax
+        ax2.minorticks_on()
+        ax2.set_ylabel('{}'.format(param))
+        ax2.yaxis.set_label_coords(4.5,0.5)
+        fig_xmin,fig_ymin,fig_xmax,fig_ymax = r.bbox
+        ax1.set_xlim(fig_xmin,fig_xmax)
+        ax1.set_ylim(fig_ymin,fig_ymax)
+        if args.ax1_title is not None:
+            ax1.set_title(args.ax1_title)
+        plt.savefig(pdf,format='pdf')
+        if not args.batch:
+            plt.draw()
+            plt.pause(0.1)
+    pdf.close()
