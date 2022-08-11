@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
+import shutil
 import re
 from datetime import datetime,timedelta
+import shapefile
 import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date,MonthLocator,DayLocator
@@ -33,6 +35,7 @@ OFFSET = 10.0 # day
 STHR = 0.0
 DTHR1 = 10.0 # day
 DTHR2 = 10.0 # day
+NFIG = 1000
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -41,7 +44,10 @@ parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(defaul
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
-parser.add_argument('-P','--plant',default=None,help='Planting CSV name (%(default)s)')
+parser.add_argument('-P','--plant',default=None,help='Planting date CSV name (%(default)s)')
+parser.add_argument('--head',default=None,help='Heading date CSV name (%(default)s)')
+parser.add_argument('--harvest',default=None,help='Harvesting date CSV name (%(default)s)')
+parser.add_argument('--assess',default=None,help='Assessment date CSV name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
@@ -56,6 +62,7 @@ parser.add_argument('--sthr',default=STHR,type=float,help='Threshold for 1st dif
 parser.add_argument('--dthr1',default=DTHR1,type=float,help='Max difference of heading from the peak in day (%(default)s)')
 parser.add_argument('--dthr2',default=DTHR2,type=float,help='Min number of days between peak and harvesting (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
@@ -125,19 +132,6 @@ nobject = len(object_ids)
 if inp_ndat < 5 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
-# Read planting data
-df = pd.read_csv(args.plant,comment='#')
-df.columns = df.columns.str.strip()
-if df.columns[0].upper() != 'OBJECTID':
-    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.plant))
-elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(args.plant))
-if not 'trans_d' in df.columns:
-    raise ValueError('Error in finding trans_d >>> {}'.format(args.plant))
-iband = df.columns.to_list().index('trans_d')
-trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
-all_data = np.full((nobject,len(PARAMS)),np.nan)
-
 # Read Shapefile
 if args.shp_fnam is not None:
     r = shapefile.Reader(args.shp_fnam)
@@ -149,9 +143,93 @@ if args.shp_fnam is not None:
         all_ids = []
         for rec in r.iterRecords():
             all_ids.append(rec.OBJECTID)
-        all_inds = np.array(all_inds)
+        all_ids = np.array(all_ids)
     if not np.array_equal(all_ids,object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(args.shp_fnam))
+
+# Read planting date CSV
+df = pd.read_csv(args.plant,comment='#')
+df.columns = df.columns.str.strip()
+if df.columns[0].upper() != 'OBJECTID':
+    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.plant))
+elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.plant))
+if not 'trans_d' in df.columns:
+    raise ValueError('Error in finding trans_d >>> {}'.format(args.plant))
+iband = df.columns.to_list().index('trans_d')
+trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
+
+# Read heading date CSV
+if args.head is not None:
+    df = pd.read_csv(args.head,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'OBJECTID' in columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.head))
+    iband = columns.index('OBJECTID')
+    head_ids = df.iloc[:,iband].astype(int)
+    if not 'head_d' in columns:
+        raise ValueError('Error in finding head_d >>> {}'.format(args.head))
+    iband = columns.index('head_d')
+    head_data = df.iloc[:,iband].astype(float).values # Heading date
+    if np.array_equal(head_ids,object_ids):
+        head_d = head_data
+    else:
+        try:
+            list_ids = object_ids.to_list()
+            indx = np.array([list_ids.index(head_id) for head_id in head_ids])
+        except Exception:
+            raise ValueError('Error in finding OBJECTID in {}'.format(args.head))
+        head_d = np.full(nobject,np.nan)
+        head_d[indx] = head_data
+
+# Read harvesting date CSV
+if args.harvest is not None:
+    df = pd.read_csv(args.harvest,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'OBJECTID' in columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.harvest))
+    iband = columns.index('OBJECTID')
+    harvest_ids = df.iloc[:,iband].astype(int)
+    if not 'harvest_d' in columns:
+        raise ValueError('Error in finding harvest_d >>> {}'.format(args.harvest))
+    iband = columns.index('harvest_d')
+    harvest_data = df.iloc[:,iband].astype(float).values # Harvesting date
+    if np.array_equal(harvest_ids,object_ids):
+        harvest_d = harvest_data
+    else:
+        try:
+            list_ids = object_ids.to_list()
+            indx = np.array([list_ids.index(harvest_id) for harvest_id in harvest_ids])
+        except Exception:
+            raise ValueError('Error in finding OBJECTID in {}'.format(args.harvest))
+        harvest_d = np.full(nobject,np.nan)
+        harvest_d[indx] = harvest_data
+
+# Read assessment date CSV
+if args.assess is not None:
+    df = pd.read_csv(args.assess,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'OBJECTID' in columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.assess))
+    iband = columns.index('OBJECTID')
+    assess_ids = df.iloc[:,iband].astype(int)
+    if not 'assess_d' in columns:
+        raise ValueError('Error in finding assess_d >>> {}'.format(args.assess))
+    iband = columns.index('assess_d')
+    assess_data = df.iloc[:,iband].astype(float).values # Assessment date
+    if np.array_equal(assess_ids,object_ids):
+        assess_d = assess_data
+    else:
+        try:
+            list_ids = object_ids.to_list()
+            indx = np.array([list_ids.index(assess_id) for assess_id in assess_ids])
+        except Exception:
+            raise ValueError('Error in finding OBJECTID in {}'.format(args.assess))
+        assess_d = np.full(nobject,np.nan)
+        assess_d[indx] = assess_data
 
 # Estimate heading/harvesting/assessment dates
 if args.debug:
@@ -160,70 +238,100 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
     plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.70)
     pdf = PdfPages(args.fignam)
+    fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
+all_data = np.full((nobject,len(PARAMS)),np.nan)
 for iobj,object_id in enumerate(object_ids):
+    if args.debug and (iobj%fig_interval == 0):
+        fig_flag = True
+    else:
+        fig_flag = False
     x_trans = trans_d[iobj]
     if np.isnan(x_trans):
         continue
-    cnd = (inp_ntim >= x_trans) & (inp_ntim <= x_trans+args.grow_period)
-    x = inp_ntim[cnd]
-    y = inp_ndvi[cnd,iobj]
+    grow_cnd = (inp_ntim >= x_trans) & (inp_ntim <= x_trans+args.grow_period)
+    x = inp_ntim[grow_cnd]
+    y = inp_ndvi[grow_cnd,iobj]
     if (x.size < 5) or np.any(np.isnan(y)):
         continue
     indx = np.argmax(y)
     x_peak = x[indx] # NDVI-peak date
     y_peak = y[indx] # NDVI-peak
-    y1 = np.gradient(inp_ndvi[:,iobj])
-    y2 = np.gradient(csaps(inp_ntim,y1,inp_ntim,smooth=args.smooth))
-    y1 = y1[cnd]
-    y2 = y2[cnd]
-    min_peaks,min_properties = find_peaks(-y2)
-    max_peaks,max_properties = find_peaks(y2)
-    if (min_peaks.size < 1) or (max_peaks.size < 1):
-        xp_1 = x_peak
-        xp_2 = x_peak
+    if args.head is not None and not np.isnan(head_d[iobj]):
+        x_head = head_d[iobj]
+        if fig_flag:
+            y1 = np.gradient(inp_ndvi[:,iobj])
+            y2 = np.gradient(csaps(inp_ntim,y1,inp_ntim,smooth=args.smooth))
+            y1 = y1[grow_cnd]
+            y2 = y2[grow_cnd]
+            xp_1 = np.nan
+            xp_2 = np.nan
+        else:
+            y1 = None
     else:
-        x_mins = x[min_peaks] 
-        cnd = (x_mins < x_peak)
-        x_mins = x_mins[cnd]
-        if x_mins.size < 1:
+        y1 = np.gradient(inp_ndvi[:,iobj])
+        y2 = np.gradient(csaps(inp_ntim,y1,inp_ntim,smooth=args.smooth))
+        y1 = y1[grow_cnd]
+        y2 = y2[grow_cnd]
+        min_peaks,min_properties = find_peaks(-y2)
+        max_peaks,max_properties = find_peaks(y2)
+        if (min_peaks.size < 1) or (max_peaks.size < 1):
             xp_1 = x_peak
             xp_2 = x_peak
         else:
-            x_min = x_mins[-1]
-            x_maxs = x[max_peaks] 
-            cnd = (x_maxs > x_min)
-            x_maxs = x_maxs[cnd]
-            if x_maxs.size < 1:
+            x_mins = x[min_peaks] 
+            cnd = (x_mins < x_peak)
+            x_mins = x_mins[cnd]
+            if x_mins.size < 1:
                 xp_1 = x_peak
                 xp_2 = x_peak
             else:
-                x_max = x_maxs[0]
-                xp_1 = x_min
-                xp_2 = x_max
-    x_head = (xp_1+xp_2)*0.5
-    if np.abs(x_head-x_peak) > args.dthr1:
-        xp_1 = x_peak
-        xp_2 = x_peak
-        x_head = x_peak
-    cnd = (x >= x_peak+args.dthr2)
-    xc = x[cnd]
-    y1c = y1[cnd]
-    indx = np.argmin(y1c)
-    if y1c[indx] >= args.sthr:
-        x_harvest = np.nan
-        y_harvest = np.nan
+                x_min = x_mins[-1]
+                x_maxs = x[max_peaks] 
+                cnd = (x_maxs > x_min)
+                x_maxs = x_maxs[cnd]
+                if x_maxs.size < 1:
+                    xp_1 = x_peak
+                    xp_2 = x_peak
+                else:
+                    x_max = x_maxs[0]
+                    xp_1 = x_min
+                    xp_2 = x_max
+        x_head = (xp_1+xp_2)*0.5
+        if np.abs(x_head-x_peak) > args.dthr1:
+            xp_1 = x_peak
+            xp_2 = x_peak
+            x_head = x_peak
+    if args.harvest is not None and not np.isnan(harvest_d[iobj]):
+        x_harvest = harvest_d[iobj]
+        if fig_flag:
+            indx = np.argmin(np.abs(x-x_harvest))
+            y_harvest = y1[indx]
     else:
-        x_harvest = xc[indx]
-        y_harvest = y1c[indx]
-    x_assess = x_head+(x_harvest-x_head)*args.atc-args.offset
-    if x_assess-x_trans > args.grow_period:
-        x_assess = np.nan
+        if y1 is None:
+            y1 = np.gradient(inp_ndvi[:,iobj])
+            y1 = y1[grow_cnd]
+        cnd = (x >= x_peak+args.dthr2)
+        xc = x[cnd]
+        y1c = y1[cnd]
+        indx = np.argmin(y1c)
+        if y1c[indx] > args.sthr:
+            x_harvest = np.nan
+            y_harvest = np.nan
+        else:
+            x_harvest = xc[indx]
+            y_harvest = y1c[indx]
+    if args.assess is not None and not np.isnan(assess_d[iobj]):
+        x_assess = assess_d[iobj]
+    else:
+        x_assess = x_head+(x_harvest-x_head)*args.atc-args.offset
+        if x_assess-x_trans > args.grow_period:
+            x_assess = np.nan
     all_data[iobj,0] = x_trans
     all_data[iobj,1] = x_peak
     all_data[iobj,2] = x_head
     all_data[iobj,3] = x_harvest
     all_data[iobj,4] = x_assess
-    if args.debug:
+    if fig_flag:
         dtim = num2date(x)
         fig.clear()
         ax1 = plt.subplot(111)
