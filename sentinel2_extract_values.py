@@ -24,7 +24,8 @@ OBS_FNAM = 'observation.csv'
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
-parser.add_argument('-o','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
+parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
+parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
@@ -108,31 +109,24 @@ x_center = np.array(x_center)
 y_center = np.array(y_center)
 
 # Read indices
-columns = None
-inp_data = []
-for d in inp_dtim:
-    ystr = '{}'.format(d.year)
-    dstr = '{:%Y%m%d}'.format(d)
-    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
-    if not os.path.exists(fnam):
-        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
-        if not os.path.exists(gnam):
-            raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
-        else:
-            fnam = gnam
-    df = pd.read_csv(fnam,comment='#')
-    df.columns = df.columns.str.strip()
-    if columns is None:
-        columns = df.columns
-        if columns[0].upper() != 'OBJECTID':
-            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-    elif not np.array_equal(df.columns,columns):
-        raise ValueError('Error, different columns >>> {}'.format(fnam))
-    if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-    inp_data.append(df.iloc[:,1:].astype(float))
+dtim = datetime.strptime(args.tobs,'%Y%m%d')
+ystr = '{}'.format(dtim.year)
+fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(args.tobs))
+if not os.path.exists(fnam):
+    gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(args.tobs))
+    if not os.path.exists(gnam):
+        raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
+    else:
+        fnam = gnam
+df = pd.read_csv(fnam,comment='#')
+df.columns = df.columns.str.strip()
+columns = df.columns
+if columns[0].upper() != 'OBJECTID':
+    raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT)
 params = columns[1:]
-inp_data = np.array(inp_data) # (NDAT,NOBJECT)
 
 out_nb = len(params)
 out_data = np.full((nobject,out_nb),np.nan)
