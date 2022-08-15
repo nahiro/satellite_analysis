@@ -170,17 +170,22 @@ for plot in plots:
             observe_points[observe_id] = 1
         else:
             observe_points[observe_id] += 1
-    out_data = np.full(out_nb,np.nan)
+    if len(observe_id) < 1:
+    elif len(observe_id) == 1:
+        if args.use_index:
+            indx = observe_ids[0]-1
+        else:
+            indx = object_ids.index(observe_id)
+        out_data = inp_data[indx]
+    else:
+        if args.use_index:
+            indx = observe_ids-1
+        else:
+            indx = []
+            for observe_id in observe_ids:
+                indx.append(object_ids.index(observe_id))
+        out_data = np.nanmean(inp_data[indx],axis=0)
 
-
-
-
-for iobj,object_id in enumerate(object_ids):
-    x_assess = assess_d[iobj]
-    if x_assess < 0:
-        continue
-    indx = inp_ntim.index(x_assess)
-    out_data[iobj] = inp_data[indx,iobj]
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
