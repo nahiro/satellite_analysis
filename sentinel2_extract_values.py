@@ -5,6 +5,7 @@ import shutil
 import re
 from datetime import datetime,timedelta
 import shapefile
+from shapely.geometry import shape
 import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date
@@ -18,12 +19,12 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 EPSILON = 1.0e-6 # a small number
 
 # Default values
-CSV_FNAM = 'gps_points.dat'
+OBS_FNAM = 'observation.csv'
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
-parser.add_argument('-g','--csv_fnam',default=CSV_FNAM,help='CSV file name (%(default)s)')
+parser.add_argument('-o','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
@@ -53,7 +54,7 @@ plot_bunch = []
 x_bunch = []
 y_bunch = []
 rest_bunch = []
-with open(args.csv_fnam,'r') as fp:
+with open(args.obs_fnam,'r') as fp:
     #Location, BunchNumber, PlotPaddy, EastingI, NorthingI, PlantDate, Age, Tiller, BLB, Blast, Borer, Rat, Hopper, Drought
     #           15,   1,   1,  750949.8273,  9242821.0756, 2022-01-08,    55,  27,   1,   0,   5,   0,   0,   0
     for line in fp:
@@ -66,9 +67,9 @@ with open(args.csv_fnam,'r') as fp:
             header = line # skip header
             item = [s.strip() for s in header.split(',')]
             if len(item) < 6:
-                raise ValueError('Error in header ({}) >>> {}'.format(args.csv_fnam,header))
+                raise ValueError('Error in header ({}) >>> {}'.format(args.obs_fnam,header))
             if item[0] != 'Location' or item[1] != 'BunchNumber' or item[2] != 'PlotPaddy' or item[3] != 'EastingI' or item[4] != 'NorthingI':
-                raise ValueError('Error in header ({}) >>> {}'.format(args.csv_fnam,header))
+                raise ValueError('Error in header ({}) >>> {}'.format(args.obs_fnam,header))
             continue
         m = re.search('^([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),(.*)',line)
         if not m:
@@ -89,19 +90,22 @@ rest_bunch = np.array(rest_bunch)
 plots = np.unique(plot_bunch)
 
 # Read Shapefile
-if args.shp_fnam is not None:
-    r = shapefile.Reader(args.shp_fnam)
-    if len(r) != nobject:
-        raise ValueError('Error, len()={}, nobject={} >>> {}'.format(len(r),nobject,args.shp_fnam))
-    if args.use_index:
-        all_ids = np.arange(nobject)+1
-    else:
-        all_ids = []
-        for rec in r.iterRecords():
-            all_ids.append(rec.OBJECTID)
-        all_ids = np.array(all_ids)
-    if not np.array_equal(all_ids,object_ids):
-        raise ValueError('Error, different OBJECTID >>> {}'.format(args.shp_fnam))
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    object_ids = np.arange(nobject)+1
+else:
+    object_ids = []
+    for rec in r.iterRecords():
+        object_ids.append(rec.OBJECTID)
+    object_ids = np.array(object_ids)
+x_center = []
+y_center = []
+for shp in shape(r.shapes()):
+    x_center.append(shp.centroid.x)
+    y_center.append(shp.centroid.y)
+x_center = np.array(x_center)
+y_center = np.array(y_center)
 
 # Read indices
 columns = None
