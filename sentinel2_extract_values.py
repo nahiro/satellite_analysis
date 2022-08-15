@@ -4,6 +4,7 @@ import sys
 import shutil
 import re
 from datetime import datetime,timedelta
+from skimage.measure import point_in_poly
 import shapefile
 from shapely.geometry import shape
 import numpy as np
@@ -20,6 +21,7 @@ EPSILON = 1.0e-6 # a small number
 
 # Default values
 OBS_FNAM = 'observation.csv'
+NCHECK = 10
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -28,6 +30,7 @@ parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file na
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
+parser.add_argument('-n','--ncheck',default=NCHECK,type=int,help='Number of plots to check (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
@@ -129,7 +132,49 @@ inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT)
 params = columns[1:]
 
 out_nb = len(params)
-out_data = np.full((nobject,out_nb),np.nan)
+for plot in plots:
+    cnd = (plot_bunch == plot)
+    indx = indx_bunch[cnd]
+    size_plot[plot] = len(indx)
+    xg = x_bunch[indx]
+    yg = y_bunch[indx]
+    observe_ids = []
+    observe_points = {}
+    for x,y in zip(xg,yg):
+        observe_id = None
+        inds = np.argsort(np.square(x_center-x)+np.square(y_center-y))[:args.ncheck]
+        for indx in inds:
+            shp = r.shape(indx)
+            if len(shp.points) < 1:
+                continue
+            poly_buffer = Polygon(shp.points).buffer(args.buffer)
+            if poly_buffer.area <= 0.0:
+                continue
+            if poly_buffer.type == 'MultiPolygon':
+                for p in poly_buffer.geoms:
+                    path_search = np.array(p.exterior.coords.xy).swapaxes(0,1)
+                    if point_in_poly(point,path_search):
+                        observe_id = object_ids[indx]
+                        break
+            else:
+                path_search = np.array(poly_buffer.exterior.coords.xy).swapaxes(0,1)
+                if point_in_poly(point,path_search):
+                    observe_id = object_ids[indx]
+        if observe_id is None:
+            sys.stderr.write('Warning\n')
+            sys.stderr.flush()
+            indx = inds[0]
+            observe_id = object_ids[indx]
+        if observe_id in observe_ids:
+            observe_ids.append(observe_id)
+            observe_points[observe_id] = 1
+        else:
+            observe_points[observe_id] += 1
+    out_data = np.full(out_nb,np.nan)
+
+
+
+
 for iobj,object_id in enumerate(object_ids):
     x_assess = assess_d[iobj]
     if x_assess < 0:
