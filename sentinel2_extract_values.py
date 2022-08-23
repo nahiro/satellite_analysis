@@ -4,9 +4,9 @@ import sys
 import shutil
 import re
 from datetime import datetime,timedelta
-from skimage.measure import point_in_poly
+from skimage.measure import points_in_poly
 import shapefile
-from shapely.geometry import shape
+from shapely.geometry import Point,Polygon,shape
 import numpy as np
 import pandas as pd
 from matplotlib.dates import date2num,num2date
@@ -26,6 +26,7 @@ NCHECK = 10
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
+parser.add_argument('--buffer',default=None,type=float,help='Buffer distance (%(default)s)')
 parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
@@ -38,11 +39,10 @@ parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',he
 parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('-H','--header_none',default=False,action='store_true',help='Read csv file with no header (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.phenology is None or not os.path.exists(args.phenology):
-    raise IOError('Error, no such file >>> {}'.format(args.phenology))
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
     bnam = 'assess'
     if args.out_csv is None:
@@ -99,10 +99,10 @@ nobject = len(r)
 if args.use_index:
     object_ids = np.arange(nobject)+1
 else:
-    object_ids = []
+    list_ids = []
     for rec in r.iterRecords():
-        object_ids.append(rec.OBJECTID)
-    object_ids = np.array(object_ids)
+        list_ids.append(rec.OBJECTID)
+    object_ids = np.array(list_ids)
 x_center = []
 y_center = []
 for shp in shape(r.shapes()):
@@ -128,55 +128,70 @@ if columns[0].upper() != 'OBJECTID':
     raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
 if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
     raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT)
+inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
 params = columns[1:]
 
 out_nb = len(params)
+out_data = {}
 for plot in plots:
     cnd = (plot_bunch == plot)
     indx = indx_bunch[cnd]
-    size_plot[plot] = len(indx)
+    ng = number_bunch[indx]
     xg = x_bunch[indx]
     yg = y_bunch[indx]
     observe_ids = []
     observe_points = {}
-    for x,y in zip(xg,yg):
+    for n,x,y in zip(ng,xg,yg):
+        point = np.array([[x,y]])
+        r2 = np.square(x_center-x)+np.square(y_center-y)
+        inds = np.argsort(r2)[:args.ncheck]
         observe_id = None
-        inds = np.argsort(np.square(x_center-x)+np.square(y_center-y))[:args.ncheck]
         for indx in inds:
             shp = r.shape(indx)
             if len(shp.points) < 1:
                 continue
-            poly_buffer = Polygon(shp.points).buffer(args.buffer)
+            if args.buffer is not None:
+                poly_buffer = Polygon(shp.points).buffer(args.buffer)
+            else:
+                poly_buffer = Polygon(shp.points)
             if poly_buffer.area <= 0.0:
                 continue
             if poly_buffer.type == 'MultiPolygon':
                 for p in poly_buffer.geoms:
                     path_search = np.array(p.exterior.coords.xy).swapaxes(0,1)
-                    if point_in_poly(point,path_search):
-                        observe_id = object_ids[indx]
-                        break
+                    if points_in_poly(point,path_search)[0]:
+                        if observe_id is None:
+                            observe_id = object_ids[indx]
+                        else:
+                            sys.stderr.write('Warning, bunch number {} is inside multiple plots.'.format(n))
+                            sys.stderr.flush()
             else:
                 path_search = np.array(poly_buffer.exterior.coords.xy).swapaxes(0,1)
-                if point_in_poly(point,path_search):
-                    observe_id = object_ids[indx]
+                if points_in_poly(point,path_search)[0]:
+                    if observe_id is None:
+                        observe_id = object_ids[indx]
+                    else:
+                        sys.stderr.write('Warning, bunch number {} is inside multiple plots.'.format(n))
+                        sys.stderr.flush()
         if observe_id is None:
-            sys.stderr.write('Warning\n')
+            sys.stderr.write('Warning, failed in finding plot for bunch number {}.\n'.format(n))
             sys.stderr.flush()
             indx = inds[0]
             observe_id = object_ids[indx]
         if observe_id in observe_ids:
+            observe_points[observe_id] += 1
+        else:
             observe_ids.append(observe_id)
             observe_points[observe_id] = 1
-        else:
-            observe_points[observe_id] += 1
-    if len(observe_id) < 1:
-    elif len(observe_id) == 1:
+    observe_ids = np.array(observe_ids)
+    if len(observe_ids) < 1:
+        pass
+    elif len(observe_ids) == 1:
         if args.use_index:
             indx = observe_ids[0]-1
         else:
-            indx = object_ids.index(observe_id)
-        out_data = inp_data[indx]
+            indx = list_ids.index(observe_id)
+        out_data[plot] = inp_data[indx]
     else:
         if args.use_index:
             indx = observe_ids-1
@@ -184,8 +199,10 @@ for plot in plots:
             indx = []
             for observe_id in observe_ids:
                 indx.append(object_ids.index(observe_id))
-        out_data = np.nanmean(inp_data[indx],axis=0)
+        out_data[plot] = np.nanmean(inp_data[indx],axis=0)
 
+print('HEREEEEE')
+sys.exit()
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
