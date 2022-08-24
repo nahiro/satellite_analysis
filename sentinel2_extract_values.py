@@ -173,6 +173,7 @@ for plot in plots:
                     else:
                         sys.stderr.write('Warning, bunch number {} is inside multiple plots.'.format(n))
                         sys.stderr.flush()
+        #print(n,inds+1,observe_id)
         if observe_id is None:
             sys.stderr.write('Warning, failed in finding plot for bunch number {}.\n'.format(n))
             sys.stderr.flush()
@@ -199,7 +200,13 @@ for plot in plots:
             indx = []
             for observe_id in observe_ids:
                 indx.append(object_ids.index(observe_id))
+        weight = []
+        for observe_id in observe_ids:
+            weight.append(observe_points[observe_id])
+        weight = np.array(weight)
         out_data[plot] = np.nanmean(inp_data[indx],axis=0)
+    if plot == 2:
+        break
 
 print('HEREEEEE')
 sys.exit()
