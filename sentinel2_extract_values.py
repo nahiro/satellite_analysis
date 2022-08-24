@@ -203,8 +203,13 @@ for plot in plots:
         weight = []
         for observe_id in observe_ids:
             weight.append(observe_points[observe_id])
-        weight = np.array(weight)
-        out_data[plot] = np.nanmean(inp_data[indx],axis=0)
+        weight = np.array(weight).reshape(-1,1)
+        cnd = ~np.isnan(inp_data[indx])
+        if np.all(cnd):
+            out_data[plot] = np.nansum(inp_data[indx]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
+        else:
+            out_data[plot] = np.nansum(inp_data[indx]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
+
     if plot == 2:
         break
 
