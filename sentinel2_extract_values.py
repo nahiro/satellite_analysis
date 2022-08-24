@@ -283,5 +283,5 @@ if args.debug:
         plt.savefig(pdf,format='pdf')
         if not args.batch:
             plt.draw()
-            plt.pause(1.1)
+            plt.pause(0.1)
     pdf.close()
