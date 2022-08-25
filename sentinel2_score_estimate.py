@@ -30,8 +30,6 @@ parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(defau
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
 parser.add_argument('--y_number',default=None,type=int,action='append',help='Formula number ({})'.format(Y_NUMBER))
-parser.add_argument('-M','--smax',default=None,type=int,action='append',help='Max score ({})'.format(SMAX))
-parser.add_argument('-S','--sint',default=None,type=int,action='append',help='Sampling interval for digitizing score ({})'.format(SINT))
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--ax1_vmin',default=AX1_VMIN,type=float,action='append',help='Axis1 V min for debug (%(default)s)')
 parser.add_argument('--ax1_vmax',default=AX1_VMAX,type=float,action='append',help='Axis1 V max for debug (%(default)s)')
@@ -55,20 +53,6 @@ while len(args.y_number) < len(args.y_param):
 y_number = {}
 for i,param in enumerate(args.y_param):
     y_number[param] = args.y_number[i]
-if args.smax is None:
-    args.smax = SMAX
-while len(args.smax) < len(args.y_param):
-    args.smax.append(args.smax[-1])
-smax = {}
-for i,param in enumerate(args.y_param):
-    smax[param] = args.smax[i]
-if args.sint is None:
-    args.sint = SINT
-while len(args.sint) < len(args.y_param):
-    args.sint.append(args.sint[-1])
-sint = {}
-for i,param in enumerate(args.y_param):
-    sint[param] = args.sint[i]
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.y_param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
