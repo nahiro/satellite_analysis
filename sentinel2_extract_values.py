@@ -77,7 +77,18 @@ number_bunch = df['BunchNumber'].astype(int).values
 plot_bunch = df['PlotPaddy'].astype(int).values
 x_bunch = df['EastingI'].astype(float).values
 y_bunch = df['NorthingI'].astype(float).values
+trans_bunch = df['PlantDate'].str.strip().values
+age_bunch = df['Age'].astype(int).values
+tiller_bunch = df['Tiller'].astype(int).values
 plots = np.unique(plot_bunch)
+
+# Calculate damage intensities
+Y = df[args.y_param].copy()
+for y_param in args.y_param:
+    if y_param in y_max:
+        Y[y_param] = Y[y_param]/y_max[y_param]
+    else:
+        Y[y_param] = Y[y_param]/tiller_bunch
 
 # Read Shapefile
 r = shapefile.Reader(args.shp_fnam)
