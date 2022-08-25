@@ -95,7 +95,7 @@ if args.dst_geotiff is None or args.fignam is None:
         args.fignam = bnam+'_estimate.pdf'
 
 # Read Shapefile
-r = shapefile.Reader(args.shp_fnam)
+r = shapefile.Reader(args.inp_shp)
 nobject = len(r)
 if args.use_index:
     object_ids = np.arange(nobject)+1
@@ -177,7 +177,7 @@ if args.out_shp is not None:
         w.shape(shp)
         w.record(*rec)
     w.close()
-    shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
+    shutil.copy2(os.path.splitext(args.inp_shp)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
 # For debug
 if args.debug:
