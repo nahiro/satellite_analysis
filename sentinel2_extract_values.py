@@ -211,13 +211,24 @@ for plot in plots:
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
-    fp.write('{:>8s}'.format('OBJECTID'))
+    fp.write('Location, OBJECTID, PlotPaddy, EastingI, NorthingI, PlantDate, Age')
+    for y_param in args.y_param:
+        fp.write(', {:>13s}'.format(y_param))
     for param in params:
         fp.write(', {:>13s}'.format(param))
     fp.write('\n')
     for plot in plots:
+        cnd = (plot_bunch == plot)
+        lg = loc_bunch[cnd]
+        xg = x_bunch[cnd]
+        yg = y_bunch[cnd]
+        tg = trans_bunch[cnd]
+        ag = age_bunch[cnd]
         object_id = out_plot[plot]
-        fp.write('{:8d}'.format(object_id))
+        fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f}'.format(
+                 lg[0],object_id,plot,xg.mean(),yg.mean(),tg[0],ag[0]))
+        for y_param in args.y_param:
+            fp.write(', {:>13.6e}'.format(np.nanmean(Y[y_param].values[cnd])))
         for iband,param in enumerate(params):
             fp.write(', {:>13.6e}'.format(out_data[plot][iband]))
         fp.write('\n')
