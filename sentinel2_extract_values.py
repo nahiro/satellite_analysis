@@ -17,9 +17,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
+OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6 # a small number
 
 # Default values
+Y_PARAM = ['BLB','Blast','Borer','Rat','Hopper','Drought']
+Y_MAX = ['BLB:9.0','Blast:9.0','Drought:9.0']
 OBS_FNAM = 'observation.csv'
 NCHECK = 10
 RMAX = 50.0 # m
@@ -32,6 +35,8 @@ parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file na
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
+parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
+parser.add_argument('--y_max',default=None,action='append',help='Max score ({})'.format(Y_MAX))
 parser.add_argument('-n','--ncheck',default=NCHECK,type=int,help='Number of plots to check (%(default)s)')
 parser.add_argument('-R','--rmax',default=RMAX,type=float,help='Maximum distance between bunch and plot center in m (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
@@ -42,6 +47,23 @@ parser.add_argument('-H','--header_none',default=False,action='store_true',help=
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
+if args.y_param is None:
+    args.y_param = Y_PARAM
+for param in args.y_param:
+    if not param in OBJECTS:
+        raise ValueError('Error, unknown objective variable for y_param >>> {}'.format(param))
+if args.y_max is None:
+    args.y_max = Y_MAX
+y_max = {}
+for s in args.y_max:
+    m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+    if not m:
+        raise ValueError('Error, invalid max score >>> {}'.format(s))
+    param = m.group(1)
+    value = float(m.group(2))
+    if not param in OBJECTS:
+        raise ValueError('Error, unknown objective variable for y_max ({}) >>> {}'.format(param,s))
+    y_max[param] = value
 if args.out_csv is None or args.fignam is None:
     bnam = 'assess'
     if args.out_csv is None:
