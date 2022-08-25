@@ -87,31 +87,37 @@ if args.ax1_zstp is not None:
     ax1_zstp = {}
     for i,param in enumerate(args.y_param):
         ax1_zstp[param] = args.ax1_zstp[i]
-if args.dst_geotiff is None or args.fignam is None:
-    bnam,enam = os.path.splitext(args.src_geotiff)
-    if args.dst_geotiff is None:
-        args.dst_geotiff = bnam+'_estimate'+enam
+if args.out_csv is None or args.out_shp is None or args.fignam is None:
+    bnam,enam = os.path.splitext(args.inp_csv)
+    if args.out_csv is None:
+        args.out_csv = bnam+'_estimate.csv'
+    if args.out_shp is None:
+        args.out_shp = bnam+'_estimate.shp'
     if args.fignam is None:
         args.fignam = bnam+'_estimate.pdf'
-
-# Read Shapefile
-r = shapefile.Reader(args.inp_shp)
-nobject = len(r)
-if args.use_index:
-    object_ids = np.arange(nobject)+1
-else:
-    list_ids = []
-    for rec in r.iterRecords():
-        list_ids.append(rec.OBJECTID)
-    object_ids = np.array(list_ids)
 
 # Read indices
 src_df = pd.read_csv(args.inp_csv,comment='#')
 src_df.columns = src_df.columns.str.strip()
 if not 'OBJECTID' in src_df.columns:
     raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
-if not np.array_equal(src_df['OBJECTID'].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(args.inp_csv))
+object_ids = src_df['OBJECTID'].astype(int)
+nobject = len(object_ids)
+
+# Read Shapefile
+if args.inp_shp is not None:
+    r = shapefile.Reader(args.inp_shp)
+    if len(r) != nobject:
+        raise ValueError('Error, len(r)={}, nobject={} >>> {}'.format(len(r),nobject,args.inp_shp))
+    if args.use_index:
+        all_ids = np.arange(nobject)+1
+    else:
+        list_ids = []
+        for rec in r.iterRecords():
+            list_ids.append(rec.OBJECTID)
+        all_ids = np.array(list_ids)
+    if not np.array_equal(all_ids,object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(args.inp_shp))
 
 # Read formula
 form_df = pd.read_csv(args.form_fnam,comment='#')
@@ -164,7 +170,7 @@ with open(args.out_csv,'w') as fp:
         fp.write('\n')
 
 # Output Shapefile
-if args.out_shp is not None:
+if args.inp_shp is not None:
     w = shapefile.Writer(args.out_shp)
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
@@ -180,7 +186,7 @@ if args.out_shp is not None:
     shutil.copy2(os.path.splitext(args.inp_shp)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
 # For debug
-if args.debug:
+if args.inp_shp is not None and args.debug:
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
