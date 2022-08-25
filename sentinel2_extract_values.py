@@ -43,7 +43,6 @@ parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(defau
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
-parser.add_argument('-H','--header_none',default=False,action='store_true',help='Read csv file with no header (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -71,47 +70,14 @@ if args.out_csv is None or args.fignam is None:
     if args.fignam is None:
         args.fignam = bnam+'_extract.pdf'
 
-comments = ''
-header = None
-loc_bunch = []
-number_bunch = []
-plot_bunch = []
-x_bunch = []
-y_bunch = []
-rest_bunch = []
-with open(args.obs_fnam,'r') as fp:
-    #Location, BunchNumber, PlotPaddy, EastingI, NorthingI, PlantDate, Age, Tiller, BLB, Blast, Borer, Rat, Hopper, Drought
-    #           15,   1,   1,  750949.8273,  9242821.0756, 2022-01-08,    55,  27,   1,   0,   5,   0,   0,   0
-    for line in fp:
-        if len(line) < 1:
-            continue
-        elif line[0] == '#':
-            comments += line
-            continue
-        elif not args.header_none and header is None:
-            header = line # skip header
-            item = [s.strip() for s in header.split(',')]
-            if len(item) < 6:
-                raise ValueError('Error in header ({}) >>> {}'.format(args.obs_fnam,header))
-            if item[0] != 'Location' or item[1] != 'BunchNumber' or item[2] != 'PlotPaddy' or item[3] != 'EastingI' or item[4] != 'NorthingI':
-                raise ValueError('Error in header ({}) >>> {}'.format(args.obs_fnam,header))
-            continue
-        m = re.search('^([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),(.*)',line)
-        if not m:
-            continue
-        loc_bunch.append(m.group(1).strip())
-        number_bunch.append(int(m.group(2)))
-        plot_bunch.append(int(m.group(3)))
-        x_bunch.append(float(m.group(4)))
-        y_bunch.append(float(m.group(5)))
-        rest_bunch.append(m.group(6))
-loc_bunch = np.array(loc_bunch)
-number_bunch = np.array(number_bunch)
+df = pd.read_csv(args.obs_fnam,comment='#')
+df.columns = df.columns.str.strip()
+loc_bunch = df['Location'].str.strip().values
+number_bunch = df['BunchNumber'].astype(int).values
 indx_bunch = np.arange(len(number_bunch))
-plot_bunch = np.array(plot_bunch)
-x_bunch = np.array(x_bunch)
-y_bunch = np.array(y_bunch)
-rest_bunch = np.array(rest_bunch)
+plot_bunch = df['PlotPaddy'].astype(int).values
+x_bunch = df['EastingI'].astype(float).values
+y_bunch = df['NorthingI'].astype(float).values
 plots = np.unique(plot_bunch)
 
 # Read Shapefile
