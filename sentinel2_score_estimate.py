@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 import os
 import zlib # import zlib before gdal to prevent segmentation fault when saving pdf
-try:
-    import gdal
-except Exception:
-    from osgeo import gdal
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -27,9 +23,11 @@ AX1_VMAX = 1.0
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-i','--inp_fnam',default=None,help='Input formula file name (%(default)s)')
-parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
-parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
+parser.add_argument('-f','--form_fnam',default=None,help='Input formula file name (%(default)s)')
+parser.add_argument('-i','--inp_shp',default=None,help='Input Shapefile name (%(default)s)')
+parser.add_argument('-I','--inp_csv',default=None,help='Input CSV name (%(default)s)')
+parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
 parser.add_argument('--y_number',default=None,type=int,action='append',help='Formula number ({})'.format(Y_NUMBER))
 parser.add_argument('-M','--smax',default=None,type=int,action='append',help='Max score ({})'.format(SMAX))
@@ -41,8 +39,7 @@ parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',he
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
 parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
-parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
-parser.add_argument('-D','--digitize',default=False,action='store_true',help='Digitize score (%(default)s)')
+parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -97,61 +94,48 @@ if args.dst_geotiff is None or args.fignam is None:
     if args.fignam is None:
         args.fignam = bnam+'_estimate.pdf'
 
-df = pd.read_csv(args.inp_fnam,comment='#')
-df.columns = df.columns.str.strip()
-df['Y'] = df['Y'].str.strip()
-nmax = df['N'].max()+1
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    object_ids = np.arange(nobject)+1
+else:
+    list_ids = []
+    for rec in r.iterRecords():
+        list_ids.append(rec.OBJECTID)
+    object_ids = np.array(list_ids)
+
+# Read indices
+src_df = pd.read_csv(args.inp_csv,comment='#')
+src_df.columns = src_df.columns.str.strip()
+if not 'OBJECTID' in src_df.columns:
+    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
+if not np.array_equal(src_df['OBJECTID'].astype(int),object_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.inp_csv))
+
+# Read formula
+form_df = pd.read_csv(args.form_fnam,comment='#')
+form_df.columns = form_df.columns.str.strip()
+form_df['Y'] = form_df['Y'].str.strip()
+nmax = form_df['N'].max()+1
 for n in range(nmax):
     p = 'P{}_param'.format(n)
-    if not p in df.columns:
-        raise ValueError('Error in finding column for {} >>> {}'.format(p,args.inp_fnam))
-    df[p] = df[p].str.strip()
+    if not p in form_df.columns:
+        raise ValueError('Error in finding column for {} >>> {}'.format(p,args.form_fnam))
+    form_df[p] = form_df[p].str.strip()
     p = 'P{}_value'.format(n)
-    if not p in df.columns:
-        raise ValueError('Error in finding column for {} >>> {}'.format(p,args.inp_fnam))
-    df[p] = df[p].astype(float)
-
-# Read Source GeoTIFF
-ds = gdal.Open(args.src_geotiff)
-src_nx = ds.RasterXSize
-src_ny = ds.RasterYSize
-src_nb = ds.RasterCount
-src_shape = (src_ny,src_nx)
-src_prj = ds.GetProjection()
-src_trans = ds.GetGeoTransform()
-if src_trans[2] != 0.0 or src_trans[4] != 0.0:
-    raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
-src_meta = ds.GetMetadata()
-src_data = ds.ReadAsArray().astype(np.float64).reshape(src_nb,src_ny,src_nx)
-src_band = []
-for iband in range(src_nb):
-    band = ds.GetRasterBand(iband+1)
-    src_band.append(band.GetDescription())
-src_dtype = band.DataType
-src_nodata = band.GetNoDataValue()
-src_xmin = src_trans[0]
-src_xstp = src_trans[1]
-src_xmax = src_xmin+src_nx*src_xstp
-src_ymax = src_trans[3]
-src_ystp = src_trans[5]
-src_ymin = src_ymax+src_ny*src_ystp
-ds = None
-if src_nodata is not None and not np.isnan(src_nodata):
-    src_data[src_data == src_nodata] = np.nan
+    if not p in form_df.columns:
+        raise ValueError('Error in finding column for {} >>> {}'.format(p,args.form_fnam))
+    form_df[p] = form_df[p].astype(float)
 
 # Calculate damage intensity
-dst_nx = src_nx
-dst_ny = src_ny
-dst_nb = len(args.y_param)
-dst_shape = (dst_ny,dst_nx)
-dst_data = np.full((dst_nb,dst_ny,dst_nx),0.0)
-dst_band = args.y_param
-for y_param in args.y_param:
-    dst_iband = dst_band.index(y_param)
-    cnd = (df['Y'] == y_param)
+out_nb = len(args.y_param)
+out_data = np.full((nobject,out_nb),0.0)
+for iband,y_param in enumerate(args.y_param):
+    cnd = (form_df['Y'] == y_param)
     if cnd.sum() < y_number[y_param]:
         raise ValueError('Error in finding formula for {} >>> {}'.format(y_param,args.inp_fnam))
-    formula = df[cnd].iloc[y_number[y_param]-1]
+    formula = form_df[cnd].iloc[y_number[y_param]-1]
     for n in range(nmax):
         p = 'P{}_param'.format(n)
         param = formula[p]
@@ -161,59 +145,39 @@ for y_param in args.y_param:
         if param_low == 'none':
             continue
         elif param_low == 'const':
-            dst_data[dst_iband] += coef
+            out_data[:,iband] += coef
         else:
-            if not param in src_band:
-                raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
-            src_iband = src_band.index(param)
-            dst_data[dst_iband] += coef*src_data[src_iband]
+            if not param in src_df.columns:
+                raise ValueError('Error in finding {} in {}'.format(param,args.inp_csv))
+            out_data[:,iband] += coef*src_df[param]
 
-# Convert damage intensity to score
-for y_param in args.y_param:
-    if smax[y_param] != 1:
-        iband = dst_band.index(y_param)
-        dst_data[iband] *= smax[y_param]
+# Output CSV
+with open(args.out_csv,'w') as fp:
+    fp.write('{:>8s}'.format('OBJECTID'))
+    for param in args.y_param:
+        fp.write(', {:>13s}'.format(param))
+    fp.write('\n')
+    for iobj,object_id in enumerate(object_ids):
+        fp.write('{:8d}'.format(object_id))
+        for iband,param in enumerate(args.y_param):
+            fp.write(', {:>13.6e}'.format(out_data[iobj,iband]))
+        fp.write('\n')
 
-# Digitize score
-if args.digitize:
-    data = np.full(dst_data.shape,-1).astype(np.int16)
-    for y_param in args.y_param:
-        iband = dst_band.index(y_param)
-        cnd1 = np.full(dst_shape,True)
-        for score in range(smax[y_param],0,-sint[y_param]):
-            s_next = score-sint[y_param]
-            s = 0.5*(score+s_next)
-            if np.abs(s) < EPSILON:
-                s = 0.0
-            cnd2 = dst_data[iband] > s
-            data[iband,(cnd1 & cnd2)] = score
-            cnd1[cnd2] = False
-        data[iband,cnd1] = 0
-        data[iband,np.isnan(dst_data[iband])] = -1
-    dst_data = data
-
-# Write Destination GeoTIFF
-dst_prj = src_prj
-dst_trans = src_trans
-dst_meta = src_meta
-if args.digitize:
-    dst_dtype = gdal.GDT_Int16
-    dst_nodata = -1
-else:
-    dst_dtype = gdal.GDT_Float32
-    dst_nodata = np.nan
-drv = gdal.GetDriverByName('GTiff')
-ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,dst_dtype)
-ds.SetProjection(dst_prj)
-ds.SetGeoTransform(dst_trans)
-ds.SetMetadata(dst_meta)
-for iband in range(dst_nb):
-    band = ds.GetRasterBand(iband+1)
-    band.WriteArray(dst_data[iband])
-    band.SetDescription(dst_band[iband])
-band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
-ds.FlushCache()
-ds = None # close dataset
+# Output Shapefile
+if args.out_shp is not None:
+    w = shapefile.Writer(args.out_shp)
+    w.shapeType = shapefile.POLYGON
+    w.fields = r.fields[1:] # skip first deletion field
+    for param in args.y_param:
+        w.field(param,'F',13,6)
+    for iobj,shaperec in enumerate(r.iterShapeRecords()):
+        rec = shaperec.record
+        shp = shaperec.shape
+        rec.extend(list(out_data[iobj]))
+        w.shape(shp)
+        w.record(*rec)
+    w.close()
+    shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
 
 # For debug
 if args.debug:
@@ -222,46 +186,32 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
-    for param in args.y_param:
-        iband = dst_band.index(param)
-        if smax[param] == 1:
-            data = dst_data[iband]*100.0
-            title = '{} Intensity (%)'.format(param)
-        else:
-            data = dst_data[iband].astype(np.float32)
-            title = '{} Score'.format(param)
-        if args.digitize:
-            data[dst_data[iband] == -1] = np.nan
+    for iband,param in enumerate(args.y_param):
+        data = out_data[:,iband]*100.0
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
         ax1.set_yticks([])
-        if args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
+        if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
             zmin = ax1_zmin[param]
-            zmax = ax1_zmax[param]
-            im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=zmin,vmax=zmax,cmap=cm.jet,interpolation='none')
-        elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
-            zmin = ax1_zmin[param]
-            if smax[param] == 1:
-                zmax = min(np.nanmax(data),args.ax1_vmax*100.0)
-            else:
-                zmax = min(np.nanmax(data),args.ax1_vmax*smax[param])
-            im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=zmin,vmax=zmax,cmap=cm.jet,interpolation='none')
-        elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
-            if smax[param] == 1:
-                zmin = max(np.nanmin(data),args.ax1_vmin*100.0)
-            else:
-                zmin = max(np.nanmin(data),args.ax1_vmin*smax[param])
-            zmax = ax1_zmax[param]
-            im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=zmin,vmax=zmax,cmap=cm.jet,interpolation='none')
         else:
-            if smax[param] == 1:
-                zmin = max(np.nanmin(data),args.ax1_vmin*100.0)
-                zmax = min(np.nanmax(data),args.ax1_vmax*100.0)
-            else:
-                zmin = max(np.nanmin(data),args.ax1_vmin*smax[param])
-                zmax = min(np.nanmax(data),args.ax1_vmax*smax[param])
-            im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=zmin,vmax=zmax,cmap=cm.jet,interpolation='none')
+            zmin = max(np.nanmin(data),args.ax1_vmin*100.0)
+            if np.isnan(zmin):
+                zmin = 0.0
+        if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+            zmax = ax1_zmax[param]
+        else:
+            zmax = min(np.nanmax(data),args.ax1_vmax*100.0)
+            if np.isnan(zmax):
+                zmax = 100.0
+        zdif = zmax-zmin
+        for iobj,shaperec in enumerate(r.iterShapeRecords()):
+            rec = shaperec.record
+            shp = shaperec.shape
+            z = data[iobj]
+            if not np.isnan(z):
+                ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
+        im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right',size='5%',pad=0.05)
         if args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
@@ -277,28 +227,13 @@ if args.debug:
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
-        ax2.set_ylabel(title)
+        ax2.set_ylabel('{} Intensity (%)'.format(param))
         ax2.yaxis.set_label_coords(4.5,0.5)
-        if args.remove_nan:
-            src_indy,src_indx = np.indices(src_shape)
-            src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
-            src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
-            cnd = ~np.isnan(data)
-            xp = src_xp[cnd]
-            yp = src_yp[cnd]
-            fig_xmin = xp.min()
-            fig_xmax = xp.max()
-            fig_ymin = yp.min()
-            fig_ymax = yp.max()
-        else:
-            fig_xmin = src_xmin
-            fig_xmax = src_xmax
-            fig_ymin = src_ymin
-            fig_ymax = src_ymax
+        fig_xmin,fig_ymin,fig_xmax,fig_ymax = r.bbox
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
         if args.ax1_title is not None:
-            ax1.set_title('{}'.format(args.ax1_title))
+            ax1.set_title(args.ax1_title)
         plt.savefig(pdf,format='pdf')
         if not args.batch:
             plt.draw()
