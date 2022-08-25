@@ -40,6 +40,7 @@ parser.add_argument('--y_max',default=None,action='append',help='Max score ({})'
 parser.add_argument('-n','--ncheck',default=NCHECK,type=int,help='Number of plots to check (%(default)s)')
 parser.add_argument('-R','--rmax',default=RMAX,type=float,help='Maximum distance between bunch and plot center in m (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-P','--phenology',default=None,help='Phenology CSV name (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
