@@ -14,16 +14,17 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
-PARAMS = ['Sb','Sg','Sr','Se','Sn','Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','RGI','NRGI']
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 CRITERIAS = ['RMSE_test','R2_test','AIC_test','RMSE_train','R2_train','AIC_train','BIC_train']
 EPSILON = 1.0e-6
 
 # Default values
-OUT_FNAM = 'drone_score_fit.csv'
-X_PARAM = ['Nb','Ng','Nr','Ne','Nn','NDVI','GNDVI','NRGI']
+OUT_FNAM = 'sentinel2_score_fit.csv'
+X_PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','NRGI']
 Y_PARAM = ['BLB']
-Q_PARAM = ['Location','PlotPaddy','PlantDate','Age']
 VMAX = 5.0
 NX_MIN = 1
 NX_MAX = 2
@@ -35,7 +36,7 @@ Y_THRESHOLD = ['BLB:0.2','Blast:0.2','Borer:0.2','Rat:0.2','Hopper:0.2','Drought
 Y_MAX = ['BLB:9.0','Blast:9.0','Drought:9.0']
 Y_INT = ['BLB:2.0','Blast:2.0','Borer:0.2','Rat:0.2','Hopper:0.2','Drought:2.0']
 Y_FACTOR = ['BLB:BLB:1.0','Blast:Blast:1.0','Borer:Borer:1.0','Rat:Rat:1.0','Hopper:Hopper:1.0','Drought:Drought:1.0']
-FIGNAM = 'drone_score_fit.pdf'
+FIGNAM = 'sentinel2_score_fit.pdf'
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -48,7 +49,6 @@ parser.add_argument('--y_threshold',default=None,action='append',help='Threshold
 parser.add_argument('--y_max',default=None,action='append',help='Max score ({})'.format(Y_MAX))
 parser.add_argument('--y_int',default=None,action='append',help='Score step for mean value fitting ({})'.format(Y_INT))
 parser.add_argument('--y_factor',default=None,action='append',help='Conversion factor to objective variable equivalent ({})'.format(Y_FACTOR))
-parser.add_argument('-p','--q_param',default=None,action='append',help='Identification parameter ({})'.format(Q_PARAM))
 parser.add_argument('-V','--vmax',default=VMAX,type=float,help='Max variance inflation factor (%(default)s)')
 parser.add_argument('-n','--nx_min',default=NX_MIN,type=int,help='Min number of explanatory variable in a formula (%(default)s)')
 parser.add_argument('-N','--nx_max',default=NX_MAX,type=int,help='Max number of explanatory variable in a formula (%(default)s)')
@@ -59,7 +59,6 @@ parser.add_argument('-c','--n_cross',default=N_CROSS,type=int,help='Number of cr
 parser.add_argument('-a','--amin',default=None,type=float,help='Min age in day (%(default)s)')
 parser.add_argument('-A','--amax',default=None,type=float,help='Max age in day (%(default)s)')
 parser.add_argument('-F','--fignam',default=FIGNAM,help='Output figure name for debug (%(default)s)')
-parser.add_argument('-u','--use_average',default=False,action='store_true',help='Use plot average (%(default)s)')
 parser.add_argument('--mean_fitting',default=False,action='store_true',help='Mean value fitting (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
@@ -136,8 +135,6 @@ for s in args.y_factor:
     if y_param in args.y_param:
         if not np.isnan(value) and (param != y_param):
             y_factor[y_param][param] = value
-if args.q_param is None:
-    args.q_param = Q_PARAM
 
 def llf(y_true,y_pred):
     n = len(y_pred)
@@ -177,13 +174,8 @@ if args.amin is not None or args.amax is not None:
     p_param.append('Age')
 for param in OBJECTS:
     if param in y_threshold:
-        if not 'Tiller' in p_param:
-            p_param.append('Tiller')
         p_param.append(param)
 for y_param in args.y_param:
-    if not y_param in y_max:
-        if not 'Tiller' in p_param:
-            p_param.append('Tiller')
     for param in y_factor[y_param]:
         if not param in p_param:
             p_param.append(param)
@@ -193,10 +185,6 @@ for param in args.y_param:
     Y[param] = []
 for param in p_param:
     P[param] = []
-if args.use_average:
-    Q = {}
-    for param in args.q_param:
-        Q[param] = []
 for fnam in fnams:
     df = pd.read_csv(fnam,comment='#')
     df.columns = df.columns.str.strip()
@@ -212,11 +200,6 @@ for fnam in fnams:
         if not param in df.columns:
             raise ValueError('Error in finding column for {} >>> {}'.format(param,fnam))
         P[param].extend(list(df[param]))
-    if args.use_average:
-        for param in args.q_param:
-            if not param in df.columns:
-                raise ValueError('Error in finding column for {} >>> {}'.format(param,fnam))
-            Q[param].extend(list(df[param]))
 X = pd.DataFrame(X)
 Y = pd.DataFrame(Y)
 P = pd.DataFrame(P)
@@ -227,55 +210,10 @@ for param in Y.columns:
 for param in P.columns:
     P[param] = P[param].astype(float)
 
-# Calculate means
-if args.use_average:
-    X_avg = {}
-    Y_avg = {}
-    P_avg = {}
-    for param in args.x_param:
-        X_avg[param] = []
-    for param in args.y_param:
-        Y_avg[param] = []
-    for param in p_param:
-        P_avg[param] = []
-    Q = pd.DataFrame(Q)
-    for param in args.q_param:
-        Q_tmp = Q[param].drop_duplicates()
-        if len(Q_tmp) == 1:
-            if Q_tmp.iloc[0] == Q_tmp.iloc[0]:
-                pass
-            else: # all NaN
-                raise ValueError('Error, no data available for {}. Remove {} from identification parameter.'.format(param,param))
-    Q_uniq = Q.drop_duplicates()
-    for i in range(len(Q_uniq)):
-        cnd = (Q == Q_uniq.iloc[i]).all(axis=1)
-        X_cnd = X[cnd].mean()
-        Y_cnd = Y[cnd].mean()
-        P_cnd = P[cnd].mean()
-        for param in args.x_param:
-            X_avg[param].append(X_cnd[param])
-        for param in args.y_param:
-            Y_avg[param].append(Y_cnd[param])
-        for param in p_param:
-            P_avg[param].append(P_cnd[param])
-    X = pd.DataFrame(X_avg)
-    Y = pd.DataFrame(Y_avg)
-    P = pd.DataFrame(P_avg)
-
-# Convert objective variable to damage intensity
-for y_param in args.y_param:
-    if y_param in y_max:
-        Y[y_param] = Y[y_param]/y_max[y_param]
-    else:
-        Y[y_param] = Y[y_param]/P['Tiller']
-
 # Add equivalent values to objective variables
 for y_param in args.y_param:
     for param in y_factor[y_param]:
-        if param in y_max:
-            Y[y_param] += P[param]/y_max[param]*y_factor[y_param][param]
-        else:
-            Y[y_param] += P[param]/P['Tiller']*y_factor[y_param][param]
+        Y[y_param] += P[param]*y_factor[y_param][param]
 
 # Select data
 param = 'Age'
@@ -324,13 +262,8 @@ for y_param in args.y_param:
     for param in y_threshold:
         if param in [y_param]:
             continue
-        elif param in y_max:
-            cnd2 = (P_inp[param]/y_max[param] > y_threshold[param]).values
-            if np.all(cnd2):
-                raise ValueError('Error, no {} left in threshold determination. Change the threshold of {}.'.format(param,param))
-            cnd |= cnd2
         else:
-            cnd2 = (P_inp[param]/P_inp['Tiller'] > y_threshold[param]).values
+            cnd2 = (P_inp[param] > y_threshold[param]).values
             if np.all(cnd2):
                 raise ValueError('Error, no {} left in threshold determination. Change the threshold of {}.'.format(param,param))
             cnd |= cnd2
