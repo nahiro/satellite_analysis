@@ -74,7 +74,6 @@ df = pd.read_csv(args.obs_fnam,comment='#')
 df.columns = df.columns.str.strip()
 loc_bunch = df['Location'].str.strip().values
 number_bunch = df['BunchNumber'].astype(int).values
-indx_bunch = np.arange(len(number_bunch))
 plot_bunch = df['PlotPaddy'].astype(int).values
 x_bunch = df['EastingI'].astype(float).values
 y_bunch = df['NorthingI'].astype(float).values
@@ -125,10 +124,9 @@ if args.debug:
     out_weight = {}
 for plot in plots:
     cnd = (plot_bunch == plot)
-    indx = indx_bunch[cnd]
-    ng = number_bunch[indx]
-    xg = x_bunch[indx]
-    yg = y_bunch[indx]
+    ng = number_bunch[cnd]
+    xg = x_bunch[cnd]
+    yg = y_bunch[cnd]
     observe_inds = []
     observe_nums = {}
     for n,x,y in zip(ng,xg,yg):
@@ -222,11 +220,10 @@ if args.debug:
     pdf = PdfPages(args.fignam)
     for plot in plots:
         cnd = (plot_bunch == plot)
-        indx = indx_bunch[cnd]
-        lg = loc_bunch[indx]
-        ng = number_bunch[indx]
-        xg = x_bunch[indx]
-        yg = y_bunch[indx]
+        lg = loc_bunch[cnd]
+        ng = number_bunch[cnd]
+        xg = x_bunch[cnd]
+        yg = y_bunch[cnd]
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
