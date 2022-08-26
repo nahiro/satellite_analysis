@@ -71,6 +71,7 @@ parser.add_argument('--img_fnam',default=None,help='Image file name (%(default)s
 parser.add_argument('--scan_fnam',default=None,help='Scan file name (%(default)s)')
 parser.add_argument('-e','--exp',default=False,action='store_true',help='Output in exp format (%(default)s)')
 parser.add_argument('--long',default=False,action='store_true',help='Output in long format (%(default)s)')
+parser.add_argument('--out_empty',default=False,action='store_true',help='Output empty file (%(default)s)')
 parser.add_argument('-u','--use_edge',default=False,action='store_true',help='Use GCPs near the edge of the correction range (%(default)s)')
 parser.add_argument('-v','--verbose',default=False,action='store_true',help='Verbose mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
@@ -334,3 +335,7 @@ for trg_indyc in np.arange(args.trg_indy_start,args.trg_indy_stop,args.trg_indy_
                 img_fnam = args.img_fnam.replace('.npz','_{:05d}_{:05d}.npz'.format(trg_indxc,trg_indyc))
                 ref_img,trg_img = interp_img(p2,ref_subset_xp0,ref_subset_yp0,ref_subset_data,trg_subset_xp0,trg_subset_yp0,trg_subset_data)
                 np.savez(img_fnam,ref_img=ref_img,trg_img=trg_img,xp0=ref_subset_xp0,yp0=ref_subset_yp0)
+if args.out_fnam is not None and args.out_empty:
+    if not os.path.exists(args.out_fnam):
+        with open(args.out_fnam,'w') as fp:
+            pass
