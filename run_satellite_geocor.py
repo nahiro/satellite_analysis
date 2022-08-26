@@ -253,6 +253,9 @@ class Geocor(Satellite_Process):
                     self.print_message('No GCPs found.',print_time=False)
                     continue
                 x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
+                if not np.iterable(x):
+                    self.print_message('Not enough GCPs were found >>> {}'.format(x.size),print_time=False)
+                    continue
                 indx0 = np.arange(r.size)[(r90<self.values['rmax'])]
                 x_diff1,y_diff1,e1,n1,indx1 = calc_mean(x,y,emax=self.values['emaxs'][0],selected=indx0)
                 x_diff2,y_diff2,e2,n2,indx2 = calc_mean(x,y,emax=self.values['emaxs'][1],selected=indx1)
