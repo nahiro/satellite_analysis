@@ -88,7 +88,7 @@ class Phenology(Satellite_Process):
             command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
         self.run_command(command,message='<<< Select planting >>>')
 
-        # Parcellate planting data
+        # Parcellate planting
         out_csv = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
         out_shp = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
         out_pdf = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
@@ -100,6 +100,7 @@ class Phenology(Satellite_Process):
         command += ' --out_csv "{}"'.format(out_csv)
         command += ' --out_shp "{}"'.format(out_shp)
         command += ' --fignam "{}"'.format(out_pdf)
+        command += ' --ax1_title "Planting Date btw {:%Y%m%d} - {:%Y%m%d}"'.format(start_dtim,end_dtim)
         command += ' --use_index'
         command += ' --remove_nan'
         command += ' --debug'
