@@ -241,11 +241,15 @@ class Geocor(Satellite_Process):
                 command += ' --rthr {}'.format(self.values['cmin'])
                 command += ' --feps 0.01'
                 command += ' --exp'
+                command += ' --out_empty'
                 try:
                     self.run_command(command,message='<<< Find GCPs for {} >>>'.format(dstr))
                 except Exception:
                     continue
                 if not os.path.exists(dat_fnam):
+                    self.print_message('No GCPs found.',print_time=False)
+                    continue
+                elif os.path.getsize(dat_fnam) < 1:
                     self.print_message('No GCPs found.',print_time=False)
                     continue
                 x,y,r,r90 = np.loadtxt(dat_fnam,usecols=(4,5,6,7),unpack=True)
