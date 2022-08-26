@@ -26,9 +26,12 @@ class Phenology(Satellite_Process):
             os.makedirs(self.s2_analysis)
         if not os.path.isdir(self.s2_analysis):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
-        mask_fnam = os.path.join(self.s1_analysis,'paddy_mask.tif')
-        if not os.path.exists(mask_fnam):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_fnam))
+        mask_paddy = self.values['mask_paddy']
+        if not os.path.exists(mask_paddy):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_paddy))
+        mask_parcel = self.values['mask_parcel']
+        if not os.path.exists(mask_parcel):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
         # Select reference for planting
         planting_ref = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}_ref.tif'.format(start_dtim,end_dtim))
@@ -36,7 +39,7 @@ class Phenology(Satellite_Process):
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
         command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
         command += ' --dst_fnam "{}"'.format(planting_ref)
-        command += ' --mask_fnam "{}"'.format(mask_fnam)
+        command += ' --mask_fnam "{}"'.format(mask_paddy)
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
         command += ' --tmax {:%Y%m%d}'.format(end_dtim)
         command += ' --tref {:%Y%m%d}'.format(pref_dtim)
@@ -69,7 +72,7 @@ class Phenology(Satellite_Process):
         command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
         command += ' --stat_fnam "{}"'.format(planting_avg)
         command += ' --dst_fnam "{}"'.format(planting_sel)
-        command += ' --mask_fnam "{}"'.format(mask_fnam)
+        command += ' --mask_fnam "{}"'.format(mask_paddy)
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
         command += ' --tmax {:%Y%m%d}'.format(end_dtim)
         #command += ' --tref {:%Y%m%d}'.format(pref_dtim)
@@ -93,7 +96,7 @@ class Phenology(Satellite_Process):
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
         command += ' --src_geotiff "{}"'.format(planting_sel)
-        command += ' --mask_geotiff "{}"'.format(self.values['mask_fnam'])
+        command += ' --mask_geotiff "{}"'.format(mask_parcel)
         command += ' --out_csv "{}"'.format(out_csv)
         command += ' --out_shp "{}"'.format(out_shp)
         command += ' --fignam "{}"'.format(out_pdf)

@@ -37,6 +37,8 @@ if not os.path.exists(main_browse_image):
     main_browse_image = os.path.join(HOME,'Pictures','browse.png')
 gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_area_polygon_20210914.shp')
 ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_mul.tif')
+mask_paddy = os.path.join(main_s1_analysis,'paddy_mask.tif')
+mask_parcel = os.path.join(main_s2_analysis,'parcel_mask.tif')
 
 # Set defaults
 config_defaults = dict(os.environ)
@@ -182,7 +184,8 @@ config_defaults.update({
 'interp.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
 'phenology.gis_fnam'                  : gis_fnam,
-'phenology.mask_fnam'                 : '',
+'phenology.mask_paddy'                : mask_paddy,
+'phenology.mask_parcel'               : mask_parcel,
 'phenology.trans_fnam'                : '',
 'phenology.heading_fnam'              : '',
 'phenology.harvest_fnam'              : '',
