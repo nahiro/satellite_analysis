@@ -48,8 +48,8 @@ parser.add_argument('-P','--plant',default=None,help='Planting date CSV name (%(
 parser.add_argument('--head',default=None,help='Heading date CSV name (%(default)s)')
 parser.add_argument('--harvest',default=None,help='Harvesting date CSV name (%(default)s)')
 parser.add_argument('--assess',default=None,help='Assessment date CSV name (%(default)s)')
-parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-s','--tmin',default=TMIN,help='Min planting date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-e','--tmax',default=TMAX,help='Max harvesting date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
@@ -80,7 +80,7 @@ if args.data_tmax is None:
 else:
     d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
-    bnam = 'assess_{:%Y%m%d}_{:%Y%m%d}'.format(d1,d2)
+    bnam = 'assess_{:%Y%m%d}_{:%Y%m%d}'.format(tmin,tmax)
     if args.out_csv is None:
         args.out_csv = bnam+'_parcel.csv'
     if args.out_shp is None:
@@ -366,6 +366,11 @@ for iobj,object_id in enumerate(object_ids):
     #break # for debug
 if args.debug:
     pdf.close()
+
+nmin = date2num(tmin)
+nmax = date2num(tmax)
+all_data[all_data < nmin] = np.nan
+all_data[all_data > nmax] = np.nan
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
