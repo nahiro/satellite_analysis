@@ -18,6 +18,7 @@ class Phenology(Satellite_Process):
         # Check files/folders
         start_dtim = datetime.strptime(self.start_date,self.date_fmt)
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
+        finish_dtim = end_dtim+timedelta(days=self.values['assess_dthrs'][0])
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         pref_dtim = datetime.strptime(self.values['trans_pref'],self.date_fmt)
@@ -130,12 +131,13 @@ class Phenology(Satellite_Process):
         command += ' --atc {}'.format(self.values['atc_params'][0]*1.0e-2)
         command += ' --offset {}'.format(self.values['atc_params'][1])
         command += ' --sthr {}'.format(self.values['y1_thr'])
-        command += '  {}'.format(self.values[''])
-        command += '  {}'.format(self.values[''])
-        command += ' '.format()
-        command += ' '.format()
-        command += ' '.format()
-        command += ' '.format()
+        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+        command += ' --tmax {:%Y%m%d}'.format(finish_dtim)
+        command += ' --data_tmin '.format(first_dtim)
+        command += ' --data_tmax '.format(last_dtim)
+        command += ' --grow_period {}'.format(self.values['assess_dthrs'][0])
+        command += ' --dthr1 {}'.format(self.values['assess_dthrs'][1])
+        command += ' --dthr2 {}'.format(self.values['assess_dthrs'][2])
         command += ' --use_index'
         command += ' --debug'
         command += ' --batch'
