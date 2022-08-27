@@ -9,6 +9,8 @@ except Exception:
     from osgeo import gdal
 import shapefile
 import numpy as np
+from datetime import datetime
+from matplotlib.dates import num2date,date2num
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -18,6 +20,24 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 # Constants
 PARAMS = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime',
 'p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
+DATE_PARAMS = ['trans_d','trans_n','p1_2','p3_2']
+PARAM_LABELS = {'trans_d':'Planting Date',
+'trans_s':'Planting Signal (dB)',
+'trans_n':'Date of $\sigma$ Min',
+'bsc_min':'$\sigma$ Min (dB)',
+'post_avg':'$\Delta\sigma$ Avg (dB)',
+'post_min':'$\Delta\sigma$ Min (dB)',
+'post_max':'$\Delta\sigma$ Max (dB)',
+'risetime':'Risetime (day)',
+'p1_2':'Planting Date 2',
+'p2_2':'Planting Signal 2 (dB)',
+'p3_2':'Date of $\sigma$ Min 2',
+'p4_2':'$\sigma$ Min 2 (dB)',
+'p5_2':'$\Delta\sigma$ Avg 2 (dB)',
+'p6_2':'$\Delta\sigma$ Min 2 (dB)',
+'p7_2':'$\Delta\sigma$ Max 2 (dB)',
+'p8_2':'Risetime 2 (day)',
+}
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -206,6 +226,48 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
+    date_indx = []
+    for param in DATE_PARAMS:
+        if not param in src_band:
+            raise ValueError('Error in finding {} >>> {}'.format(param,args.src_geotiff))
+        date_indx.append(src_band.index(param))
+    tmin = np.nanmin(src_data[date_indx])
+    tmax = np.nanmax(src_data[date_indx])
+    tdif = tmax-tmin
+    values = []
+    labels = []
+    ticks = []
+    ds = tdif/365
+    for y in range(num2date(tmin).year,num2date(tmax).year+1):
+        if ds > 2.0:
+            for m in range(1,13,3):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        elif ds > 1.0:
+            for m in range(1,13,2):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        else:
+            for m in range(1,13,1):
+                for day in [1,15]:
+                    d = datetime(y,m,day)
+                    values.append(date2num(d))
+                    labels.append(d.strftime('%m/%d'))
+                for day in [5,10,20,25]:
+                    d = datetime(y,m,day)
+                    ticks.append(date2num(d))
+    fig_xmin = None
+    fig_xmax = None
+    fig_ymin = None
+    fig_ymax = None
     for iband,param in enumerate(PARAMS):
         data = dst_data[iband]
         fig.clear()
@@ -256,31 +318,39 @@ if args.debug:
             ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,ax1_zstp[param])).ax
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
-        ax2.minorticks_on()
-        ax2.set_ylabel('{}'.format(param))
-        ax2.yaxis.set_label_coords(4.5,0.5)
-        if args.remove_nan:
-            src_indy,src_indx = np.indices(src_shape)
-            src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
-            src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
-            cnd = ~np.isnan(data)
-            if cnd.sum() < 1:
+        if param in DATE_PARAMS:
+            ax2.yaxis.set_major_locator(plt.FixedLocator(values))
+            ax2.yaxis.set_major_formatter(plt.FixedFormatter(labels))
+            ax2.yaxis.set_minor_locator(plt.FixedLocator(ticks))
+            for l in ax2.yaxis.get_ticklabels():
+                l.set_rotation(30)
+        else:
+            ax2.minorticks_on()
+        ax2.set_ylabel('{}'.format(PARAM_LABELS[param]))
+        ax2.yaxis.set_label_coords(6.5,0.5)
+        if fig_xmin is None:
+            if args.remove_nan:
+                src_indy,src_indx = np.indices(src_shape)
+                src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
+                src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
+                cnd = ~np.isnan(data)
+                if cnd.sum() < 1:
+                    fig_xmin = src_xmin
+                    fig_xmax = src_xmax
+                    fig_ymin = src_ymin
+                    fig_ymax = src_ymax
+                else:
+                    xp = src_xp[cnd]
+                    yp = src_yp[cnd]
+                    fig_xmin = xp.min()
+                    fig_xmax = xp.max()
+                    fig_ymin = yp.min()
+                    fig_ymax = yp.max()
+            else:
                 fig_xmin = src_xmin
                 fig_xmax = src_xmax
                 fig_ymin = src_ymin
                 fig_ymax = src_ymax
-            else:
-                xp = src_xp[cnd]
-                yp = src_yp[cnd]
-                fig_xmin = xp.min()
-                fig_xmax = xp.max()
-                fig_ymin = yp.min()
-                fig_ymax = yp.max()
-        else:
-            fig_xmin = src_xmin
-            fig_xmax = src_xmax
-            fig_ymin = src_ymin
-            fig_ymax = src_ymax
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
         if args.ax1_title is not None:

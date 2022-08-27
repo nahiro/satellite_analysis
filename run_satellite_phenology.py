@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime
+from datetime import datetime,timedelta
 import numpy as np
 from subprocess import call
 from proc_satellite_class import Satellite_Process
@@ -101,7 +101,7 @@ class Phenology(Satellite_Process):
         command += ' --out_csv "{}"'.format(planting_csv)
         command += ' --out_shp "{}"'.format(planting_shp)
         command += ' --fignam "{}"'.format(planting_pdf)
-        command += ' --ax1_title "Planting Date btw {:%Y%m%d} - {:%Y%m%d}"'.format(start_dtim,end_dtim)
+        command += ' --ax1_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
         command += ' --use_index'
         command += ' --remove_nan'
         command += ' --debug'
@@ -141,6 +141,7 @@ class Phenology(Satellite_Process):
         command += ' --use_index'
         command += ' --debug'
         command += ' --batch'
+        self.run_command(command,message='<<< Calculate assessment date >>>')
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
