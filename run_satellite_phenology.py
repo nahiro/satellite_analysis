@@ -89,20 +89,49 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Select planting >>>')
 
         # Parcellate planting
-        out_csv = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
-        out_shp = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
-        out_pdf = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
+        planting_csv = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
+        planting_shp = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
+        planting_pdf = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
         command += ' --src_geotiff "{}"'.format(planting_sel)
         command += ' --mask_geotiff "{}"'.format(mask_parcel)
-        command += ' --out_csv "{}"'.format(out_csv)
-        command += ' --out_shp "{}"'.format(out_shp)
-        command += ' --fignam "{}"'.format(out_pdf)
+        command += ' --out_csv "{}"'.format(planting_csv)
+        command += ' --out_shp "{}"'.format(planting_shp)
+        command += ' --fignam "{}"'.format(planting_pdf)
         command += ' --ax1_title "Planting Date btw {:%Y%m%d} - {:%Y%m%d}"'.format(start_dtim,end_dtim)
         command += ' --use_index'
         command += ' --remove_nan'
+        command += ' --debug'
+        command += ' --batch'
+        self.run_command(command,message='<<< Parcellate planting >>>')
+
+        # Calculate assessment date
+        assess_csv = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
+        assess_shp = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
+        assess_pdf = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
+        command = self.python_path
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'calc_assess_date.py'))
+        command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --plant "{}"'.format(planting_csv)
+        if self.values['head_fnam'] != '':
+            command += ' --head "{}"'.format(self.values['head_fnam'])
+        if self.values['harvest_fnam'] != '':
+            command += ' --harvest "{}"'.format(self.values['harvest_fnam'])
+        if self.values['assess_fnam'] != '':
+            command += ' --assess "{}"'.format(self.values['assess_fnam'])
+        command += ' --out_csv "{}"'.format(assess_csv)
+        command += ' --out_shp "{}"'.format(assess_shp)
+        command += ' --fignam "{}"'.format(assess_pdf)
+        command += ' '.format()
+        command += ' '.format()
+        command += ' '.format()
+        command += ' '.format()
+        command += ' '.format()
+        command += ' --use_index'
         command += ' --debug'
         command += ' --batch'
 
