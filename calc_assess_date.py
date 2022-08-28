@@ -313,13 +313,17 @@ for iobj,object_id in enumerate(object_ids):
         cnd = (x >= x_peak+args.dthr2)
         xc = x[cnd]
         y1c = y1[cnd]
-        indx = np.argmin(y1c)
-        if y1c[indx] > args.sthr:
+        if xc.size < 1:
             x_harvest = np.nan
             y_harvest = np.nan
         else:
-            x_harvest = xc[indx]
-            y_harvest = y1c[indx]
+            indx = np.argmin(y1c)
+            if y1c[indx] > args.sthr:
+                x_harvest = np.nan
+                y_harvest = np.nan
+            else:
+                x_harvest = xc[indx]
+                y_harvest = y1c[indx]
     if args.assess is not None and not np.isnan(assess_d[iobj]):
         x_assess = assess_d[iobj]
     else:
