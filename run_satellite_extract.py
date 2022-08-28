@@ -1,12 +1,14 @@
 import os
 import sys
-from subprocess import call
 from proc_satellite_class import Satellite_Process
 
 class Extract(Satellite_Process):
 
     def __init__(self):
         super().__init__()
+        self.ax1_zmin = None
+        self.ax1_zmax = None
+        self.ax1_zstp = None
         self._freeze()
 
     def run(self):
@@ -27,37 +29,25 @@ class Extract(Satellite_Process):
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
-        # Read data
-        command = self.python_path
-        command += ' {}'.format(os.path.join(self.scr_dir,'read_survey_xls.py'))
-        command += ' --inp_fnam {}'.format(self.values['obs_fnam'])
-        command += ' --sheet {}'.format(self.values['i_sheet'])
-        command += ' --ref_fnam {}'.format(self.values['gps_fnam'])
-        command += ' --epsg {}'.format(self.values['epsg'])
-        command += ' --out_fnam {}'.format(os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam)))
-        sys.stderr.write('\nRead observation data\n')
-        sys.stderr.write(command+'\n')
-        sys.stderr.flush()
-        call(command,shell=True)
-
         # Extract indices
         command = self.python_path
-        command += ' {}'.format(os.path.join(self.scr_dir,'drone_extract_values.py'))
-        command += ' --src_geotiff {}'.format(self.values['inp_fnam'])
-        command += ' --csv_fnam {}'.format(os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam)))
-        command += ' --ext_fnam {}'.format(os.path.join(wrk_dir,'{}_extract.csv'.format(trg_bnam)))
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'drone_extract_values.py'))
+        command += ' --src_geotiff "{}"'.format(self.values['inp_fnam'])
+        command += ' --csv_fnam "{}"'.format(os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam)))
+        command += ' --ext_fnam "{}"'.format(os.path.join(wrk_dir,'{}_extract.csv'.format(trg_bnam)))
         command += ' --inner_radius {}'.format(self.values['region_size'][0])
         command += ' --outer_radius {}'.format(self.values['region_size'][1])
-        command += ' --fignam {}'.format(os.path.join(wrk_dir,'{}_extract.pdf'.format(trg_bnam)))
+        command += ' --fignam "{}"'.format(os.path.join(wrk_dir,'{}_extract.pdf'.format(trg_bnam)))
+        command += ' --ax1_zmin="{}"'.format(self.ax1_zmin)
+        command += ' --ax1_zmax="{}"'.format(self.ax1_zmax)
+        command += ' --ax1_zstp="{}"'.format(self.ax1_zstp)
+        command += ' --ax1_title "{}"'.format(trg_bnam)
         command += ' --remove_nan'
         command += ' --debug'
         command += ' --batch'
-        sys.stderr.write('\nExtract indices\n')
-        sys.stderr.write(command+'\n')
-        sys.stderr.flush()
-        call(command,shell=True)
+        self.run_command(command,message='<<< Extract indices >>>')
 
         # Finish process
-        sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
+        sys.stderr.write('\nFinished process {}.\n\n'.format(self.proc_name))
         sys.stderr.flush()
         return
