@@ -216,8 +216,11 @@ config_defaults.update({
 #----------- formula -----------
 'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'extract','extract.csv'),
 'formula.data_select'                 : 'Days from Assessment',
+'formula.harvest_range'               : [-15.0,-5.0],
 'formula.assess_range'                : [-5.0,5.0],
-'formula.mature_range'                : [30.0,40.0],
+'formula.head_range'                  : [30.0,40.0],
+'formula.peak_range'                  : [30.0,40.0],
+'formula.plant_range'                 : [90.0,100.0],
 'formula.age_range'                   : [90.0,100.0],
 'formula.n_x'                         : [1,2],
 'formula.x1_params'                   : [True,True,True,True,True,True,True,True,True,True],

@@ -6,8 +6,11 @@ proc_formula.proc_name = 'formula'
 proc_formula.proc_title = 'Make Formula'
 proc_formula.pnams.append('inp_fnams')
 proc_formula.pnams.append('data_select')
+proc_formula.pnams.append('harvest_range')
 proc_formula.pnams.append('assess_range')
-proc_formula.pnams.append('mature_range')
+proc_formula.pnams.append('head_range')
+proc_formula.pnams.append('peak_range')
+proc_formula.pnams.append('plant_range')
 proc_formula.pnams.append('age_range')
 proc_formula.pnams.append('n_x')
 proc_formula.pnams.append('x1_params')
@@ -32,9 +35,12 @@ proc_formula.pnams.append('n_cros')
 proc_formula.pnams.append('n_formula')
 proc_formula.params['inp_fnams'] = 'Input Files'
 proc_formula.params['data_select'] = 'Data Selection Criteria'
+proc_formula.params['harvest_range'] = 'Days from Harvesting (day)'
 proc_formula.params['assess_range'] = 'Days from Assessment (day)'
-proc_formula.params['mature_range'] = 'Days from Heading (day)'
-proc_formula.params['age_range'] = 'Days from Planting (day)'
+proc_formula.params['head_range'] = 'Days from Heading (day)'
+proc_formula.params['peak_range'] = 'Days from Peak (day)'
+proc_formula.params['plant_range'] = 'Days from Planting (day)'
+proc_formula.params['age_range'] = 'Age Range (day)'
 proc_formula.params['n_x'] = 'Explanatory Variable Number'
 proc_formula.params['x1_params'] = 'Explanatory Ref. Candidate'
 proc_formula.params['x2_params'] = 'Explanatory NRef. Candidate'
@@ -58,8 +64,11 @@ proc_formula.params['n_cros'] = 'Cross Validation Number'
 proc_formula.params['n_formula'] = 'Max Formula Number'
 proc_formula.param_types['inp_fnams'] = 'string'
 proc_formula.param_types['data_select'] = 'string_select'
+proc_formula.param_types['harvest_range'] = 'float_list'
 proc_formula.param_types['assess_range'] = 'float_list'
-proc_formula.param_types['mature_range'] = 'float_list'
+proc_formula.param_types['head_range'] = 'float_list'
+proc_formula.param_types['peak_range'] = 'float_list'
+proc_formula.param_types['plant_range'] = 'float_list'
 proc_formula.param_types['age_range'] = 'float_list'
 proc_formula.param_types['n_x'] = 'int_select_list'
 proc_formula.param_types['x1_params'] = 'boolean_list'
@@ -82,8 +91,11 @@ proc_formula.param_types['n_multi'] = 'int'
 proc_formula.param_types['vif_max'] = 'float'
 proc_formula.param_types['n_cros'] = 'int'
 proc_formula.param_types['n_formula'] = 'int'
+proc_formula.param_range['harvest_range'] = (-1000.0,1000.0)
 proc_formula.param_range['assess_range'] = (-1000.0,1000.0)
-proc_formula.param_range['mature_range'] = (-1000.0,1000.0)
+proc_formula.param_range['head_range'] = (-1000.0,1000.0)
+proc_formula.param_range['peak_range'] = (-1000.0,1000.0)
+proc_formula.param_range['plant_range'] = (-1000.0,1000.0)
 proc_formula.param_range['age_range'] = (-1000.0,1000.0)
 proc_formula.param_range['score_max'] = (1,65535)
 proc_formula.param_range['score_step'] = (0.0,1.0e50)
@@ -100,8 +112,11 @@ proc_formula.param_range['n_cros'] = (2,1000)
 proc_formula.param_range['n_formula'] = (1,1000)
 proc_formula.defaults['inp_fnams'] = 'input.csv'
 proc_formula.defaults['data_select'] = 'Days from Assessment'
+proc_formula.defaults['harvest_range'] = [-15.0,-5.0]
 proc_formula.defaults['assess_range'] = [-5.0,5.0]
-proc_formula.defaults['mature_range'] = [30.0,40.0]
+proc_formula.defaults['head_range'] = [30.0,40.0]
+proc_formula.defaults['peak_range'] = [30.0,40.0]
+proc_formula.defaults['plant_range'] = [90.0,100.0]
 proc_formula.defaults['age_range'] = [90.0,100.0]
 proc_formula.defaults['n_x'] = [1,2]
 proc_formula.defaults['x1_params'] = [True,True,True,True,True,True,True,True,True,True]
@@ -124,9 +139,12 @@ proc_formula.defaults['n_multi'] = 1
 proc_formula.defaults['vif_max'] = 5.0
 proc_formula.defaults['n_cros'] = 5
 proc_formula.defaults['n_formula'] = 3
-proc_formula.list_sizes['data_select'] = 3
+proc_formula.list_sizes['data_select'] = 6
+proc_formula.list_sizes['harvest_range'] = 2
 proc_formula.list_sizes['assess_range'] = 2
-proc_formula.list_sizes['mature_range'] = 2
+proc_formula.list_sizes['head_range'] = 2
+proc_formula.list_sizes['peak_range'] = 2
+proc_formula.list_sizes['plant_range'] = 2
 proc_formula.list_sizes['age_range'] = 2
 proc_formula.list_sizes['n_x'] = 2
 proc_formula.list_sizes['x1_params'] = 10
@@ -144,9 +162,12 @@ proc_formula.list_sizes['yfac4'] = 6
 proc_formula.list_sizes['yfac5'] = 6
 proc_formula.list_sizes['yfac6'] = 6
 proc_formula.list_sizes['criteria'] = 7
-proc_formula.list_labels['data_select'] = ['Days from Assessment','Days from Heading','Days from Planting']
+proc_formula.list_labels['data_select'] = ['Days from Harvesting','Days from Assessment','Days from Heading','Days from Peak','Days from Planting','Age Range']
+proc_formula.list_labels['harvest_range'] = ['Min :',' Max :']
 proc_formula.list_labels['assess_range'] = ['Min :',' Max :']
-proc_formula.list_labels['mature_range'] = ['Min :',' Max :']
+proc_formula.list_labels['head_range'] = ['Min :',' Max :']
+proc_formula.list_labels['peak_range'] = ['Min :',' Max :']
+proc_formula.list_labels['plant_range'] = ['Min :',' Max :']
 proc_formula.list_labels['age_range'] = ['Min :',' Max :']
 proc_formula.list_labels['n_x'] = [('Min :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]),
                                   (' Max :',[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24])]
@@ -167,8 +188,11 @@ proc_formula.list_labels['yfac6'] = ['','','','','','']
 proc_formula.list_labels['criteria'] = ['RMSE_test','R2_test','AIC_test','RMSE_train','R2_train','AIC_train','BIC_train']
 proc_formula.input_types['inp_fnams'] = 'ask_files'
 proc_formula.input_types['data_select'] = 'string_select'
+proc_formula.input_types['harvest_range'] = 'float_list'
 proc_formula.input_types['assess_range'] = 'float_list'
-proc_formula.input_types['mature_range'] = 'float_list'
+proc_formula.input_types['head_range'] = 'float_list'
+proc_formula.input_types['peak_range'] = 'float_list'
+proc_formula.input_types['plant_range'] = 'float_list'
 proc_formula.input_types['age_range'] = 'float_list'
 proc_formula.input_types['n_x'] = 'int_select_list'
 proc_formula.input_types['x1_params'] = 'boolean_list'
