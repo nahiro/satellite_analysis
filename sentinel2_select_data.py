@@ -46,6 +46,9 @@ parser.add_argument('--use_index',default=False,action='store_true',help='Use in
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
+for param in args.param:
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter for selection >>> {}'.format(param))
 if args.phenology is None or not os.path.exists(args.phenology):
     raise IOError('Error, no such file >>> {}'.format(args.phenology))
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
