@@ -34,7 +34,7 @@ class Phenology(Satellite_Process):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
         # Select reference for planting
-        planting_ref = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}_ref.tif'.format(start_dtim,end_dtim))
+        planting_ref = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting_ref.tif'.format(start_dtim,end_dtim))
         dnam = os.path.dirname(planting_ref)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
@@ -61,7 +61,7 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Select reference for planting >>>')
 
         # Calculate average for planting
-        planting_avg = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}_avg.tif'.format(start_dtim,end_dtim))
+        planting_avg = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting_avg.tif'.format(start_dtim,end_dtim))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_average_reference.py'))
         command += ' --ref_fnam "{}"'.format(planting_ref)
@@ -71,7 +71,7 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Calculate average for planting >>>')
 
         # Select planting
-        planting_sel = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.tif'.format(start_dtim,end_dtim))
+        planting_sel = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.tif'.format(start_dtim,end_dtim))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
         command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))

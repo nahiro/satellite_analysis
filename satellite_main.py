@@ -85,7 +85,7 @@ def set_title(pnam):
         proc_interp.center_var[proc_pnam][1].set(data_tmax)
     # phenology
     proc_pnam = 'trans_fnam'
-    proc_phenology.values[proc_pnam] = os.path.join(s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
+    proc_phenology.values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
     dt = (end_dtim-start_dtim).total_seconds()
     trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
     proc_pnam = 'trans_pref'
