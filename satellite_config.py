@@ -226,7 +226,6 @@ config_defaults.update({
 'formula.x1_params'                   : [True,True,True,True,True,True,True,True,True,True],
 'formula.x2_params'                   : [True,True,True,True,True,True,True,True,True,True],
 'formula.x3_params'                   : [True,True,True,True],
-'formula.q_params'                    : [True,True,True,True],
 'formula.y_params'                    : [True,False,False,False,False,False],
 'formula.score_max'                   : [9,9,1,1,1,9],
 'formula.score_step'                  : [2.0,2.0,0.2,0.2,0.2,2.0],
