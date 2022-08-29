@@ -180,8 +180,19 @@ X = {}
 Y = {}
 P = {}
 p_param = []
+p_param.append('ObsDate')
 if args.amin is not None or args.amax is not None:
     p_param.append('Age')
+if args.dmin_harvest is not None or args.dmax_harvest is not None:
+    p_param.append('harvest_d')
+if args.dmin_assess is not None or args.dmax_assess is not None:
+    p_param.append('assess_d')
+if args.dmin_head is not None or args.dmax_head is not None:
+    p_param.append('head_d')
+if args.dmin_peak is not None or args.dmax_peak is not None:
+    p_param.append('peak_d')
+if args.dmin_plant is not None or args.dmax_plant is not None:
+    p_param.append('plant_d')
 for param in OBJECTS:
     if param in y_threshold:
         p_param.append(param)

@@ -16,8 +16,8 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
 EPSILON = 1.0e-6 # a small number
-PARAMS = ['trans_d','peak_d','head_d','assess_d','harvest_d']
-# trans_d   : Transplanting date
+PARAMS = ['plant_d','peak_d','head_d','assess_d','harvest_d']
+# plant_d   : Planting date
 # peak_d    : Heading date (peak of NDVI)
 # head_d    : Heading date (between two peaks of NDVI 2nd difference)
 # assess_d  : Assessment date
@@ -157,7 +157,7 @@ elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
 if not 'trans_d' in df.columns:
     raise ValueError('Error in finding trans_d >>> {}'.format(args.plant))
 iband = df.columns.to_list().index('trans_d')
-trans_d = df.iloc[:,iband].astype(float).values # Transplanting date
+plant_d = df.iloc[:,iband].astype(float).values # Planting date
 
 # Read heading date CSV
 if args.head is not None:
@@ -245,10 +245,10 @@ for iobj,object_id in enumerate(object_ids):
         fig_flag = True
     else:
         fig_flag = False
-    x_trans = trans_d[iobj]
-    if np.isnan(x_trans):
+    x_plant = plant_d[iobj]
+    if np.isnan(x_plant):
         continue
-    grow_cnd = (inp_ntim >= x_trans) & (inp_ntim <= x_trans+args.grow_period)
+    grow_cnd = (inp_ntim >= x_plant) & (inp_ntim <= x_plant+args.grow_period)
     x = inp_ntim[grow_cnd]
     y = inp_ndvi[grow_cnd,iobj]
     if (x.size < 5) or np.any(np.isnan(y)):
@@ -328,13 +328,13 @@ for iobj,object_id in enumerate(object_ids):
         x_assess = assess_d[iobj]
     else:
         x_assess = x_head+(x_harvest-x_head)*args.atc-args.offset
-        if x_assess-x_trans > args.grow_period:
+        if x_assess-x_plant > args.grow_period:
             x_assess = np.nan
-    all_data[iobj,0] = x_trans
+    all_data[iobj,0] = x_plant
     all_data[iobj,1] = x_peak
     all_data[iobj,2] = x_head
-    all_data[iobj,3] = x_harvest
-    all_data[iobj,4] = x_assess
+    all_data[iobj,3] = x_assess
+    all_data[iobj,4] = x_harvest
     if fig_flag:
         dtim = num2date(x)
         fig.clear()

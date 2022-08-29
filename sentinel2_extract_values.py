@@ -17,7 +17,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
-PARAMS = ['trans_d','peak_d','head_d','assess_d','harvest_d']
+PARAMS = ['plant_d','peak_d','head_d','assess_d','harvest_d']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6 # a small number
 
@@ -56,9 +56,9 @@ args = parser.parse_args()
 args_d = {}
 args_d['peak_d'] = None
 if args.plant is not None:
-    args_d['trans_d'] = date2num(datetime.strptime(args.plant,'%Y%m%d'))
+    args_d['plant_d'] = date2num(datetime.strptime(args.plant,'%Y%m%d'))
 else:
-    args_d['trans_d'] = None
+    args_d['plant_d'] = None
 if args.head is not None:
     args_d['head_d'] = date2num(datetime.strptime(args.head,'%Y%m%d'))
 else:
@@ -103,7 +103,7 @@ number_bunch = df['BunchNumber'].astype(int).values
 plot_bunch = df['PlotPaddy'].astype(int).values
 x_bunch = df['EastingI'].astype(float).values
 y_bunch = df['NorthingI'].astype(float).values
-trans_bunch = df['PlantDate'].str.strip().values
+plant_bunch = df['PlantDate'].str.strip().values
 age_bunch = df['Age'].astype(int).values
 tiller_bunch = df['Tiller'].astype(int).values
 plots = np.unique(plot_bunch)
@@ -280,15 +280,15 @@ with open(args.out_csv,'w') as fp:
         lg = loc_bunch[cnd]
         xg = x_bunch[cnd]
         yg = y_bunch[cnd]
-        tg = trans_bunch[cnd]
+        pg = plant_bunch[cnd]
         ag = age_bunch[cnd]
-        dt = datetime.strptime(tg[0],'%Y-%m-%d')+timedelta(days=int(ag[0]))
+        dt = datetime.strptime(pg[0],'%Y-%m-%d')+timedelta(days=int(ag[0]))
         if dt != dtim:
             sys.stderr.write('Warning, input time: {:%Y-%m-%d}, read time: {:%Y-%m-%d}\n'.format(dtim,dt))
             sys.stderr.flush()
         object_id = out_plot[plot]
         fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f}, {:13.1f}'.format(
-                 lg[0],object_id,plot,xg.mean(),yg.mean(),tg[0],ag[0],date2num(dt)))
+                 lg[0],object_id,plot,xg.mean(),yg.mean(),pg[0],ag[0],date2num(dt)))
         for param in PARAMS:
             fp.write(', {:13.1f}'.format(out_event[plot][param]))
         for y_param in args.y_param:
