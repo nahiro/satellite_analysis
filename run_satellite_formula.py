@@ -34,12 +34,17 @@ class Formula(Satellite_Process):
         tmp_fnam = self.mktemp(suffix='.dat')
         with open(tmp_fnam,'w') as fp:
             fp.write('\n'.join(fnams))
-        x_params = [(('S'+param) if param.islower() else param) for param in self.list_labels['x_params']]
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_score_fit.py'))
         command += ' --inp_list "{}"'.format(tmp_fnam)
         command += ' --out_fnam "{}"'.format(os.path.join(wrk_dir,'pm_formula_{}_{}.csv'.format(trg_bnam)))
-        for param,flag in zip(x_params,self.values['x_params']):
+        for param,flag in zip(self.list_labels['x1_params'],self.values['x1_params']):
+            if flag:
+                command += ' --x_param S{}'.format(param)
+        for param,flag in zip(self.list_labels['x2_params'],self.values['x2_params']):
+            if flag:
+                command += ' --x_param {}'.format(param)
+        for param,flag in zip(self.list_labels['x3_params'],self.values['x3_params']):
             if flag:
                 command += ' --x_param {}'.format(param)
         for param,flag in zip(self.list_labels['y_params'],self.values['y_params']):
