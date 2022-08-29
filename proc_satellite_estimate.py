@@ -4,6 +4,7 @@ proc_estimate = Estimate()
 proc_estimate.proc_name = 'estimate'
 proc_estimate.proc_title = 'Estimate Damage'
 proc_estimate.pnams.append('gis_fnam')
+proc_estimate.pnams.append('event_fnam')
 proc_estimate.pnams.append('data_select')
 proc_estimate.pnams.append('harvest_value')
 proc_estimate.pnams.append('assess_value')
@@ -15,6 +16,7 @@ proc_estimate.pnams.append('pm_fnam')
 proc_estimate.pnams.append('pm_number')
 proc_estimate.pnams.append('y_params')
 proc_estimate.params['gis_fnam'] = 'Polygon File'
+proc_estimate.params['event_fnam'] = 'Event Date File'
 proc_estimate.params['data_select'] = 'Data Selection Criteria'
 proc_estimate.params['harvest_value'] = 'Days from Harvesting (day)'
 proc_estimate.params['assess_value'] = 'Days from Assessment (day)'
@@ -26,6 +28,7 @@ proc_estimate.params['pm_fnam'] = 'Plot-mean Formula'
 proc_estimate.params['pm_number'] = 'Plot-mean Formula Number'
 proc_estimate.params['y_params'] = 'Output Variable'
 proc_estimate.param_types['gis_fnam'] = 'string'
+proc_estimate.param_types['event_fnam'] = 'string'
 proc_estimate.param_types['data_select'] = 'string_select'
 proc_estimate.param_types['harvest_value'] = 'float'
 proc_estimate.param_types['assess_value'] = 'float'
@@ -44,6 +47,7 @@ proc_estimate.param_range['plant_value'] = (-1000.0,1000.0)
 proc_estimate.param_range['age_value'] = (-1000.0,1000.0)
 proc_estimate.param_range['pm_number'] = (1,10000)
 proc_estimate.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
+proc_estimate.defaults['event_fnam'] = 'phenology.csv'
 proc_estimate.defaults['data_select'] = 'Days from Assessment'
 proc_estimate.defaults['harvest_value'] = -10.0
 proc_estimate.defaults['assess_value'] = 0.0
@@ -59,6 +63,7 @@ proc_estimate.list_sizes['y_params'] = 6
 proc_estimate.list_labels['data_select'] = ['Days from Assessment','Days from Heading','Days from Planting']
 proc_estimate.list_labels['y_params'] = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 proc_estimate.input_types['gis_fnam'] = 'ask_file'
+proc_estimate.input_types['event_fnam'] = 'ask_file'
 proc_estimate.input_types['data_select'] = 'string_select'
 proc_estimate.input_types['harvest_value'] = 'box'
 proc_estimate.input_types['assess_value'] = 'box'
