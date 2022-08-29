@@ -105,7 +105,6 @@ def set_title(pnam):
     else:
         fs = []
         ds = []
-        date_fmt = date_format.replace('yyyy','%Y').replace('yy','%y').replace('mmm','%b').replace('mm','%m').replace('dd','%d').replace('&','')
         try:
             dtim = datetime.strptime(dstr,date_fmt)
         except Exception:
