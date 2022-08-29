@@ -103,7 +103,7 @@ else:
     object_ids = np.array(list_ids)
 x_center = []
 y_center = []
-for shp in shape(r.shapes()):
+for shp in shape(r.shapes()).geoms:
     x_center.append(shp.centroid.x)
     y_center.append(shp.centroid.y)
 x_center = np.array(x_center)
