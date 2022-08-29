@@ -176,23 +176,20 @@ if args.inp_list is not None:
             fnams.append(fnam)
 else:
     fnams = args.inp_fnam
-X = {}
-Y = {}
-P = {}
+d_range = {}
+d_range['Age'] = [args.amin,args.amax]
+d_range['harvest_d'] = [args.dmin_harvest,args.dmax_harvest]
+d_range['assess_d'] = [args.dmin_assess,args.dmax_assess]
+d_range['head_d'] = [args.dmin_head,args.dmax_head]
+d_range['peak_d'] = [args.dmin_peak,args.dmax_peak]
+d_range['plant_d'] = [args.dmin_plant,args.dmax_plant]
+d_param = 'ObsDate'
 p_param = []
-p_param.append('ObsDate')
-if args.amin is not None or args.amax is not None:
-    p_param.append('Age')
-if args.dmin_harvest is not None or args.dmax_harvest is not None:
-    p_param.append('harvest_d')
-if args.dmin_assess is not None or args.dmax_assess is not None:
-    p_param.append('assess_d')
-if args.dmin_head is not None or args.dmax_head is not None:
-    p_param.append('head_d')
-if args.dmin_peak is not None or args.dmax_peak is not None:
-    p_param.append('peak_d')
-if args.dmin_plant is not None or args.dmax_plant is not None:
-    p_param.append('plant_d')
+for param in d_range:
+    if d_range[param][0] is not None or d_range[param][1] is not None:
+        p_param.append(param)
+        if not d_param in p_param:
+            p_param.append(d_param)
 for param in OBJECTS:
     if param in y_threshold:
         p_param.append(param)
@@ -200,6 +197,9 @@ for y_param in args.y_param:
     for param in y_factor[y_param]:
         if not param in p_param:
             p_param.append(param)
+X = {}
+Y = {}
+P = {}
 for param in args.x_param:
     X[param] = []
 for param in args.y_param:
@@ -237,21 +237,28 @@ for y_param in args.y_param:
         Y[y_param] += P[param]*y_factor[y_param][param]
 
 # Select data
-param = 'Age'
-if param in p_param:
-    cnd2 = np.isnan(P[param].values)
-    if np.all(cnd2):
-        sys.stderr.write('Warning, no data available for {}.\n'.format(param))
-    else:
-        cnd = np.full((len(X),),False)
-        if args.amin is not None:
-            cnd |= (P[param] < args.amin).values
-        if args.amax is not None:
-            cnd |= (P[param] > args.amax).values
-        if cnd.sum() > 0:
-            X = X.iloc[~cnd]
-            Y = Y.iloc[~cnd]
-            P = P.iloc[~cnd]
+cnd = np.full((len(X),),False)
+for param in d_range:
+    if param in p_param:
+        if np.all(np.isnan(P[param].values)):
+            sys.stderr.write('Warning, no data available for {}.\n'.format(param))
+        elif param == 'Age':
+            if d_range[param][0] is not None:
+                cnd |= (P[param] < d_range[param][0]).values
+            if d_range[param][1] is not None:
+                cnd |= (P[param] > d_range[param][1]).values
+        else:
+            if np.all(np.isnan(P[d_param].values)):
+                sys.stderr.write('Warning, no data available for {}.\n'.format(d_param))
+            else:
+                if d_range[param][0] is not None:
+                    cnd |= ((P[d_param]-P[param]) < d_range[param][0]).values
+                if d_range[param][1] is not None:
+                    cnd |= ((P[d_param]-P[param]) > d_range[param][1]).values
+if cnd.sum() > 0:
+    X = X.iloc[~cnd]
+    Y = Y.iloc[~cnd]
+    P = P.iloc[~cnd]
 X_inp = X.copy()
 Y_inp = Y.copy()
 P_inp = P.copy()
