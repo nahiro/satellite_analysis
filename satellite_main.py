@@ -95,7 +95,7 @@ def set_title(pnam):
             proc_phenology.center_var[proc_pnam].set(proc_phenology.values[proc_pnam])
     # extract
     proc_pnam = 'gps_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_observation.csv'.format(block,dstr))
+    proc_extract.values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
     proc_pnam = 'event_fnam'
     proc_extract.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
     if proc_extract.center_var is not None:
