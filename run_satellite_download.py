@@ -160,7 +160,7 @@ class Download(Satellite_Process):
                 command += ' --port "{}"'.format(self.values['port'])
                 command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --inp_list {}'.format(tmp_fnam)
-                command += ' --dstdir {}'.format(os.path.join(self.s2_data,ystr))
+                command += ' --dstdir {}'.format(os.path.join(self.s2_data,'L2A',ystr))
                 command += ' --verbose'
                 if self.values['oflag'][itarg]:
                     command += ' --overwrite'
@@ -218,7 +218,7 @@ class Download(Satellite_Process):
                     command += ' --port "{}"'.format(self.values['port'])
                     command += ' --rcdir {}'.format(self.values['netrc_dir'])
                     command += ' --inp_list {}'.format(tmp_fnam)
-                    command += ' --dstdir {}'.format(os.path.join(self.s2_analysis,targ,ystr))
+                    command += ' --dstdir {}'.format(os.path.join(self.s2_data,targ,ystr))
                     command += ' --verbose'
                     if self.values['oflag'][itarg]:
                         command += ' --overwrite'
