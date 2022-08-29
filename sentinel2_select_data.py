@@ -16,12 +16,12 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
 EPSILON = 1.0e-6 # a small number
-PARAMS = ['trans_d','peak_d','head_d','harvest_d','assess_d']
+PARAMS = ['trans_d','peak_d','head_d','assess_d','harvest_d']
 # trans_d   : Transplanting date
 # peak_d    : Heading date (peak of NDVI)
 # head_d    : Heading date (between two peaks of NDVI 2nd difference)
-# harvest_d : Harvesting date
 # assess_d  : Assessment date
+# harvest_d : Harvesting date
 
 # Default values
 PARAM = 'harvest_d'

@@ -17,7 +17,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
-PARAMS = ['trans_d','peak_d','head_d','harvest_d','assess_d']
+PARAMS = ['trans_d','peak_d','head_d','assess_d','harvest_d']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6 # a small number
 
