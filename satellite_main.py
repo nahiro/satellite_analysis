@@ -94,17 +94,49 @@ def set_title(pnam):
         for proc_pnam in ['trans_fnam','trans_pref']:
             proc_phenology.center_var[proc_pnam].set(proc_phenology.values[proc_pnam])
     # extract
-    proc_pnam = 'obs_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
     proc_pnam = 'gps_fnam'
     dnam = os.path.join(drone_analysis,block,'identify')
     fnams = glob(os.path.join(dnam,'*_identify.csv'))
-    if len(fnams) > 0:
+    n = len(fnams)
+    if n < 1:
+        proc_extract.values[proc_pnam] = os.path.join(dnam,'{}_{}_identify.csv'.format(block,dstr))
+    elif n == 1:
         proc_extract.values[proc_pnam] = fnams[0]
     else:
-        proc_extract.values[proc_pnam] = os.path.join(dnam,'{}_{}_identify.csv'.format(block,dstr))
+        fs = []
+        ds = []
+        date_fmt = date_format.replace('yyyy','%Y').replace('yy','%y').replace('mmm','%b').replace('mm','%m').replace('dd','%d').replace('&','')
+        try:
+            dtim = datetime.strptime(dstr,date_fmt)
+        except Exception:
+            dtim = None
+        for fnam in fnams:
+            f = os.path.basename(fnam)
+            m = re.search('{}_(.*)_identify\.csv'.format(block),f)
+            try:
+                d = datetime.strptime(m.group(1),date_fmt)
+                fs.append(fnam)
+                ds.append(d)
+            except Exception:
+                continue
+        n = len(fs)
+        if n < 1:
+            proc_extract.values[proc_pnam] = fnams[0]
+        elif n == 1:
+            proc_extract.values[proc_pnam] = fs[0]
+        elif dtim is None:
+            proc_extract.values[proc_pnam] = fs[0]
+        else:
+            dmin = 1000000
+            for fnam,d in zip(fs,ds):
+                dt = abs((d-dtim).total_seconds()/86400)
+                if dt < dmin:
+                    proc_extract.values[proc_pnam] = fnam
+                    dmin = dt
+    proc_pnam = 'event_fnam'
+    proc_extract.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
     if proc_extract.center_var is not None:
-        for proc_pnam in ['obs_fnam','gps_fnam']:
+        for proc_pnam in ['gps_fnam','event_fnam']:
             proc_extract.center_var[proc_pnam].set(proc_extract.values[proc_pnam])
     # formula
     proc_pnam = 'inp_fnams'

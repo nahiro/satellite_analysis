@@ -94,9 +94,9 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Select planting >>>')
 
         # Parcellate planting
-        planting_csv = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
-        planting_shp = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
-        planting_pdf = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
+        planting_csv = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
+        planting_shp = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.shp'.format(start_dtim,end_dtim))
+        planting_pdf = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.pdf'.format(start_dtim,end_dtim))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
@@ -113,9 +113,9 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Parcellate planting >>>')
 
         # Calculate assessment date
-        assess_csv = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
-        assess_shp = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
-        assess_pdf = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
+        assess_csv = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+        assess_shp = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.shp'.format(start_dtim,end_dtim))
+        assess_pdf = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.pdf'.format(start_dtim,end_dtim))
         dnam = os.path.dirname(assess_csv)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
