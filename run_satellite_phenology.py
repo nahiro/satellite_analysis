@@ -22,7 +22,6 @@ class Phenology(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         pref_dtim = datetime.strptime(self.values['trans_pref'],self.date_fmt)
-        data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         if not os.path.exists(self.s2_analysis):
             os.makedirs(self.s2_analysis)
         if not os.path.isdir(self.s2_analysis):
@@ -36,6 +35,11 @@ class Phenology(Satellite_Process):
 
         # Select reference for planting
         planting_ref = os.path.join(self.s1_analysis,'planting','planting_{:%Y%m%d}_{:%Y%m%d}_ref.tif'.format(start_dtim,end_dtim))
+        dnam = os.path.dirname(planting_ref)
+        if not os.path.exists(dnam):
+            os.makedirs(dnam)
+        if not os.path.isdir(dnam):
+            raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
         command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
@@ -112,6 +116,11 @@ class Phenology(Satellite_Process):
         assess_csv = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim))
         assess_shp = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.shp'.format(start_dtim,end_dtim))
         assess_pdf = os.path.join(self.s2_analysis,'phenology','assess_{:%Y%m%d}_{:%Y%m%d}.pdf'.format(start_dtim,end_dtim))
+        dnam = os.path.dirname(assess_csv)
+        if not os.path.exists(dnam):
+            os.makedirs(dnam)
+        if not os.path.isdir(dnam):
+            raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'calc_assess_date.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])

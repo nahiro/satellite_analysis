@@ -22,7 +22,6 @@ class Interp(Satellite_Process):
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         d1 = start_dtim
         d2 = end_dtim+timedelta(days=120)
-        data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         if not os.path.exists(self.s2_analysis):
             os.makedirs(self.s2_analysis)
         if not os.path.isdir(self.s2_analysis):
