@@ -44,6 +44,7 @@ parser.add_argument('-P','--phenology',default=None,help='Phenology CSV name (%(
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('--use_major_plot',default=False,action='store_true',help='Use major plot (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -129,8 +130,8 @@ if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
 inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
 params = columns[1:]
 
-out_data = {}
 out_plot = {}
+out_data = {}
 if args.debug:
     out_inds = {}
     out_weight = {}
@@ -190,19 +191,25 @@ for plot in plots:
         raise ValueError('Error in finding correspondent plot for plot{}.'.format(plot))
     elif observe_inds.size == 1:
         observe_indx = observe_inds[0]
-        out_data[plot] = inp_data[observe_indx]
         out_plot[plot] = object_ids[observe_indx]
+        out_data[plot] = inp_data[observe_indx]
     else:
         weight = []
         for observe_indx in observe_inds:
             weight.append(observe_nums[observe_indx])
         weight = np.array(weight).reshape(-1,1)
-        cnd = ~np.isnan(inp_data[observe_inds])
-        if np.all(cnd):
-            out_data[plot] = np.sum(inp_data[observe_inds]*weight,axis=0)/np.sum(weight)
+        major_indx = np.argmax(weight)
+        observe_indx = observe_inds[major_indx]
+        out_plot[plot] = object_ids[observe_indx]
+        if args.use_major_plot:
+            out_data[plot] = inp_data[observe_indx]
+            observe_inds = np.array([observe_indx])
         else:
-            out_data[plot] = np.nansum(inp_data[observe_inds]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
-        out_plot[plot] = object_ids[observe_inds[np.argmax(weight)]]
+            cnd = ~np.isnan(inp_data[observe_inds])
+            if np.all(cnd):
+                out_data[plot] = np.sum(inp_data[observe_inds]*weight,axis=0)/np.sum(weight)
+            else:
+                out_data[plot] = np.nansum(inp_data[observe_inds]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
     if args.debug:
         out_inds[plot] = observe_inds.copy()
         if observe_inds.size == 1:
