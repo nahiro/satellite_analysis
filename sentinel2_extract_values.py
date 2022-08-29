@@ -284,6 +284,15 @@ if args.debug:
                     fig_ymin = y1
                 if y2 > fig_ymax:
                     fig_ymax = y2
+        for x1,y1 in zip(xg,yg):
+            if x1 < fig_xmin:
+                fig_xmin = x1
+            if x1 > fig_xmax:
+                fig_xmax = x1
+            if y1 < fig_ymin:
+                fig_ymin = y1
+            if y1 > fig_ymax:
+                fig_ymax = y1
         ax1.plot(xg,yg,'o',ms=10,mfc='none',mec='k')
         for ntmp,xtmp,ytmp in zip(ng,xg,yg):
             if np.isnan(xtmp) or np.isnan(ytmp):
