@@ -248,8 +248,11 @@ config_defaults.update({
 'formula.middle_left_frame_width'     : 1000,
 #----------- estimate -----------
 'estimate.data_select'                : 'Days from Assessment',
+'estimate.harvest_value'              : -10.0,
 'estimate.assess_value'               : 0.0,
-'estimate.mature_value'               : 35.0,
+'estimate.head_value'                 : 35.0,
+'estimate.peak_value'                 : 35.0,
+'estimate.plant_value'                : 95.0,
 'estimate.age_value'                  : 95.0,
 'estimate.pm_fnam'                    : os.path.join(main_s2_analysis,'formula','pm_formula_age_90_110.csv'),
 'estimate.pm_number'                  : 1,
