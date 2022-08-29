@@ -385,7 +385,7 @@ with open(args.out_csv,'w') as fp:
     for iobj,object_id in enumerate(object_ids):
         fp.write('{:8d}'.format(object_id))
         for iband,param in enumerate(PARAMS):
-            fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
+            fp.write(', {:>13.1f}'.format(all_data[iobj,iband]))
         fp.write('\n')
 
 # Output Shapefile
@@ -394,7 +394,7 @@ if args.shp_fnam is not None and args.out_shp is not None:
     w.shapeType = shapefile.POLYGON
     w.fields = r.fields[1:] # skip first deletion field
     for param in PARAMS:
-        w.field(param,'F',13,6)
+        w.field(param,'F',13,1)
     for iobj,shaperec in enumerate(r.iterShapeRecords()):
         rec = shaperec.record
         shp = shaperec.shape

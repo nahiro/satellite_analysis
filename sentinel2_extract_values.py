@@ -17,6 +17,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
+PARAMS = ['trans_d','peak_d','head_d','harvest_d','assess_d']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6 # a small number
 
@@ -33,6 +34,10 @@ parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%
 parser.add_argument('--buffer',default=None,type=float,help='Buffer distance (%(default)s)')
 parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--plant',default=None,help='Planting date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--head',default=None,help='Heading date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--harvest',default=None,help='Harvesting date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--assess',default=None,help='Assessment date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
@@ -48,6 +53,24 @@ parser.add_argument('--use_major_plot',default=False,action='store_true',help='U
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
+args_d = {}
+args_d['peak_d'] = None
+if args.plant is not None:
+    args_d['trans_d'] = date2num(datetime.strptime(args.plant,'%Y%m%d'))
+else:
+    args_d['trans_d'] = None
+if args.head is not None:
+    args_d['head_d'] = date2num(datetime.strptime(args.head,'%Y%m%d'))
+else:
+    args_d['head_d'] = None
+if args.harvest is not None:
+    args_d['harvest_d'] = date2num(datetime.strptime(args.harvest,'%Y%m%d'))
+else:
+    args_d['harvest_d'] = None
+if args.assess is not None:
+    args_d['assess_d'] = date2num(datetime.strptime(args.assess,'%Y%m%d'))
+else:
+    args_d['assess_d'] = None
 if args.y_param is None:
     args.y_param = Y_PARAM
 for param in args.y_param:
@@ -72,6 +95,7 @@ if args.out_csv is None or args.fignam is None:
     if args.fignam is None:
         args.fignam = bnam+'_extract.pdf'
 
+# Read observation file
 df = pd.read_csv(args.obs_fnam,comment='#')
 df.columns = df.columns.str.strip()
 loc_bunch = df['Location'].str.strip().values
@@ -110,6 +134,22 @@ for shp in shape(r.shapes()).geoms:
 x_center = np.array(x_center)
 y_center = np.array(y_center)
 
+# Read phenology CSV
+df = pd.read_csv(args.phenology,comment='#')
+df.columns = df.columns.str.strip()
+columns = df.columns.to_list()
+if not 'OBJECTID' in columns:
+    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.phenology))
+iband = columns.index('OBJECTID')
+if not np.array_equal(df.iloc[:,iband].astype(int),object_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.phenology))
+event_d = {}
+for param in PARAMS:
+    if not param in columns:
+        raise ValueError('Error in finding {} >>> {}'.format(param,args.phenology))
+    iband = columns.index(param)
+    event_d[param] = df.iloc[:,iband].astype(float).values
+
 # Read indices
 dtim = datetime.strptime(args.tobs,'%Y%m%d')
 ystr = '{}'.format(dtim.year)
@@ -130,8 +170,10 @@ if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
 inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
 params = columns[1:]
 
+# Extract data
 out_plot = {}
 out_data = {}
+out_event = {}
 if args.debug:
     out_inds = {}
     out_weight = {}
@@ -210,6 +252,12 @@ for plot in plots:
                 out_data[plot] = np.sum(inp_data[observe_inds]*weight,axis=0)/np.sum(weight)
             else:
                 out_data[plot] = np.nansum(inp_data[observe_inds]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
+    out_event[plot] = {}
+    for param in PARAMS:
+        if args_d[param] is not None:
+            out_event[plot][param] = args_d[param]
+        else:
+            out_event[plot][param] = event_d[param][observe_indx]
     if args.debug:
         out_inds[plot] = observe_inds.copy()
         if observe_inds.size == 1:
@@ -219,7 +267,9 @@ for plot in plots:
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
-    fp.write('Location, OBJECTID, PlotPaddy, EastingI, NorthingI, PlantDate, Age')
+    fp.write('Location, OBJECTID, PlotPaddy, EastingI, NorthingI, PlantDate, Age, ObsDate')
+    for param in PARAMS:
+        fp.write(', {:>13s}'.format(param))
     for y_param in args.y_param:
         fp.write(', {:>13s}'.format(y_param))
     for param in params:
@@ -232,9 +282,15 @@ with open(args.out_csv,'w') as fp:
         yg = y_bunch[cnd]
         tg = trans_bunch[cnd]
         ag = age_bunch[cnd]
+        dt = datetime.strptime(tg[0],'%Y-%m-%d')+timedelta(days=int(ag[0]))
+        if dt != dtim:
+            sys.stderr.write('Warning, input time: {:%Y-%m-%d}, read time: {:%Y-%m-%d}\n'.format(dtim,dt))
+            sys.stderr.flush()
         object_id = out_plot[plot]
-        fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f}'.format(
-                 lg[0],object_id,plot,xg.mean(),yg.mean(),tg[0],ag[0]))
+        fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f} {:13.1f}'.format(
+                 lg[0],object_id,plot,xg.mean(),yg.mean(),tg[0],ag[0],date2num(dt)))
+        for param in PARAMS:
+            fp.write(', {:13.1f}'.format(out_event[plot][param]))
         for y_param in args.y_param:
             fp.write(', {:>13.6e}'.format(np.nanmean(Y[y_param].values[cnd])))
         for iband,param in enumerate(params):
