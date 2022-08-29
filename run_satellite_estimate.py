@@ -15,7 +15,11 @@ class Estimate(Satellite_Process):
         # Start process
         super().run()
 
-        # Check files
+        # Check files/folders
+        start_dtim = datetime.strptime(self.start_date,self.date_fmt)
+        end_dtim = datetime.strptime(self.end_date,self.date_fmt)
+        first_dtim = datetime.strptime(self.first_date,self.date_fmt)
+        last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         if not os.path.exists(self.values['inp_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['inp_fnam']))
         if not os.path.exists(self.values['pm_fnam']):
@@ -28,15 +32,19 @@ class Estimate(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
         # Select data
-        select_fnam = os.path.join(wrk_dir,'{}_select.csv'.format(trg_bnam))
+        select_csv = os.path.join(wrk_dir,'{}_select.csv'.format(trg_bnam))
+        select_shp = os.path.join(wrk_dir,'{}_select.shp'.format(trg_bnam))
+        select_pdf = os.path.join(wrk_dir,'{}_select.pdf'.format(trg_bnam))
         command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'rebin_mask.py'))
-        command += ' --istp {}'.format(istp)
-        command += ' --jstp {}'.format(jstp)
-        command += ' --src_geotiff "{}"'.format(mask_fnam)
-        command += ' --dst_geotiff "{}"'.format(mask_resized_fnam)
-        command += ' --rmax 0.1'
-        self.run_command(command,message='<<< Make parcel image >>>')
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_select_data.py'))
+        command += ' --phenology "{}"'.format()
+        command += ' --out_csv "{}"'.format(select_csv)
+        command += ' --out_shp "{}"'.format(select_shp)
+        command += ' --fignam "{}"'.format(select_pdf)
+        command += ' --use_index'
+        command += ' --debug'
+        command += ' --batch'
+        self.run_command(command,message='<<< Select data >>>')
 
         # Estimate plot-mean
         command = self.python_path
