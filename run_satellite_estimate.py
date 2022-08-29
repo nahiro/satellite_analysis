@@ -71,28 +71,32 @@ class Estimate(Satellite_Process):
         self.run_command(command,message='<<< Select data >>>')
 
         # Estimate plot-mean
+        estimate_csv = os.path.join(wrk_dir,'{}_estimate.csv'.format(trg_bnam))
+        estimate_shp = os.path.join(wrk_dir,'{}_estimate.shp'.format(trg_bnam))
+        estimate_pdf = os.path.join(wrk_dir,'{}_estimate.pdf'.format(trg_bnam))
         command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'drone_score_estimate.py'))
-        command += ' --inp_fnam "{}"'.format(self.values['pm_fnam'])
-        command += ' --src_geotiff "{}"'.format(img_fnam)
-        command += ' --dst_geotiff "{}"'.format(os.path.join(wrk_dir,'{}_pm_mesh.tif'.format(trg_bnam)))
+        command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_score_estimate.py'))
+        command += ' --form_fnam "{}"'.format(self.values['pm_fnam'])
+        command += ' --inp_shp "{}"'.format(self.values['gis_fnam'])
+        command += ' --inp_csv "{}"'.format(select_csv)
+        command += ' --out_shp "{}"'.format(estimate_shp)
+        command += ' --out_csv "{}"'.format(estimate_csv)
         for param,flag in zip(self.list_labels['y_params'],self.values['y_params']):
             if flag:
                 command += ' --y_param {}'.format(param)
                 command += ' --y_number {}'.format(self.values['pm_number'])
-                command += ' --smax 1'
-        command += ' --fignam "{}"'.format(os.path.join(wrk_dir,'{}_pm_mesh.pdf'.format(trg_bnam)))
-        for value,flag in zip(self.ax1_zmin[1],self.values['y_params']):
-            if flag:
-                command += ' --ax1_zmin="{}"'.format(value)
-        for value,flag in zip(self.ax1_zmax[1],self.values['y_params']):
-            if flag:
-                command += ' --ax1_zmax="{}"'.format(value)
-        for value,flag in zip(self.ax1_zstp[1],self.values['y_params']):
-            if flag:
-                command += ' --ax1_zstp="{}"'.format(value)
+        command += ' --fignam "{}"'.format(estimate_pdf)
+        #for value,flag in zip(self.ax1_zmin[1],self.values['y_params']):
+        #    if flag:
+        #        command += ' --ax1_zmin="{}"'.format(value)
+        #for value,flag in zip(self.ax1_zmax[1],self.values['y_params']):
+        #    if flag:
+        #        command += ' --ax1_zmax="{}"'.format(value)
+        #for value,flag in zip(self.ax1_zstp[1],self.values['y_params']):
+        #    if flag:
+        #        command += ' --ax1_zstp="{}"'.format(value)
         command += ' --ax1_title "{}"'.format(trg_bnam)
-        command += ' --remove_nan'
+        command += ' --use_index'
         command += ' --debug'
         command += ' --batch'
         self.run_command(command,message='<<< Estimate plot-mean >>>')
