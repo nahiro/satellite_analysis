@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime,timedelta
 from proc_satellite_class import Satellite_Process
 
 class Extract(Satellite_Process):
@@ -18,9 +19,9 @@ class Extract(Satellite_Process):
         # Check files/folders
         start_dtim = datetime.strptime(self.start_date,self.date_fmt)
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
-        finish_dtim = end_dtim+timedelta(days=self.values['assess_dthrs'][0])
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        obs_dtim = datetime.strptime(self.obs_date,self.date_fmt)
         if not os.path.exists(self.values['gis_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gis_fnam']))
         if not os.path.exists(self.values['gps_fnam']):
@@ -45,7 +46,7 @@ class Extract(Satellite_Process):
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
         command += ' --obs_fnam "{}"'.format(self.values['gps_fnam'])
         command += ' --phenology "{}"'.format(self.values['event_fnam'])
-        command += ' --tobs {}'.format(self.obs_date)
+        command += ' --tobs {:%Y%m%d}'.format(obs_dtim)
         command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
         command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
         command += ' --out_csv "{}"'.format(extract_csv)
