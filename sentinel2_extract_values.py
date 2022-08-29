@@ -287,7 +287,7 @@ with open(args.out_csv,'w') as fp:
             sys.stderr.write('Warning, input time: {:%Y-%m-%d}, read time: {:%Y-%m-%d}\n'.format(dtim,dt))
             sys.stderr.flush()
         object_id = out_plot[plot]
-        fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f} {:13.1f}'.format(
+        fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f}, {:13.1f}'.format(
                  lg[0],object_id,plot,xg.mean(),yg.mean(),tg[0],ag[0],date2num(dt)))
         for param in PARAMS:
             fp.write(', {:13.1f}'.format(out_event[plot][param]))
