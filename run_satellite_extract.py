@@ -28,14 +28,15 @@ class Extract(Satellite_Process):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gps_fnam']))
         if not os.path.exists(self.values['event_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['event_fnam']))
-        if not os.path.exists(self.s2_analysis):
-            os.makedirs(self.s2_analysis)
-        if not os.path.isdir(self.s2_analysis):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
+        wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
+        if not os.path.exists(wrk_dir):
+            os.makedirs(wrk_dir)
+        if not os.path.isdir(wrk_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
         # Extract indices
-        extract_csv = os.path.join(self.s2_analysis,'extract','{:%Y%m%d}_{:%Y%m%d}_extract.csv'.format(start_dtim,end_dtim))
-        extract_pdf = os.path.join(self.s2_analysis,'extract','{:%Y%m%d}_{:%Y%m%d}_extract.pdf'.format(start_dtim,end_dtim))
+        extract_csv = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.csv'.format(start_dtim,end_dtim))
+        extract_pdf = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.pdf'.format(start_dtim,end_dtim))
         dnam = os.path.dirname(extract_csv)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
