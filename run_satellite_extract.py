@@ -6,9 +6,9 @@ class Extract(Satellite_Process):
 
     def __init__(self):
         super().__init__()
-        self.ax1_zmin = None
-        self.ax1_zmax = None
-        self.ax1_zstp = None
+        #self.ax1_zmin = None
+        #self.ax1_zmax = None
+        #self.ax1_zstp = None
         self._freeze()
 
     def run(self):
@@ -28,16 +28,23 @@ class Extract(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
 
         # Extract indices
+        extract_csv = os.path.join(self.s2_analysis,'extract','{:%Y%m%d}_{:%Y%m%d}_extract.csv'.format(start_dtim,end_dtim))
+        extract_pdf = os.path.join(self.s2_analysis,'extract','{:%Y%m%d}_{:%Y%m%d}_extract.pdf'.format(start_dtim,end_dtim))
+        dnam = os.path.dirname(extract_csv)
+        if not os.path.exists(dnam):
+            os.makedirs(dnam)
+        if not os.path.isdir(dnam):
+            raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_extract_values.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
         command += ' --obs_fnam "{}"'.format(self.values['gps_fnam'])
         command += ' --phenology "{}"'.format(self.values['event_fnam'])
         command += ' --tobs {}'.format(self.obs_date)
-
-        command += ' --obs_fnam "{}"'.format(os.path.join(s2_analysis,'extract'))
-        command += ' --ext_fnam "{}"'.format(os.path.join(s2_analysis,'extract'))
-        command += ' --fignam "{}"'.format(os.path.join(s2_analysis,'extract','{}_extract.pdf'.format(trg_bnam)))
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --out_csv "{}"'.format(extract_csv)
+        command += ' --fignam "{}"'.format(extract_pdf)
         #command += ' --ax1_zmin="{}"'.format(self.ax1_zmin)
         #command += ' --ax1_zmax="{}"'.format(self.ax1_zmax)
         #command += ' --ax1_zstp="{}"'.format(self.ax1_zstp)
