@@ -42,7 +42,7 @@ class Phenology(Satellite_Process):
             raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
-        command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
+        command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
         command += ' --dst_fnam "{}"'.format(planting_ref)
         command += ' --mask_fnam "{}"'.format(mask_paddy)
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
@@ -74,7 +74,7 @@ class Phenology(Satellite_Process):
         planting_sel = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.tif'.format(start_dtim,end_dtim))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
-        command += ' --datdir "{}"'.format(os.path.join(self.s1_analysis,'planting'))
+        command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
         command += ' --stat_fnam "{}"'.format(planting_avg)
         command += ' --dst_fnam "{}"'.format(planting_sel)
         command += ' --mask_fnam "{}"'.format(mask_paddy)
