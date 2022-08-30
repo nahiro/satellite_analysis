@@ -61,7 +61,7 @@ class Geocor(Satellite_Process):
         l2a_sizes = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_data,ystr)
+            dnam = os.path.join(self.s2_data,'L2A',ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):

@@ -24,11 +24,10 @@ class Download(Satellite_Process):
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         d1 = start_dtim+timedelta(days=60)
         d2 = end_dtim+timedelta(days=240)
-        l2a_dir = os.path.join(self.s2_data)
-        if not os.path.exists(l2a_dir):
-            os.makedirs(l2a_dir)
-        if not os.path.isdir(l2a_dir):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,l2a_dir))
+        if not os.path.exists(self.s2_data):
+            os.makedirs(self.s2_data)
+        if not os.path.isdir(self.s2_data):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Download Planting data
         itarg = 0
