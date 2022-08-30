@@ -17,6 +17,7 @@ def set_title(pnam):
     global last_date
     global field_data
     global drone_analysis
+    global s1_data
     global s1_analysis
     global s2_data
     global s2_analysis
@@ -32,6 +33,7 @@ def set_title(pnam):
         dstr = top_cde.get()
         field_data = top_var['field_data'].get()
         drone_analysis = top_var['drone_analysis'].get()
+        s1_data = top_var['s1_data'].get()
         s1_analysis = top_var['s1_analysis'].get()
         s2_data = top_var['s2_data'].get()
         s2_analysis = top_var['s2_analysis'].get()
@@ -44,6 +46,7 @@ def set_title(pnam):
         modules[proc].obs_date = dstr
         modules[proc].field_data = field_data
         modules[proc].drone_analysis = drone_analysis
+        modules[proc].s1_data = s1_data
         modules[proc].s1_analysis = s1_analysis
         modules[proc].s2_data = s2_data
         modules[proc].s2_analysis = s2_analysis
@@ -237,7 +240,7 @@ if no_gui:
     exit()
 root = tk.Tk()
 root.title('BLB Damage Estimation - Satellite version')
-root.geometry('{}x{}'.format(window_width,275+30*len(pnams)))
+root.geometry('{}x{}'.format(window_width,305+30*len(pnams)))
 top_frame = tk.Frame(root,width=10,height=top_frame_height,background=None)
 middle_frame = tk.Frame(root,width=10,height=20,background=None)
 bottom_frame = tk.Frame(root,width=10,height=40,background=None)
@@ -297,9 +300,9 @@ top_center_left_cnv = {}
 top_center_right_cnv = {}
 top_right_bottom_cnv = {}
 browse_img = tk.PhotoImage(file=browse_image)
-for pnam,title in zip(['planting','download','observation','field_data','drone_analysis','s1_analysis','s2_data','s2_analysis'],
+for pnam,title in zip(['planting','download','observation','field_data','drone_analysis','s1_data','s1_analysis','s2_data','s2_analysis'],
                       ['Planting Start/End','Data First/Last','Observation Block/Date',
-                       'Field Data','Drone Analysis','Sentinel-1 Analysis','Sentinel-2 Data','Sentinel-2 Analysis']):
+                       'Field Data','Drone Analysis','Sentinel-1 Data','Sentinel-1 Analysis','Sentinel-2 Data','Sentinel-2 Analysis']):
     top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
     top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=150,height=25)
