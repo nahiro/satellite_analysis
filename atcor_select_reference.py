@@ -68,6 +68,62 @@ np.save('band8.npy',b8_array)
 np.save('scl.npy',scl_array)
 
 
+
+src_nx = None
+src_ny = None
+src_nb = None
+src_shape = None
+src_prj = None
+src_trans = None
+src_data = []
+for year in data_years:
+    ystr = '{}'.format(year)
+    dnam = os.path.join(args.inpdir,ystr)
+    if not os.path.isdir(dnam):
+        continue
+    for f in sorted(os.listdir(dnam)):
+        m = re.search('^('+'\d'*8+')_resample\.tif$',f)
+        if not m:
+            continue
+        dstr = m.group(1)
+        d = datetime.strptime(dstr,'%Y%m%d')
+        if d < d1 or d > d2:
+            continue
+        fnam = os.path.join(dnam,f)
+        ds = gdal.Open(fnam)
+        tmp_nx = ds.RasterXSize
+        tmp_ny = ds.RasterYSize
+        tmp_nb = ds.RasterCount
+        tmp_shape = (tmp_ny,tmp_nx)
+        tmp_prj = ds.GetProjection()
+        tmp_trans = ds.GetGeoTransform()
+        tmp_data = ds.ReadAsArray()
+        if src_shape is None:
+            src_nx = tmp_nx
+            src_ny = tmp_ny
+            src_shape = tmp_shape
+            if src_shape != mask_shape:
+                raise ValueError('Error, src_shape={}, mask_shape={}'.format(src_shape,mask_shape))
+        elif tmp_shape != src_shape:
+            raise ValueError('Error, tmp_shape={}, src_shape={}'.format(tmp_shape,src_shape))
+        if src_nb is None:
+            src_nb = tmp_nb
+        elif tmp_nb != src_nb:
+            raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
+        if src_prj is None:
+            src_prj = tmp_prj
+        elif tmp_prj != src_prj:
+            raise ValueError('Error, tmp_prj={}, src_prj={}'.format(tmp_prj,src_prj))
+        if src_trans is None:
+            src_trans = tmp_trans
+        elif tmp_trans != src_trans:
+            raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
+        src_data.append(tmp_data)
+src_data = np.array(src_data)
+
+
+
+
 ntim = np.load('ntim.npy')
 b2 = np.load('band2.npy')
 b3 = np.load('band3.npy')
