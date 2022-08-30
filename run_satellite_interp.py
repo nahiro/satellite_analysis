@@ -22,17 +22,17 @@ class Interp(Satellite_Process):
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         d1 = start_dtim
         d2 = end_dtim+timedelta(days=120)
-        if not os.path.exists(self.s2_analysis):
-            os.makedirs(self.s2_analysis)
-        if not os.path.isdir(self.s2_analysis):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
+        if not os.path.exists(self.s2_data):
+            os.makedirs(self.s2_data)
+        if not os.path.isdir(self.s2_data):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Interpolate data
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'parcel'))
-        command += ' --dstdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
+        command += ' --dstdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --tmin {:%Y%m%d}'.format(d1)
         command += ' --tmax {:%Y%m%d}'.format(d2)
         command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
