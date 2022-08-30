@@ -24,35 +24,33 @@ class Extract(Satellite_Process):
         obs_dtim = datetime.strptime(self.obs_date,self.date_fmt)
         if not os.path.exists(self.values['gis_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gis_fnam']))
-        if not os.path.exists(self.values['gps_fnam']):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gps_fnam']))
+        if not os.path.exists(self.values['obs_fnam']):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['obs_fnam']))
         if not os.path.exists(self.values['event_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['event_fnam']))
+        trg_bnam = '{:%Y%m%d}_{:%Y%m%d}'.format(start_dtim,end_dtim)
         wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
-
-
         # Read data
         if 'Field' in self.values['obs_src']:
+            obs_csv = os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam))
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'read_survey_xls.py'))
             command += ' --inp_fnam "{}"'.format(self.values['obs_fnam'])
             command += ' --sheet {}'.format(self.values['i_sheet'])
-            command += ' --ref_fnam "{}"'.format(self.values['gps_fnam'])
             command += ' --epsg {}'.format(self.values['epsg'])
-            command += ' --out_fnam "{}"'.format(os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam)))
+            command += ' --out_fnam "{}"'.format(obs_csv)
             self.run_command(command,message='<<< Read observation data >>>')
-
-
-
+        else:
+            obs_csv = self.values['obs_fnam']
 
         # Extract indices
-        extract_csv = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.csv'.format(start_dtim,end_dtim))
-        extract_pdf = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.pdf'.format(start_dtim,end_dtim))
+        extract_csv = os.path.join(wrk_dir,'{}_extract.csv'.format(trg_bnam))
+        extract_pdf = os.path.join(wrk_dir,'{}_extract.pdf'.format(trg_bnam))
         dnam = os.path.dirname(extract_csv)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
@@ -61,7 +59,7 @@ class Extract(Satellite_Process):
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_extract_values.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-        command += ' --obs_fnam "{}"'.format(self.values['gps_fnam'])
+        command += ' --obs_fnam "{}"'.format(obs_csv)
         command += ' --phenology "{}"'.format(self.values['event_fnam'])
         command += ' --tobs {:%Y%m%d}'.format(obs_dtim)
         if self.values['event_dates'][0] != '':

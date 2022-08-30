@@ -211,6 +211,8 @@ config_defaults.update({
 'extract.gis_fnam'                    : gis_fnam,
 'extract.obs_src'                     : 'Drone Analysis',
 'extract.obs_fnam'                    : os.path.join(main_drone_analysis,'extract','observation.csv'),
+'extract.i_sheet'                     : 1,
+'extract.epsg'                        : 32748,
 'extract.event_fnam'                  : os.path.join(main_s2_analysis,'phenology','phenology.csv'),
 'extract.event_dates'                 : ['','','',''],
 'extract.python_path'                 : python_path,
