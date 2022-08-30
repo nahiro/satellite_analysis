@@ -38,7 +38,7 @@ if not os.path.exists(main_browse_image):
     main_browse_image = os.path.join(HOME,'Pictures','browse.png')
 gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_area_polygon_20210914.shp')
 ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_mul.tif')
-mask_paddy = os.path.join(main_s1_analysis,'paddy_mask.tif')
+mask_paddy = os.path.join(main_s1_data,'paddy_mask.tif')
 mask_parcel = os.path.join(main_s2_data,'parcel_mask.tif')
 
 # Set defaults
