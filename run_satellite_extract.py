@@ -28,7 +28,7 @@ class Extract(Satellite_Process):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['obs_fnam']))
         if not os.path.exists(self.values['event_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['event_fnam']))
-        trg_bnam = '{:%Y%m%d}_{:%Y%m%d}'.format(start_dtim,end_dtim)
+        trg_bnam = '{}_{}'.format(self.obs_block,self.obs_date)
         wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
@@ -83,6 +83,8 @@ class Extract(Satellite_Process):
         #command += ' --ax1_zstp="{}"'.format(self.ax1_zstp)
         #command += ' --ax1_title "{}"'.format(trg_bnam)
         command += ' --use_index'
+        if self.values['major_flag']:
+            command += ' --use_major_plot'
         command += ' --debug'
         command += ' --batch'
         self.run_command(command,message='<<< Extract indices >>>')

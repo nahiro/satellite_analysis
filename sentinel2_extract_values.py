@@ -101,8 +101,18 @@ df.columns = df.columns.str.strip()
 loc_bunch = df['Location'].str.strip().values
 number_bunch = df['BunchNumber'].astype(int).values
 plot_bunch = df['PlotPaddy'].astype(int).values
-x_bunch = df['EastingI'].astype(float).values
-y_bunch = df['NorthingI'].astype(float).values
+if 'EastingI' in df.columns and 'NorthingI' in df.columns:
+    x_bunch = df['EastingI'].astype(float).values
+    y_bunch = df['NorthingI'].astype(float).values
+elif 'EastingG' in df.columns and 'NorthingG' in df.columns:
+    x_bunch = df['EastingG'].astype(float).values
+    y_bunch = df['NorthingG'].astype(float).values
+elif 'EastingO' in df.columns and 'NorthingO' in df.columns:
+    x_bunch = df['EastingO'].astype(float).values
+    y_bunch = df['NorthingO'].astype(float).values
+else:
+    x_bunch = df['Easting'].astype(float).values
+    y_bunch = df['Northing'].astype(float).values
 plant_bunch = df['PlantDate'].str.strip().values
 age_bunch = df['Age'].astype(int).values
 tiller_bunch = df['Tiller'].astype(int).values
