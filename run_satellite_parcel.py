@@ -25,17 +25,17 @@ class Parcel(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
-        if not os.path.exists(self.s2_analysis):
-            os.makedirs(self.s2_analysis)
-        if not os.path.isdir(self.s2_analysis):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
+        if not os.path.exists(self.s2_data):
+            os.makedirs(self.s2_data)
+        if not os.path.isdir(self.s2_data):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Check Resample
         resample_fnams = []
         resample_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_analysis,'resample',ystr)
+            dnam = os.path.join(self.s2_data,'resample',ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):
@@ -62,7 +62,7 @@ class Parcel(Satellite_Process):
         for fnam,dstr in zip(resample_fnams,resample_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_analysis,'indices',ystr)
+            dnam = os.path.join(self.s2_data,'indices',ystr)
             gnam = os.path.join(dnam,'{}_indices.tif'.format(dstr))
             if os.path.exists(gnam) and self.values['oflag'][0]:
                 os.remove(gnam)
@@ -114,7 +114,7 @@ class Parcel(Satellite_Process):
         for fnam,rnam,dstr in zip(indices_fnams,indices_rnams,indices_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_analysis,'parcel',ystr)
+            dnam = os.path.join(self.s2_data,'parcel',ystr)
             gnam = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
             if os.path.exists(gnam) and self.values['oflag'][1]:
                 os.remove(gnam)
@@ -124,7 +124,7 @@ class Parcel(Satellite_Process):
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
-                mask_fnam = os.path.join(self.s2_analysis,'parcel_mask.tif')
+                mask_fnam = os.path.join(self.s2_data,'parcel_mask.tif')
                 if not os.path.exists(mask_fnam):
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))

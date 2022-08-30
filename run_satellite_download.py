@@ -88,7 +88,7 @@ class Download(Satellite_Process):
                 command += ' --port "{}"'.format(self.values['port'])
                 command += ' --rcdir {}'.format(self.values['netrc_dir'])
                 command += ' --inp_list {}'.format(tmp_fnam)
-                command += ' --dstdir {}'.format(os.path.join(self.s1_analysis,'planting',ystr))
+                command += ' --dstdir {}'.format(os.path.join(self.s1_data,'planting',ystr))
                 command += ' --verbose'
                 if self.values['oflag'][itarg]:
                     command += ' --overwrite'
