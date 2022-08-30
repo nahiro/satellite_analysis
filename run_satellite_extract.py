@@ -34,6 +34,22 @@ class Extract(Satellite_Process):
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
+
+
+        # Read data
+        if 'Field' in self.values['obs_src']:
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'read_survey_xls.py'))
+            command += ' --inp_fnam "{}"'.format(self.values['obs_fnam'])
+            command += ' --sheet {}'.format(self.values['i_sheet'])
+            command += ' --ref_fnam "{}"'.format(self.values['gps_fnam'])
+            command += ' --epsg {}'.format(self.values['epsg'])
+            command += ' --out_fnam "{}"'.format(os.path.join(wrk_dir,'{}_observation.csv'.format(trg_bnam)))
+            self.run_command(command,message='<<< Read observation data >>>')
+
+
+
+
         # Extract indices
         extract_csv = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.csv'.format(start_dtim,end_dtim))
         extract_pdf = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_extract.pdf'.format(start_dtim,end_dtim))

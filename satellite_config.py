@@ -209,7 +209,8 @@ config_defaults.update({
 'phenology.middle_left_frame_width'   : 1000,
 #----------- extract -----------
 'extract.gis_fnam'                    : gis_fnam,
-'extract.gps_fnam'                    : os.path.join(main_drone_analysis,'identify','orthomosaic_identify.csv'),
+'extract.obs_src'                     : 'Drone Analysis',
+'extract.obs_fnam'                    : os.path.join(main_drone_analysis,'extract','observation.csv'),
 'extract.event_fnam'                  : os.path.join(main_s2_analysis,'phenology','phenology.csv'),
 'extract.event_dates'                 : ['','','',''],
 'extract.python_path'                 : python_path,

@@ -97,12 +97,15 @@ def set_title(pnam):
         for proc_pnam in ['trans_fnam','trans_pref']:
             proc_phenology.center_var[proc_pnam].set(proc_phenology.values[proc_pnam])
     # extract
-    proc_pnam = 'gps_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
+    proc_pnam = 'obs_fnam'
+    if 'Field' in proc_extract.values['obs_src']:
+        proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
+    else:
+        proc_extract.values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
     proc_pnam = 'event_fnam'
     proc_extract.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
     if proc_extract.center_var is not None:
-        for proc_pnam in ['gps_fnam','event_fnam']:
+        for proc_pnam in ['obs_fnam','event_fnam']:
             proc_extract.center_var[proc_pnam].set(proc_extract.values[proc_pnam])
     # formula
     proc_pnam = 'inp_fnams'
