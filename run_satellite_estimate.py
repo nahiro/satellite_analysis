@@ -60,8 +60,8 @@ class Estimate(Satellite_Process):
             command += ' --offset {}'.format(self.values['plant_value'])
         else:
             raise ValueError('{}: error, unknown data selection >>> {}'.format(self.proc_name,self.values['data_select']))
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --out_csv "{}"'.format(select_csv)
         command += ' --out_shp "{}"'.format(select_shp)
         command += ' --fignam "{}"'.format(select_pdf)

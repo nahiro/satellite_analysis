@@ -74,8 +74,8 @@ class Extract(Satellite_Process):
         if self.values['event_dates'][3] != '':
             dtim = datetime.strptime(self.values['event_dates'][3],date_fmt)
             command += ' --harvest {:%Y%m%d}'.format(dtim)
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --out_csv "{}"'.format(extract_csv)
         command += ' --fignam "{}"'.format(extract_pdf)
         #command += ' --ax1_zmin="{}"'.format(self.ax1_zmin)
