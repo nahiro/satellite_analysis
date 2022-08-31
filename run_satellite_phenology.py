@@ -22,10 +22,11 @@ class Phenology(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         pref_dtim = datetime.strptime(self.values['trans_pref'],self.date_fmt)
-        if not os.path.exists(self.s2_analysis):
-            os.makedirs(self.s2_analysis)
-        if not os.path.isdir(self.s2_analysis):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_analysis))
+        wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
+        if not os.path.exists(wrk_dir):
+            os.makedirs(wrk_dir)
+        if not os.path.isdir(wrk_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
         mask_paddy = self.values['mask_paddy']
         if not os.path.exists(mask_paddy):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_paddy))
@@ -113,9 +114,9 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Parcellate planting >>>')
 
         # Calculate assessment date
-        assess_csv = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
-        assess_shp = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.shp'.format(start_dtim,end_dtim))
-        assess_pdf = os.path.join(self.s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.pdf'.format(start_dtim,end_dtim))
+        assess_csv = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+        assess_shp = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.shp'.format(start_dtim,end_dtim))
+        assess_pdf = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.pdf'.format(start_dtim,end_dtim))
         dnam = os.path.dirname(assess_csv)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
@@ -124,8 +125,8 @@ class Phenology(Satellite_Process):
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'calc_assess_date.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_analysis,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_analysis,'tentative_interp'))
+        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --plant "{}"'.format(planting_csv)
         if self.values['head_fnam'] != '':
             command += ' --head "{}"'.format(self.values['head_fnam'])
