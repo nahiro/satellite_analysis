@@ -7,6 +7,8 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
+import shapefile
+from shapely.geometry import shape
 from datetime import datetime
 from matplotlib.dates import date2num
 import numpy as np
@@ -157,7 +159,7 @@ for n in range(nobject):
     l2 = np.square(xq-x_center[n])+np.square(yq-y_center[n])
     indx = np.argsort(l2)
     leng_temp = np.sqrt(l2[indx[:args.n_nearest]])
-    inds_temp = inds[indx[:args.n_nearest]]
+    inds_temp = inds_selected[indx[:args.n_nearest]]
     leng_array.append(leng_temp)
     inds_array.append(inds_temp)
 leng_array = np.array(leng_array)
