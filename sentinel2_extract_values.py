@@ -98,7 +98,7 @@ if args.out_csv is None or args.fignam is None:
 # Read observation file
 df = pd.read_csv(args.obs_fnam,comment='#')
 df.columns = df.columns.str.strip()
-loc_bunch = df['Location'].str.strip().values
+loc_bunch = df['Location'].astype(str).str.strip().values
 number_bunch = df['BunchNumber'].astype(int).values
 plot_bunch = df['PlotPaddy'].astype(int).values
 if 'EastingI' in df.columns and 'NorthingI' in df.columns:
