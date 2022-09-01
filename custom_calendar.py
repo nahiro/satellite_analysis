@@ -49,14 +49,14 @@ class CustomCalendar(Calendar):
             nm = date_format.count('m')
             nd = date_format.count('d')
             if nm == 5:
-                ymd = r'^y+([^a-zA-Z]*)mm&mmm([^a-z]*)d{1,2}([^mdy]*)$'
+                ymd = r'^y+([^a-zA-Z]*)mm\&mmm([^a-z]*)d{1,2}([^mdy]*)$'
                 m = re.search(ymd,date_format)
                 if not m:
                     raise ValueError('{} is not a valid date format'.format(date_format))
                 sep1 = m.group(1)
                 sep2 = m.group(2)
                 sep3 = m.group(3)
-                ymd = '^('+'\d'*ny+')'+sep1+'\d\d&('+'[a-zA-Z]'*3+')'+sep2+'('+'\d'*nd+')'+sep3+'$'
+                ymd = '^('+'\d'*ny+')'+sep1+'\d\d('+'[a-zA-Z]'*3+')'+sep2+'('+'\d'*nd+')'+sep3+'$'
                 m = re.search(ymd,date)
                 if not m:
                     raise ValueError('{} is not a valid date'.format(date))
