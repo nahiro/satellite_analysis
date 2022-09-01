@@ -17,26 +17,29 @@ S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n
 SC_BAND = 'quality_scene_classification'
 
 # Default values
+OUT_LENG = 'nearest_leng.npy'
+OUT_INDS = 'nearest_inds.npy'
 REF_BAND = ['b','g','r','n1']
 RTHR = 0.035
+N_NEAREST = 1000
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
-#parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
-#parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
+parser.add_argument('-o','--out_leng',default=OUT_LENG,help='Output length file name (%(default)s)')
+parser.add_argument('-O','--out_inds',default=OUT_INDS,help='Output index file name (%(default)s)')
 parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
-#parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
+parser.add_argument('-n','--n_nearest',default=N_NEAREST,type=int,help='Number of nearest indices (%(default)s)')
 #parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 #parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 #parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
 #parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 #parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
-#parser.add_argument('-D','--fig_dpi',default=None,type=int,help='DPI of figure for debug (%(default)s)')
-#parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
+parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -45,6 +48,24 @@ if args.ref_band is None:
 d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
 d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
+
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    object_ids = np.arange(nobject)+1
+else:
+    list_ids = []
+    for rec in r.iterRecords():
+        list_ids.append(rec.OBJECTID)
+    object_ids = np.array(list_ids)
+x_center = []
+y_center = []
+for shp in shape(r.shapes()).geoms:
+    x_center.append(shp.centroid.x)
+    y_center.append(shp.centroid.y)
+x_center = np.array(x_center)
+y_center = np.array(y_center)
 
 src_nx = None
 src_ny = None
@@ -115,6 +136,9 @@ src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 scl_data = np.array(scl_data) # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
+src_indy,src_indx = np.indices(src_shape)
+src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
+src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
 
 cnd = np.full(src_shape,True)
 scl_cnd = (scl_data < 1.9) | ((scl_data > 2.1) & (scl_data < 3.9)) | (scl_data > 7.1)
@@ -124,40 +148,19 @@ for iband in range(src_nb):
     cnd &= (np.nanstd(tmp_data,axis=0) < args.rthr)
 inds = np.indices([cnd.size]).reshape(src_shape)
 inds_selected = inds[cnd]
+xq = src_xp.flatten()[inds_selected]
+yq = src_yp.flatten()[inds_selected]
 
-"""
-n_nearest = 1000
-
-sid,xc,yc,ndat,leng,area = np.loadtxt('get_center.dat',unpack=True)
-sid = (sid+0.1).astype(np.int64)
-ndat = (ndat+0.1).astype(np.int64)
-sid_indx = np.arange(sid.size)
-
-inds = np.load('inds_selected.npy')
-
-ds = gdal.Open('/home/naohiro/Work/Sentinel-2/L2A/Cihea/resample/20210916_geocor_resample.tif')
-data = ds.ReadAsArray()
-data_trans = ds.GetGeoTransform()
-data_shape = data[0].shape
-ds = None
-indy,indx = np.indices(data_shape)
-xp = data_trans[0]+(indx+0.5)*data_trans[1]+(indy+0.5)*data_trans[2]
-yp = data_trans[3]+(indx+0.5)*data_trans[4]+(indy+0.5)*data_trans[5]
-
-xq = xp.flatten()[inds]
-yq = yp.flatten()[inds]
-
-inds_array = []
 leng_array = []
-for n in range(sid.size):
-    l2 = np.square(xq-xc[n])+np.square(yq-yc[n])
+inds_array = []
+for n in range(nobject):
+    l2 = np.square(xq-x_center[n])+np.square(yq-y_center[n])
     indx = np.argsort(l2)
-    inds_temp = inds[indx[:n_nearest]]
-    leng_temp = np.sqrt(l2[indx[:n_nearest]])
-    inds_array.append(inds_temp)
+    leng_temp = np.sqrt(l2[indx[:args.n_nearest]])
+    inds_temp = inds[indx[:args.n_nearest]]
     leng_array.append(leng_temp)
-inds_array = np.array(inds_array)
+    inds_array.append(inds_temp)
 leng_array = np.array(leng_array)
-np.save('nearest_inds.npy',inds_array)
-np.save('nearest_leng.npy',leng_array)
-"""
+inds_array = np.array(inds_array)
+np.save(args.out_leng,leng_array)
+np.save(args.out_inds,inds_array)
