@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime,timedelta
 import numpy as np
 from subprocess import call
 from proc_satellite_class import Satellite_Process
@@ -27,6 +28,7 @@ class Formula(Satellite_Process):
             if not os.path.exists(fnam):
                 raise IOError('{}: error, no such file >>> "{}"'.format(self.proc_name,fnam))
             fnams.append(fnam)
+        trg_bnam = '{}_{}'.format(self.obs_block,self.obs_date)
         wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
@@ -40,7 +42,7 @@ class Formula(Satellite_Process):
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_score_fit.py'))
         command += ' --inp_list "{}"'.format(tmp_fnam)
-        command += ' --out_fnam "{}"'.format(os.path.join(wrk_dir,'pm_formula_{:%Y%m%d}_{:%Y%m%d}.csv'.format(start_dtim,end_dtim)))
+        command += ' --out_fnam "{}"'.format(os.path.join(wrk_dir,'pm_formula_{}.csv'.format(trg_bnam)))
         for param,flag in zip(self.list_labels['x1_params'],self.values['x1_params']):
             if flag:
                 command += ' --x_param S{}'.format(param)
@@ -95,7 +97,7 @@ class Formula(Satellite_Process):
             raise ValueError('{}: error, unknown data selection >>> {}'.format(self.proc_name,self.values['data_select']))
         if self.values['mean_fitting']:
             command += ' --mean_fitting'
-        command += ' --fignam "{}"'.format(os.path.join(wrk_dir,'pm_formula_{}_{}.pdf'.format(start_dtim,end_dtim)))
+        command += ' --fignam "{}"'.format(os.path.join(wrk_dir,'pm_formula_{}.pdf'.format(trg_bnam)))
         command += ' --debug'
         command += ' --batch'
         self.run_command(command,message='<<< Make plot-mean formula >>>')
