@@ -125,6 +125,9 @@ for y_param in args.y_param:
         Y[y_param] = Y[y_param]/y_max[y_param]
     else:
         Y[y_param] = Y[y_param]/tiller_bunch
+        cnd = (tiller_bunch == 0)
+        if cnd.sum() > 0:
+            Y.loc[cnd,y_param] = np.nan
 
 # Read Shapefile
 r = shapefile.Reader(args.shp_fnam)
