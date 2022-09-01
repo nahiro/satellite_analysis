@@ -12,70 +12,54 @@ from matplotlib.dates import date2num
 import numpy as np
 from argparse import ArgumentParser,RawTextHelpFormatter
 
-bands = ['B2','B3','B4','B8','quality_scene_classification']
+# Constants
+S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
+SC_BAND = 'quality_scene_classification'
 
-band_fnam = '/home/naohiro/Source/sentinel/band_names.txt'
-band_list = []
-with open(band_fnam,'r') as fp:
-    for line in fp:
-        item = line.split()
-        if len(item) != 2:
-            raise ValueError('Error, len(item)={}'.format(len(item)))
-        band_list.append(item[1])
-band_index = [band_list.index(band) for band in bands]
+# Default values
+REF_BAND = ['b','g','r','n1']
+RTHR = 0.035
 
-ntim_array = []
-b2_array = []
-b3_array = []
-b4_array = []
-b8_array = []
-scl_array = []
-data_shape = None
-datdir = '/home/naohiro/Work/Sentinel-2/L2A/Cihea/resample'
-for f in sorted(os.listdir(datdir)):
-    m = re.search('(\d+)_geocor_resample.tif',f)
-    if not m:
-        continue
-    dstr = m.group(1)
-    print(dstr)
-    ntim_array.append(date2num(datetime.strptime(dstr,'%Y%m%d')))
-    ds = gdal.Open(os.path.join(datdir,f))
-    data = ds.ReadAsArray()
-    if len(data) != len(band_list):
-        raise ValueError('Error, len(data)={}, len(band_list)={} >>> {}'.format(len(data),len(band_list),f))
-    if data_shape is None:
-        data_shape = data[0].shape
-    elif data[0].shape != data_shape:
-        raise ValueError('Error, data_shape={}, data.shape={} >>> {}'.format(data_shape,data.shape,f))
-    ds = None
-    b2_array.append(data[band_index[0]]*1.0e-4)
-    b3_array.append(data[band_index[1]]*1.0e-4)
-    b4_array.append(data[band_index[2]]*1.0e-4)
-    b8_array.append(data[band_index[3]]*1.0e-4)
-    scl_array.append(data[band_index[4]])
-    #break
-ntim_array = np.array(ntim_array)
-b2_array = np.array(b2_array)
-b3_array = np.array(b3_array)
-b4_array = np.array(b4_array)
-b8_array = np.array(b8_array)
-scl_array = np.array(scl_array)
-np.save('ntim.npy',ntim_array)
-np.save('band2.npy',b2_array)
-np.save('band3.npy',b3_array)
-np.save('band4.npy',b4_array)
-np.save('band8.npy',b8_array)
-np.save('scl.npy',scl_array)
-
-
+# Read options
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
+#parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
+#parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
+parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
+parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
+#parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
+#parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+#parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
+#parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
+#parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
+#parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
+#parser.add_argument('-D','--fig_dpi',default=None,type=int,help='DPI of figure for debug (%(default)s)')
+#parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
+parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
+args = parser.parse_args()
+if args.ref_band is None:
+    args.ref_band = REF_BAND
+d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
+d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
+data_years = np.arange(d1.year,d2.year+1,1)
 
 src_nx = None
 src_ny = None
-src_nb = None
+src_nb = len(args.ref_band)
 src_shape = None
 src_prj = None
 src_trans = None
 src_data = []
+scl_data = []
+src_band = []
+for band in args.ref_band:
+    if not band in S2_BAND:
+        raise ValueError('Error, unknown band >>> {}'.format(band))
+    src_band.append(S2_BAND[band])
+src_dtim = []
 for year in data_years:
     ystr = '{}'.format(year)
     dnam = os.path.join(args.inpdir,ystr)
@@ -97,19 +81,17 @@ for year in data_years:
         tmp_shape = (tmp_ny,tmp_nx)
         tmp_prj = ds.GetProjection()
         tmp_trans = ds.GetGeoTransform()
-        tmp_data = ds.ReadAsArray()
+        tmp_data = ds.ReadAsArray().reshape(tmp_nb,tmp_ny,tmp_nx)
+        tmp_band = []
+        for iband in range(tmp_nb):
+            band = ds.GetRasterBand(iband+1)
+            tmp_band.append(band.GetDescription())
         if src_shape is None:
             src_nx = tmp_nx
             src_ny = tmp_ny
             src_shape = tmp_shape
-            if src_shape != mask_shape:
-                raise ValueError('Error, src_shape={}, mask_shape={}'.format(src_shape,mask_shape))
         elif tmp_shape != src_shape:
             raise ValueError('Error, tmp_shape={}, src_shape={}'.format(tmp_shape,src_shape))
-        if src_nb is None:
-            src_nb = tmp_nb
-        elif tmp_nb != src_nb:
-            raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
         if src_prj is None:
             src_prj = tmp_prj
         elif tmp_prj != src_prj:
@@ -118,38 +100,32 @@ for year in data_years:
             src_trans = tmp_trans
         elif tmp_trans != src_trans:
             raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
-        src_data.append(tmp_data)
-src_data = np.array(src_data)
+        tmp_indx = []
+        for band in src_band:
+            if not band in tmp_band:
+                raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
+            tmp_indx.append(tmp_band.index(band))
+        if not SC_BAND in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(SC_BAND,fnam))
+        scl_indx = tmp_band.index(SC_BAND)
+        src_data.append(tmp_data[tmp_indx])
+        scl_data.append(tmp_data[scl_indx])
+        src_dtim.append(d)
+src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
+scl_data = np.array(scl_data) # NTIM,NY,NX
+src_dtim = np.array(src_dtim)
+src_ntim = date2num(src_dtim)
 
+cnd = np.full(src_shape,True)
+scl_cnd = (scl_data < 1.9) | ((scl_data > 2.1) & (scl_data < 3.9)) | (scl_data > 7.1)
+for iband in range(src_nb):
+    tmp_data = src_data[:,iband,:,:].astype(np.float64)
+    tmp_data[scl_cnd] = np.nan
+    cnd &= (np.nanstd(tmp_data,axis=0) < args.rthr)
+inds = np.indices([cnd.size]).reshape(src_shape)
+inds_selected = inds[cnd]
 
-
-
-ntim = np.load('ntim.npy')
-b2 = np.load('band2.npy')
-b3 = np.load('band3.npy')
-b4 = np.load('band4.npy')
-b8 = np.load('band8.npy')
-scl = np.load('scl.npy')
-#cnd = (scl < 3.9) | (scl > 7.1)
-cnd = (scl < 1.9) | ((scl > 2.1) & (scl < 3.9)) | (scl > 7.1)
-b2[cnd] = np.nan
-b3[cnd] = np.nan
-b4[cnd] = np.nan
-b8[cnd] = np.nan
-b2_std = np.nanstd(b2.astype(np.float64),axis=0)
-b3_std = np.nanstd(b3.astype(np.float64),axis=0)
-b4_std = np.nanstd(b4.astype(np.float64),axis=0)
-b8_std = np.nanstd(b8.astype(np.float64),axis=0)
-
-c2 = (b2_std < 0.035)# | (b2_std < 0.20*b2_mean)
-c3 = (b3_std < 0.035)# | (b3_std < 0.20*b3_mean)
-c4 = (b4_std < 0.035)# | (b4_std < 0.20*b4_mean)
-c8 = (b8_std < 0.035)# | (b8_std < 0.20*b8_mean)
-cnd = c2 & c3 & c4 & c8
-inds = np.indices([cnd.size]).reshape(cnd.shape)
-np.save('inds_selected.npy',inds[cnd])
-
-
+"""
 n_nearest = 1000
 
 sid,xc,yc,ndat,leng,area = np.loadtxt('get_center.dat',unpack=True)
@@ -184,3 +160,4 @@ inds_array = np.array(inds_array)
 leng_array = np.array(leng_array)
 np.save('nearest_inds.npy',inds_array)
 np.save('nearest_leng.npy',leng_array)
+"""
