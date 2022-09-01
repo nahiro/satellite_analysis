@@ -341,12 +341,8 @@ for y_param in args.y_param:
         Y_score = pd.DataFrame(Y_score)
     if args.debug:
         for param in args.x_param:
-            if y_param in y_max:
-                fact = y_max[y_param]
-                y_label = 'Observed {} Score'.format(y_param)
-            else:
-                fact = 100.0
-                y_label = 'Observed {} Intensity (%)'.format(y_param)
+            fact = 100.0
+            y_label = 'Observed {} Intensity (%)'.format(y_param)
             fig.clear()
             ax1 = plt.subplot(111)
             ax1.minorticks_on()
@@ -509,32 +505,18 @@ for y_param in args.y_param:
                 fig.clear()
                 ax1 = plt.subplot(111)
                 ax1.minorticks_on()
-                if y_param in y_max:
-                    xtmp = Y*y_max[y_param]
-                    ytmp = Y_pred*y_max[y_param]
-                    ax1.plot(xtmp,ytmp,'bo')
-                    xmin = min(Y.min(),Y_pred.min())*y_max[y_param]
-                    xmax = max(Y.max(),Y_pred.max())*y_max[y_param]
-                    xdif = xmax-xmin
-                    xfit = np.linspace(xmin,xmax,100)
-                    yfit = np.polyval(np.polyfit(xtmp,ytmp,1),xfit)
-                    ax1.plot(xfit,yfit,'r-')
-                    ax1.plot(xfit,xfit,'k:')
-                    x_label = 'Observed {} Score'.format(y_param)
-                    y_label = 'Pred {} Score'.format(y_param)
-                else:
-                    xtmp = Y*100.0
-                    ytmp = Y_pred*100.0
-                    ax1.plot(xtmp,ytmp,'bo')
-                    xmin = min(Y.min(),Y_pred.min())*100.0
-                    xmax = max(Y.max(),Y_pred.max())*100.0
-                    xdif = xmax-xmin
-                    xfit = np.linspace(xmin,xmax,100)
-                    yfit = np.polyval(np.polyfit(xtmp,ytmp,1),xfit)
-                    ax1.plot(xfit,yfit,'r-')
-                    ax1.plot(xfit,xfit,'k:')
-                    x_label = 'Observed {} Intensity (%)'.format(y_param)
-                    y_label = 'Pred {} Intensity (%)'.format(y_param)
+                xtmp = Y*100.0
+                ytmp = Y_pred*100.0
+                ax1.plot(xtmp,ytmp,'bo')
+                xmin = min(Y.min(),Y_pred.min())*100.0
+                xmax = max(Y.max(),Y_pred.max())*100.0
+                xdif = xmax-xmin
+                xfit = np.linspace(xmin,xmax,100)
+                yfit = np.polyval(np.polyfit(xtmp,ytmp,1),xfit)
+                ax1.plot(xfit,yfit,'r-')
+                ax1.plot(xfit,xfit,'k:')
+                x_label = 'Observed {} Intensity (%)'.format(y_param)
+                y_label = 'Pred {} Intensity (%)'.format(y_param)
                 ax1.set_xlim(xmin-0.1*xdif,xmax+0.1*xdif)
                 ax1.set_ylim(xmin-0.1*xdif,xmax+0.1*xdif)
                 ax1.set_title(title)
