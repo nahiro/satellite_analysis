@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
+import shutil
 import zlib # import zlib before gdal to prevent segmentation fault when saving pdf
+import shapefile
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,6 +12,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6
 
@@ -85,6 +90,9 @@ if not 'OBJECTID' in src_df.columns:
     raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
 object_ids = src_df['OBJECTID'].astype(int)
 nobject = len(object_ids)
+for param in src_df.columns:
+    if param in PARAMS:
+        src_df[param] = src_df[param].astype(float)
 
 # Read Shapefile
 if args.inp_shp is not None:
