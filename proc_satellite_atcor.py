@@ -153,6 +153,10 @@ proc_atcor.input_types['oflag'] = 'boolean_list'
 proc_atcor.flag_check['mask_fnam'] = False
 proc_atcor.flag_check['stat_fnam'] = False
 proc_atcor.flag_check['inds_fnam'] = False
+proc_atcor.expected['gis_fnam'] = '*.shp'
+proc_atcor.expected['mask_fnam'] = '*.tif'
+proc_atcor.expected['stat_fnam'] = '*.npz'
+proc_atcor.expected['inds_fnam'] = '*.npy'
 for pnam in proc_atcor.pnams:
     proc_atcor.values[pnam] = proc_atcor.defaults[pnam]
 proc_atcor.middle_left_frame_width = 1000

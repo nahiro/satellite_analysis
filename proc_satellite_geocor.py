@@ -197,6 +197,7 @@ proc_geocor.input_types['smooth_fact'] = 'float_list'
 proc_geocor.input_types['smooth_dmax'] = 'float_list'
 proc_geocor.input_types['oflag'] = 'boolean_list'
 proc_geocor.flag_check['band_fnam'] = False
+proc_geocor.expected['ref_fnam'] = '*.tif'
 for pnam in proc_geocor.pnams:
     proc_geocor.values[pnam] = proc_geocor.defaults[pnam]
 proc_geocor.middle_left_frame_width = 1000

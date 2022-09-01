@@ -74,6 +74,9 @@ proc_estimate.input_types['age_value'] = 'box'
 proc_estimate.input_types['pm_fnam'] = 'ask_file'
 proc_estimate.input_types['pm_number'] = 'box'
 proc_estimate.input_types['y_params'] = 'boolean_list'
+proc_estimate.expected['gis_fnam'] = '*.shp'
+proc_estimate.expected['event_fnam'] = 'assess.csv'
+proc_estimate.expected['pm_fnam'] = [('pm files','pm*.csv|pm*.CSV'),'*.csv']
 for pnam in proc_estimate.pnams:
     proc_estimate.values[pnam] = proc_estimate.defaults[pnam]
 proc_estimate.left_frame_width = 210

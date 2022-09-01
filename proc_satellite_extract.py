@@ -49,6 +49,9 @@ proc_extract.input_types['epsg'] = 'box'
 proc_extract.input_types['major_flag'] = 'boolean'
 proc_extract.input_types['event_fnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
+proc_extract.expected['gis_fnam'] = '*.shp'
+proc_extract.expected['obs_fnam'] = '*.xls'
+proc_extract.expected['event_fnam'] = 'assess.csv'
 for pnam in proc_extract.pnams:
     proc_extract.values[pnam] = proc_extract.defaults[pnam]
 proc_extract.middle_left_frame_width = 1000

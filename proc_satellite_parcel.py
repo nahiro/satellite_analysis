@@ -117,6 +117,7 @@ proc_parcel.input_types['cloud_band'] = 'string_select'
 proc_parcel.input_types['cloud_thr'] = 'box'
 proc_parcel.input_types['buffer'] = 'box'
 proc_parcel.input_types['oflag'] = 'boolean_list'
+proc_parcel.expected['gis_fnam'] = '*.shp'
 for pnam in proc_parcel.pnams:
     proc_parcel.values[pnam] = proc_parcel.defaults[pnam]
 proc_parcel.middle_left_frame_width = 1000

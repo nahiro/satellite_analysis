@@ -210,6 +210,7 @@ proc_formula.input_types['n_cros'] = 'box'
 proc_formula.input_types['n_formula'] = 'box'
 #proc_formula.flag_fill['x1_params'] = True
 #proc_formula.flag_fill['y_params'] = True
+proc_formula.expected['inp_fnams'] = 'extract.csv'
 for pnam in proc_formula.pnams:
     proc_formula.values[pnam] = proc_formula.defaults[pnam]
 proc_formula.left_frame_width = 200
