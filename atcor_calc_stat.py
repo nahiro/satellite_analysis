@@ -22,6 +22,7 @@ SC_BAND = 'quality_scene_classification'
 OUT_LENG = 'nearest_leng.npy'
 OUT_INDS = 'nearest_inds.npy'
 REF_BAND = ['b','g','r','n1']
+CLN_BAND = 'r'
 RTHR = 0.035
 N_NEAREST = 1000
 
@@ -32,6 +33,8 @@ parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(defaul
 parser.add_argument('-o','--out_leng',default=OUT_LENG,help='Output length file name (%(default)s)')
 parser.add_argument('-O','--out_inds',default=OUT_INDS,help='Output index file name (%(default)s)')
 parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
+parser.add_argument('-C','--cln_band',default=CLN_BAND,help='Band for clean-day select (%(default)s)')
+parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
@@ -69,6 +72,7 @@ for shp in shape(r.shapes()).geoms:
 x_center = np.array(x_center)
 y_center = np.array(y_center)
 
+# Read Source GeoTIFF
 src_nx = None
 src_ny = None
 src_nb = len(args.ref_band)
@@ -76,7 +80,8 @@ src_shape = None
 src_prj = None
 src_trans = None
 src_data = []
-scl_data = []
+scl_data = [] # Scene Classification Data
+cln_data = [] # Clean-day Selection Data
 src_band = []
 for band in args.ref_band:
     if not band in S2_BAND:
@@ -131,17 +136,46 @@ for year in data_years:
         if not SC_BAND in tmp_band:
             raise ValueError('Error in finding {} >>> {}'.format(SC_BAND,fnam))
         scl_indx = tmp_band.index(SC_BAND)
+        if not args.cln_band in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(args.cln_band,fnam))
+        cln_indx = tmp_band.index(args.cln_band)
         src_data.append(tmp_data[tmp_indx])
         scl_data.append(tmp_data[scl_indx])
+        cln_data.append(tmp_data[cln_indx])
         src_dtim.append(d)
 src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 scl_data = np.array(scl_data) # NTIM,NY,NX
+cln_data = np.array(cln_data)*1.0e-4 # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
 src_indy,src_indx = np.indices(src_shape)
 src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
 src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
 
+# Read Mask GeoTIFF
+ds = gdal.Open(args.mask_fnam)
+mask_nx = ds.RasterXSize
+mask_ny = ds.RasterYSize
+mask_nb = ds.RasterCount
+if mask_nb != 1:
+    raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_fnam))
+mask_shape = (mask_ny,mask_nx)
+if mask_shape != src_shape:
+    raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_fnam))
+mask_data = ds.ReadAsArray()#.reshape(ngrd)
+band = ds.GetRasterBand(1)
+mask_dtype = band.DataType
+mask_nodata = band.GetNoDataValue()
+if mask_dtype in [gdal.GDT_Int16,gdal.GDT_Int32]:
+    if mask_nodata < 0.0:
+        mask_nodata = -int(abs(mask_nodata)+0.5)
+    else:
+        mask_nodata = int(mask_nodata+0.5)
+elif mask_dtype in [gdal.GDT_UInt16,gdal.GDT_UInt32]:
+    mask_nodata = int(mask_nodata+0.5)
+ds = None
+
+"""
 cnd = np.full(src_shape,True)
 scl_cnd = (scl_data < 1.9) | ((scl_data > 2.1) & (scl_data < 3.9)) | (scl_data > 7.1)
 for iband in range(src_nb):
@@ -166,3 +200,4 @@ leng_array = np.array(leng_array)
 inds_array = np.array(inds_array)
 np.save(args.out_leng,leng_array)
 np.save(args.out_inds,inds_array)
+"""
