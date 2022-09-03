@@ -19,9 +19,12 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
 S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
+BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
+NORM_BAND = ['b','g','r','e1','e2','e3','n1']
+RGI_RED_BAND = 'e1'
 CLN_BAND = 'r'
 CTHR_AVG = 0.06
 CTHR_STD = 0.05
@@ -31,7 +34,9 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
-parser.add_argument('-C','--cln_band',default=CLN_BAND,help='Band for clean-day select (%(default)s)')
+parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
+parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
+parser.add_argument('-C','--cln_band',default=CLN_BAND,help='Wavelength band for clean-day select (%(default)s)')
 parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
@@ -45,11 +50,18 @@ parser.add_argument('--cthr_std',default=CTHR_STD,type=float,help='Threshold of 
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.ref_band is None:
-    args.ref_band = REF_BAND
-for band in args.ref_band:
+if args.param is None:
+    args.param = PARAM
+for param in args.param:
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter >>> {}'.format(param))
+if args.norm_band is None:
+    args.norm_band = NORM_BAND
+for band in args.norm_band:
     if not band in S2_BAND:
-        raise ValueError('Error, unknown band for reference select >>> {}'.format(band))
+        raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
+if not args.rgi_red_band in S2_BAND:
+    raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
 if not args.cln_band in S2_BAND:
     raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cln_band))
 cln_band = S2_BAND[args.cln_band]
@@ -220,4 +232,29 @@ for iy in range(src_ny):
                     indx = indx[cnd]
         data_avg[iy,ix] = np.nanmean(src_data_tmp[indx],axis=0)
         data_std[iy,ix] = np.nanstd(src_data_tmp[indx],axis=0)
-np.savez(args.out_stats,mean=data_avg,std=data_std)
+
+# Write Destination GeoTIFF
+dst_nx = src_nx
+dst_ny = src_ny
+dst_nb = len(args.param)
+dst_prj = src_prj
+dst_trans = src_trans
+dst_meta = {}
+dst_meta['data_tmin'] = '{:%Y%m%d}'.format(d1)
+dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
+dst_meta['rgi_red_band'] = args.rgi_red_band
+dst_dtype = gdal.GDT_Float32
+dst_nodata = np.nan
+dst_band = args.param
+drv = gdal.GetDriverByName('GTiff')
+ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,dst_dtype)
+ds.SetProjection(dst_prj)
+ds.SetGeoTransform(dst_trans)
+ds.SetMetadata(dst_meta)
+for iband in range(dst_nb):
+    band = ds.GetRasterBand(iband+1)
+    band.WriteArray(dst_data[iband])
+    band.SetDescription(dst_band[iband])
+band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
+ds.FlushCache()
+ds = None # close dataset
