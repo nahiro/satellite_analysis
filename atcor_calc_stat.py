@@ -24,6 +24,8 @@ OUT_INDS = 'nearest_inds.npy'
 REF_BAND = ['b','g','r','n1']
 CLN_BAND = 'r'
 RTHR = 0.035
+CTHR_AVG = 0.06
+CTHR_STD = 0.05
 N_NEAREST = 1000
 
 # Read options
@@ -38,6 +40,8 @@ parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
+parser.add_argument('--cthr_avg',default=CTHR_AVG,type=float,help='Threshold of mean for clean-day select (%(default)s)')
+parser.add_argument('--cthr_std',default=CTHR_STD,type=float,help='Threshold of std for clean-day select (%(default)s)')
 parser.add_argument('-n','--n_nearest',default=N_NEAREST,type=int,help='Number of nearest indices (%(default)s)')
 #parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 #parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
@@ -50,6 +54,12 @@ parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch
 args = parser.parse_args()
 if args.ref_band is None:
     args.ref_band = REF_BAND
+for band in args.ref_band:
+    if not band in S2_BAND:
+        raise ValueError('Error, unknown band for reference select >>> {}'.format(band))
+if not args.cln_band in S2_BAND:
+    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cln_band))
+cln_band = S2_BAND[args.cln_band]
 d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
 d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
@@ -136,9 +146,9 @@ for year in data_years:
         if not SC_BAND in tmp_band:
             raise ValueError('Error in finding {} >>> {}'.format(SC_BAND,fnam))
         scl_indx = tmp_band.index(SC_BAND)
-        if not args.cln_band in tmp_band:
-            raise ValueError('Error in finding {} >>> {}'.format(args.cln_band,fnam))
-        cln_indx = tmp_band.index(args.cln_band)
+        if not cln_band in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(cln_band,fnam))
+        cln_indx = tmp_band.index(cln_band)
         src_data.append(tmp_data[tmp_indx])
         scl_data.append(tmp_data[scl_indx])
         cln_data.append(tmp_data[cln_indx])
@@ -162,7 +172,7 @@ if mask_nb != 1:
 mask_shape = (mask_ny,mask_nx)
 if mask_shape != src_shape:
     raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_fnam))
-mask_data = ds.ReadAsArray()#.reshape(ngrd)
+mask_data = ds.ReadAsArray()
 band = ds.GetRasterBand(1)
 mask_dtype = band.DataType
 mask_nodata = band.GetNoDataValue()
@@ -175,29 +185,46 @@ elif mask_dtype in [gdal.GDT_UInt16,gdal.GDT_UInt32]:
     mask_nodata = int(mask_nodata+0.5)
 ds = None
 
-"""
-cnd = np.full(src_shape,True)
-scl_cnd = (scl_data < 1.9) | ((scl_data > 2.1) & (scl_data < 3.9)) | (scl_data > 7.1)
-for iband in range(src_nb):
-    tmp_data = src_data[:,iband,:,:].astype(np.float64)
-    tmp_data[scl_cnd] = np.nan
-    cnd &= (np.nanstd(tmp_data,axis=0) < args.rthr)
-inds = np.indices([cnd.size]).reshape(src_shape)
-inds_selected = inds[cnd]
-xq = src_xp.flatten()[inds_selected]
-yq = src_yp.flatten()[inds_selected]
+# Select clean-day images
+cnd = (mask_data > 0.5) # inside study area
+cnd_data = cln_data[:,cnd]
+cln_avg = np.nanmean(cnd_data,axis=1)
+cln_std = np.nanstd(cnd_data,axis=1)
+cnd = (cln_avg < args.cthr_avg) & (cln_std < args.cthr_std)
+ncnd = cnd.sum()
+src_data_selected = src_data[cnd] # NTIM,NBAND,NY,NX
+cln_data_selected = cln_data[cnd] # NTIM,NY,NX
+indx_all = np.arange(ncnd)
 
-leng_array = []
-inds_array = []
-for n in range(nobject):
-    l2 = np.square(xq-x_center[n])+np.square(yq-y_center[n])
-    indx = np.argsort(l2)
-    leng_temp = np.sqrt(l2[indx[:args.n_nearest]])
-    inds_temp = inds_selected[indx[:args.n_nearest]]
-    leng_array.append(leng_temp)
-    inds_array.append(inds_temp)
-leng_array = np.array(leng_array)
-inds_array = np.array(inds_array)
-np.save(args.out_leng,leng_array)
-np.save(args.out_inds,inds_array)
-"""
+# Calculate stats for clean-day pixels
+data_avg = np.full(src_shape,np.nan)
+data_std = np.full(src_shape,np.nan)
+for iy in range(src_ny):
+    for ix in range(src_nx):
+        src_data_tmp = src_data_selected[:,iy,ix]
+        cln_data_tmp = cln_data_selected[:,iy,ix]
+        indx = indx_all[np.isfinite(cln_data_tmp)]
+        vc = cln_data_tmp[indx].copy()
+        vm = vc.mean()
+        ve = vc.std()
+        cnd = (vc < vm+ve)
+        ncnd = cnd.sum()
+        if (ncnd != vc.size) and (ncnd > 4):
+            indx = indx[cnd]
+            vc = cln_data_tmp[indx].copy()
+            vm = vc.mean()
+            ve = vc.std()
+            cnd = (vc < vm+ve)
+            ncnd = cnd.sum()
+            if (ncnd != vc.size) and (ncnd > 4):
+                indx = indx[cnd]
+                vc = cln_data_tmp[indx].copy()
+                vm = vc.mean()
+                ve = vc.std()
+                cnd = (vc < vm+ve)
+                ncnd = cnd.sum()
+                if (ncnd != vc.size) and (ncnd > 4):
+                    indx = indx[cnd]
+        data_avg[iy,ix] = np.nanmean(src_data_tmp[indx],axis=0)
+        data_std[iy,ix] = np.nanstd(src_data_tmp[indx],axis=0)
+np.savez(args.out_stats,mean=data_avg,std=data_std)
