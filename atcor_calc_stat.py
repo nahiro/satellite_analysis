@@ -65,6 +65,35 @@ if not args.rgi_red_band in S2_BAND:
 if not args.cln_band in S2_BAND:
     raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cln_band))
 cln_band = S2_BAND[args.cln_band]
+inp_band = []
+for param in args.param:
+    if param == 'NDVI':
+        for band in ['r','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param == 'GNDVI':
+        for band in ['g','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param in ['RGI','NRGI']:
+        for band in ['g',args.rgi_red_band]:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param[0] in ['S','N']:
+        if len(param) in [2,3]:
+            band = param[1:]
+            if not band in inp_band:
+                inp_band.append(band)
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    else:
+        raise ValueError('Error, param={}'.format(param))
+for band in args.norm_band:
+    if not band in inp_band:
+        inp_band.append(band)
+for band in [args.cln_band]:
+    if not band in inp_band:
+        inp_band.append(band)
 d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
 d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
