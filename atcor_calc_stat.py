@@ -15,40 +15,33 @@ import numpy as np
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
 S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
-SC_BAND = 'quality_scene_classification'
 
 # Default values
-OUT_LENG = 'nearest_leng.npy'
-OUT_INDS = 'nearest_inds.npy'
-REF_BAND = ['b','g','r','n1']
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
 CLN_BAND = 'r'
-RTHR = 0.035
 CTHR_AVG = 0.06
 CTHR_STD = 0.05
-N_NEAREST = 1000
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
-parser.add_argument('-o','--out_leng',default=OUT_LENG,help='Output length file name (%(default)s)')
-parser.add_argument('-O','--out_inds',default=OUT_INDS,help='Output index file name (%(default)s)')
-parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
+parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
+parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-C','--cln_band',default=CLN_BAND,help='Band for clean-day select (%(default)s)')
 parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
-parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
 parser.add_argument('--cthr_avg',default=CTHR_AVG,type=float,help='Threshold of mean for clean-day select (%(default)s)')
 parser.add_argument('--cthr_std',default=CTHR_STD,type=float,help='Threshold of std for clean-day select (%(default)s)')
-parser.add_argument('-n','--n_nearest',default=N_NEAREST,type=int,help='Number of nearest indices (%(default)s)')
 #parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 #parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 #parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
 #parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 #parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
-parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
