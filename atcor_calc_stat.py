@@ -18,6 +18,7 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
+S2_PARAM = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
 BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
 
@@ -91,46 +92,23 @@ for param in args.param:
 for band in args.norm_band:
     if not band in inp_band:
         inp_band.append(band)
-for band in [args.cln_band]:
-    if not band in inp_band:
-        inp_band.append(band)
+inp_band = np.array(inp_band)
+indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
+inp_band = inp_band[indx]
 d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
 d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
 
-# Read Shapefile
-r = shapefile.Reader(args.shp_fnam)
-nobject = len(r)
-if args.use_index:
-    object_ids = np.arange(nobject)+1
-else:
-    list_ids = []
-    for rec in r.iterRecords():
-        list_ids.append(rec.OBJECTID)
-    object_ids = np.array(list_ids)
-x_center = []
-y_center = []
-for shp in shape(r.shapes()).geoms:
-    x_center.append(shp.centroid.x)
-    y_center.append(shp.centroid.y)
-x_center = np.array(x_center)
-y_center = np.array(y_center)
-
 # Read Source GeoTIFF
 src_nx = None
 src_ny = None
-src_nb = len(args.ref_band)
+src_nb = len(inp_band)
 src_shape = None
 src_prj = None
 src_trans = None
 src_data = []
-scl_data = [] # Scene Classification Data
 cln_data = [] # Clean-day Selection Data
-src_band = []
-for band in args.ref_band:
-    if not band in S2_BAND:
-        raise ValueError('Error, unknown band >>> {}'.format(band))
-    src_band.append(S2_BAND[band])
+src_band = [S2_BAND[band] for band in inp_band]
 src_dtim = []
 for year in data_years:
     ystr = '{}'.format(year)
@@ -177,18 +155,13 @@ for year in data_years:
             if not band in tmp_band:
                 raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
             tmp_indx.append(tmp_band.index(band))
-        if not SC_BAND in tmp_band:
-            raise ValueError('Error in finding {} >>> {}'.format(SC_BAND,fnam))
-        scl_indx = tmp_band.index(SC_BAND)
         if not cln_band in tmp_band:
             raise ValueError('Error in finding {} >>> {}'.format(cln_band,fnam))
         cln_indx = tmp_band.index(cln_band)
         src_data.append(tmp_data[tmp_indx])
-        scl_data.append(tmp_data[scl_indx])
         cln_data.append(tmp_data[cln_indx])
         src_dtim.append(d)
 src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
-scl_data = np.array(scl_data) # NTIM,NY,NX
 cln_data = np.array(cln_data)*1.0e-4 # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
@@ -230,9 +203,22 @@ src_data_selected = src_data[cnd] # NTIM,NBAND,NY,NX
 cln_data_selected = cln_data[cnd] # NTIM,NY,NX
 indx_all = np.arange(ncnd)
 
+sys.exit()
+
 # Calculate stats for clean-day pixels
-data_avg = np.full(src_shape,np.nan)
-data_std = np.full(src_shape,np.nan)
+dst_nx = src_nx
+dst_ny = src_ny
+dst_nb = len(args.param)
+dst_prj = src_prj
+dst_trans = src_trans
+dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
+dst_band = args.param
+dst_dtype = gdal.GDT_Float32
+dst_nodata = np.nan
+dst_meta = {}
+dst_meta['data_tmin'] = '{:%Y%m%d}'.format(d1)
+dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
+dst_meta['rgi_red_band'] = args.rgi_red_band
 for iy in range(src_ny):
     for ix in range(src_nx):
         src_data_tmp = src_data_selected[:,iy,ix]
@@ -263,18 +249,6 @@ for iy in range(src_ny):
         data_std[iy,ix] = np.nanstd(src_data_tmp[indx],axis=0)
 
 # Write Destination GeoTIFF
-dst_nx = src_nx
-dst_ny = src_ny
-dst_nb = len(args.param)
-dst_prj = src_prj
-dst_trans = src_trans
-dst_meta = {}
-dst_meta['data_tmin'] = '{:%Y%m%d}'.format(d1)
-dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
-dst_meta['rgi_red_band'] = args.rgi_red_band
-dst_dtype = gdal.GDT_Float32
-dst_nodata = np.nan
-dst_band = args.param
 drv = gdal.GetDriverByName('GTiff')
 ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,dst_dtype)
 ds.SetProjection(dst_prj)
