@@ -19,8 +19,7 @@ S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n
 SC_BAND = 'quality_scene_classification'
 
 # Default values
-OUT_LENG = 'nearest_leng.npy'
-OUT_INDS = 'nearest_inds.npy'
+OUT_FNAM = 'nearest_inds.npz'
 REF_BAND = ['b','g','r','n1']
 RTHR = 0.035
 N_NEAREST = 1000
@@ -29,8 +28,7 @@ N_NEAREST = 1000
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
-parser.add_argument('-o','--out_leng',default=OUT_LENG,help='Output length file name (%(default)s)')
-parser.add_argument('-O','--out_inds',default=OUT_INDS,help='Output index file name (%(default)s)')
+parser.add_argument('-O','--out_fnam',default=OUT_FNAM,help='Output index file name (%(default)s)')
 parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
@@ -164,5 +162,4 @@ for n in range(nobject):
     inds_array.append(inds_temp)
 leng_array = np.array(leng_array)
 inds_array = np.array(inds_array)
-np.save(args.out_leng,leng_array)
-np.save(args.out_inds,inds_array)
+np.savez(args.out_fnam,object_ids=object_ids,leng=leng_array,inds=inds_array)
