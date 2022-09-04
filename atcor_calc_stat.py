@@ -203,7 +203,11 @@ src_data_selected = src_data[cnd] # NTIM,NBAND,NY,NX
 cln_data_selected = cln_data[cnd] # NTIM,NY,NX
 indx_all = np.arange(ncnd)
 
-sys.exit()
+# Calculate indices
+all_nx = src_nx
+all_ny = src_nx
+all_nb = len(args.param)
+all_data = np.full((ncnd,all_nb,dst_ny,dst_nx),np.nan)
 
 # Calculate stats for clean-day pixels
 dst_nx = src_nx
@@ -221,7 +225,7 @@ dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
 dst_meta['rgi_red_band'] = args.rgi_red_band
 for iy in range(src_ny):
     for ix in range(src_nx):
-        src_data_tmp = src_data_selected[:,iy,ix]
+        all_data_tmp = all_data[:,:,iy,ix]
         cln_data_tmp = cln_data_selected[:,iy,ix]
         indx = indx_all[np.isfinite(cln_data_tmp)]
         vc = cln_data_tmp[indx].copy()
@@ -245,8 +249,7 @@ for iy in range(src_ny):
                 ncnd = cnd.sum()
                 if (ncnd != vc.size) and (ncnd > 4):
                     indx = indx[cnd]
-        data_avg[iy,ix] = np.nanmean(src_data_tmp[indx],axis=0)
-        data_std[iy,ix] = np.nanstd(src_data_tmp[indx],axis=0)
+        dst_data[:,iy,ix] = np.nanmean(all_data_tmp[indx],axis=0)
 
 # Write Destination GeoTIFF
 drv = gdal.GetDriverByName('GTiff')
