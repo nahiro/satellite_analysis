@@ -17,8 +17,8 @@ proc_atcor.pnams.append('n_ref')
 proc_atcor.pnams.append('ref_band')
 proc_atcor.pnams.append('ref_thr')
 proc_atcor.pnams.append('clean_band')
-proc_atcor.pnams.append('clean_thr')
 proc_atcor.pnams.append('clean_nmin')
+proc_atcor.pnams.append('clean_thr')
 proc_atcor.pnams.append('cloud_flag')
 proc_atcor.pnams.append('cloud_band')
 proc_atcor.pnams.append('cloud_thr')
@@ -41,8 +41,8 @@ proc_atcor.params['n_ref'] = 'Reference Number'
 proc_atcor.params['ref_band'] = 'Band for Reference Select'
 proc_atcor.params['ref_thr'] = 'Thres. for Reference Select'
 proc_atcor.params['clean_band'] = 'Band for Clean-day Select'
-proc_atcor.params['clean_thr'] = 'Thres. for Clean-day Select'
 proc_atcor.params['clean_nmin'] = 'Min Clean-day Number'
+proc_atcor.params['clean_thr'] = 'Thres. for Clean-day Select'
 proc_atcor.params['cloud_flag'] = 'Cloud Rem. by Reflectance'
 proc_atcor.params['cloud_band'] = 'Band for Cloud Removal'
 proc_atcor.params['cloud_thr'] = 'Thres. for Cloud Removal'
@@ -65,8 +65,8 @@ proc_atcor.param_types['n_ref'] = 'int'
 proc_atcor.param_types['ref_band'] = 'boolean_list'
 proc_atcor.param_types['ref_thr'] = 'float'
 proc_atcor.param_types['clean_band'] = 'string_select'
-proc_atcor.param_types['clean_thr'] = 'float_list'
 proc_atcor.param_types['clean_nmin'] = 'int'
+proc_atcor.param_types['clean_thr'] = 'float_list'
 proc_atcor.param_types['cloud_flag'] = 'boolean_list'
 proc_atcor.param_types['cloud_band'] = 'string_select'
 proc_atcor.param_types['cloud_thr'] = 'float'
@@ -99,8 +99,8 @@ proc_atcor.defaults['n_ref'] = 1000
 proc_atcor.defaults['ref_band'] = [True,True,True,False,False,False,True,False,False,False]
 proc_atcor.defaults['ref_thr'] = 0.035
 proc_atcor.defaults['clean_band'] = 'r'
-proc_atcor.defaults['clean_thr'] = [0.06,0.05,1.0]
 proc_atcor.defaults['clean_nmin'] = 4
+proc_atcor.defaults['clean_thr'] = [0.06,0.05,1.0]
 proc_atcor.defaults['cloud_flag'] = [True,True,True]
 proc_atcor.defaults['cloud_band'] = 'r'
 proc_atcor.defaults['cloud_thr'] = 0.35
@@ -152,8 +152,8 @@ proc_atcor.input_types['n_ref'] = 'box'
 proc_atcor.input_types['ref_band'] = 'boolean_list'
 proc_atcor.input_types['ref_thr'] = 'box'
 proc_atcor.input_types['clean_band'] = 'string_select'
-proc_atcor.input_types['clean_thr'] = 'float_list'
 proc_atcor.input_types['clean_nmin'] = 'box'
+proc_atcor.input_types['clean_thr'] = 'float_list'
 proc_atcor.input_types['cloud_flag'] = 'boolean_list'
 proc_atcor.input_types['cloud_band'] = 'string_select'
 proc_atcor.input_types['cloud_thr'] = 'box'
