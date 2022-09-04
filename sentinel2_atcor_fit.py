@@ -18,7 +18,6 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 BAND = '4'
-BAND_COL = 1
 RTHR = 1.0
 MTHR = 2.0
 BAND4_MAX = 0.35
@@ -26,141 +25,108 @@ INDS_FNAM = 'nearest_inds.npy'
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.set_usage('Usage: %prog input_fnam [options]')
+parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
+parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
+parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
 parser.add_argument('-b','--band',default=BAND,help='Target band (%(default)s)')
-parser.add_argument('-B','--band_fnam',default=None,help='Band file name (%(default)s)')
-parser.add_argument('--band_col',default=BAND_COL,help='Band column number (%(default)s)')
 parser.add_argument('-v','--vthr',default=None,type=float,help='Absolute threshold to remove outliers (%(default)s)')
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Relative threshold for 2-step outlier removal (%(default)s)')
 parser.add_argument('--mthr',default=MTHR,type=float,help='Multiplying factor of vthr for 2-step outlier removal (%(default)s)')
 parser.add_argument('--band4_max',default=BAND4_MAX,type=float,help='Band4 threshold (%(default)s)')
-parser.add_argument('--ax1_xmin',default=None,type=float,help='Axis1 X min (%(default)s)')
-parser.add_argument('--ax1_xmax',default=None,type=float,help='Axis1 X max (%(default)s)')
-parser.add_argument('--ax1_ymin',default=None,type=float,help='Axis1 Y min (%(default)s)')
-parser.add_argument('--ax1_ymax',default=None,type=float,help='Axis1 Y max (%(default)s)')
-parser.add_argument('--ax1_zmin',default=None,type=float,help='Axis1 Z min (%(default)s)')
-parser.add_argument('--ax1_zmax',default=None,type=float,help='Axis1 Z max (%(default)s)')
+parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',help='Axis1 X min for debug (%(default)s)')
+parser.add_argument('-X','--ax1_xmax',default=None,type=float,action='append',help='Axis1 X max for debug (%(default)s)')
+parser.add_argument('-y','--ax1_ymin',default=None,type=float,action='append',help='Axis1 Y min for debug (%(default)s)')
+parser.add_argument('-Y','--ax1_ymax',default=None,type=float,action='append',help='Axis1 Y max for debug (%(default)s)')
 parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--stat_fnam',default=None,help='Statistic file name (%(default)s)')
 parser.add_argument('--inds_fnam',default=INDS_FNAM,help='Index file name (%(default)s)')
 parser.add_argument('-F','--fig_fnam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
-parser.add_argument('-o','--output_fnam',default=None,help='Output NPZ name (%(default)s)')
+parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
 parser.add_argument('--ignore_band4',default=False,action='store_true',help='Ignore exceeding the band4 threshold (%(default)s)')
 parser.add_argument('--outlier_remove2',default=False,action='store_true',help='2-step outlier removal mode (%(default)s)')
 parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 args = parser.parse_args()
-m = re.search('^('+'\d'*8+')_',os.path.basename(input_fnam))
-if not m:
-    raise ValueError('Error in file name >>> '+input_fnam)
-dstr = m.group(1)
-
-if args.band.upper() == 'NDVI':
-    band_l = args.band.lower()
-    band_u = args.band.upper()
-    if args.vthr is None:
-        args.vthr = 0.1
-    if args.ax1_xmin is None:
-        args.ax1_xmin = -0.5
-    if args.ax1_xmax is None:
-        args.ax1_xmax = 1.0
-    if args.ax1_ymin is None:
-        args.ax1_ymin = -0.5
-    if args.ax1_ymax is None:
-        args.ax1_ymax = 1.0
-    if args.ax1_zmin is None:
-        args.ax1_zmin = 0.01
-    if args.ax1_zmax is None:
-        args.ax1_zmax = 0.05
+if args.ax1_xmin is not None:
+    while len(args.ax1_xmin) < len(args.param):
+        args.ax1_xmin.append(args.ax1_xmin[-1])
+if args.ax1_xmax is not None:
+    while len(args.ax1_xmax) < len(args.param):
+        args.ax1_xmax.append(args.ax1_xmax[-1])
+if args.ax1_ymin is None:
+    args.ax1_ymin = args.ax1_xmin
 else:
-    band_l = 'band'+args.band
-    band_u = 'Band'+args.band
-    if args.vthr is None:
-        args.vthr = 0.02
-    if args.ax1_xmin is None:
-        args.ax1_xmin = 0.0
-    if args.ax1_xmax is None:
-        args.ax1_xmax = 0.5
-    if args.ax1_ymin is None:
-        args.ax1_ymin = 0.0
-    if args.ax1_ymax is None:
-        args.ax1_ymax = 0.5
-    if args.ax1_zmin is None:
-        args.ax1_zmin = 0.01
-    if args.ax1_zmax is None:
-        args.ax1_zmax = 0.035
-if args.output_fnam is None:
-    args.output_fnam = 'atcor_param_{}_{}.npz'.format(band_l,dstr)
-if args.fig_fnam is None:
-    args.fig_fnam = 'sentinel2_atcor_{}_{}.pdf'.format(band_l,dstr)
+    while len(args.ax1_ymin) < len(args.param):
+        args.ax1_ymin.append(args.ax1_ymin[-1])
+if args.ax1_ymax is None:
+    args.ax1_ymax = args.ax1_xmax
+else:
+    while len(args.ax1_ymax) < len(args.param):
+        args.ax1_ymax.append(args.ax1_ymax[-1])
+if args.out_fnam is None or args.fig_fnam is None:
+    bnam,enam = os.path.splitext(args.src_geotiff)
+    if args.out_fnam is None:
+        args.out_fnam = '{}_atcor_fit.npz'.format(bnam)
+    if args.fig_fnam is None:
+        args.fig_fnam = '{}_atcor_fit.pdf'.format(bnam)
+
+# Read Source GeoTIFF
+ds = gdal.Open(args.src_geotiff)
+src_nx = ds.RasterXSize
+src_ny = ds.RasterYSize
+src_nb = len(band_list)
+src_shape = (src_ny,src_nx)
+src_prj = ds.GetProjection()
+src_trans = ds.GetGeoTransform()
+if src_trans[2] != 0.0 or src_trans[4] != 0.0:
+    raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
+src_meta = ds.GetMetadata()
+src_data = []
+src_band = []
+for band in band_list:
+    bnam = band_dict[band]
+    if not bnam in band_name:
+        raise ValueError('Error, {} is not in the band name list.'.format(bnam))
+    iband = band_name.index(bnam)
+    b = ds.GetRasterBand(iband+1)
+    src_data.append(b.ReadAsArray().astype(np.float64).reshape(src_ny,src_nx))
+    src_band.append(b.GetDescription())
+src_data = np.array(src_data)
+src_dtype = b.DataType
+src_nodata = b.GetNoDataValue()
+src_xmin = src_trans[0]
+src_xstp = src_trans[1]
+src_xmax = src_xmin+src_nx*src_xstp
+src_ymax = src_trans[3]
+src_ystp = src_trans[5]
+src_ymin = src_ymax+src_ny*src_ystp
+ds = None
+if src_nodata is not None and not np.isnan(src_nodata):
+    src_data[src_data == src_nodata] = np.nan
+
+# Read Mask GeoTIFF
+if args.mask_geotiff is not None:
+    ds = gdal.Open(args.mask_geotiff)
+    mask_nx = ds.RasterXSize
+    mask_ny = ds.RasterYSize
+    mask_nb = ds.RasterCount
+    if mask_nb != 1:
+        raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_geotiff))
+    mask_shape = (mask_ny,mask_nx)
+    if mask_shape != src_shape:
+        raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_geotiff))
+    mask_data = ds.ReadAsArray().reshape(mask_ny,mask_nx)
+    ds = None
+    src_data[:,mask_data < 0.5] = np.nan
 
 stat = np.load(args.stat_fnam)
 data_y_all = stat['mean'].flatten()
-data_z_all = stat['std'].flatten()
 nearest_inds = np.load(args.inds_fnam)
 nobject = len(nearest_inds)
 
-ds = gdal.Open(input_fnam)
-data = ds.ReadAsArray()
-data_shape = data[0].shape
-band_list = []
-if args.band_fnam is not None:
-    with open(args.band_fnam,'r') as fp:
-        for line in fp:
-            item = line.split()
-            if len(item) <= args.band_col or item[0][0]=='#':
-                continue
-            band_list.append(item[args.band_col])
-    if len(data) != len(band_list):
-        raise ValueError('Error, len(data)={}, len(band_list)={} >>> {}'.format(len(data),len(band_list),input_fnam))
-else:
-    for i in range(ds.RasterCount):
-        band = ds.GetRasterBand(i+1)
-        band_name = band.GetDescription()
-        if not band_name:
-            raise ValueError('Error, faild to read band name >>> {}'.format(input_fnam))
-        band_list.append(band_name)
-ds = None
-if args.band.upper() == 'NDVI':
-    band_name = 'B4'
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band4_index = band_list.index(band_name)
-    b4_img = data[band4_index].astype(np.float64).flatten()
-    band_name = 'B8'
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band8_index = band_list.index(band_name)
-    b8_img = data[band8_index].astype(np.float64).flatten()
-    data_img = (b8_img-b4_img)/(b8_img+b4_img)
-    b4_img *= 1.0e-4
-else:
-    band_name = 'B{}'.format(args.band)
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band_index = band_list.index(band_name)
-    data_img = data[band_index].astype(np.float64).flatten()*1.0e-4
-    if args.band == 4:
-        b4_img = data_img.copy()
-    else:
-        band_name = 'B4'
-        if not band_name in band_list:
-            raise ValueError('Error, faild to search index for {}'.format(band_name))
-        band4_index = band_list.index(band_name)
-        b4_img = data[band4_index].astype(np.float64).flatten()*1.0e-4
-if args.mask_fnam is not None:
-    ds = gdal.Open(args.mask_fnam)
-    mask = ds.ReadAsArray()
-    ds = None
-    mask_shape = mask.shape
-    if data_shape != mask_shape:
-        raise ValueError('Error, data_shape={}, mask_shape={}'.format(data_shape,mask_shape))
-    cnd = ~np.isnan(mask.flatten())
-    data_x_all = data_img.flatten()[cnd]
-    data_b_all = b4_img.flatten()[cnd]
-else:
-    data_x_all = data_img.flatten()
-    data_b_all = b4_img.flatten()
+data_x_all = data_img.flatten()
+data_b_all = b4_img.flatten()
 if data_x_all.shape != data_y_all.shape:
     raise ValueError('Error, data_x_all.shape={}, data_y_all.shape={}'.format(data_x_all.shape,data_y_all.shape))
 
@@ -187,7 +153,6 @@ for i in range(nobject):
     indx = nearest_inds[i]
     data_x = data_x_all[indx]
     data_y = data_y_all[indx]
-    data_z = data_z_all[indx]
     data_b = data_b_all[indx]
     if args.outlier_remove2:
         cnd1 = (~np.isnan(data_x)) & (np.abs(data_x-data_y) < (np.abs(data_y)*args.rthr).clip(min=args.vthr*args.mthr))
@@ -197,7 +162,6 @@ for i in range(nobject):
         cnd1 &= ((~np.isnan(data_b)) & (data_b < args.band4_max))
     xcnd = data_x[cnd1]
     ycnd = data_y[cnd1]
-    zcnd = data_z[cnd1]
     bcnd = data_b[cnd1]
     if xcnd.size < 2:
         result = [np.nan,np.nan]
@@ -213,7 +177,6 @@ for i in range(nobject):
         cnd2 = np.abs(calc_y-ycnd) < args.vthr
         xcnd2 = xcnd[cnd2]
         ycnd2 = ycnd[cnd2]
-        zcnd2 = zcnd[cnd2]
         bcnd2 = bcnd[cnd2]
         if (xcnd2.size == cnd2.size) or (xcnd2.size < 2):
             r_value = np.corrcoef(xcnd,ycnd)[0,1]
@@ -251,16 +214,13 @@ for i in range(nobject):
         at.patch.set_boxstyle('round')
         ax1.add_artist(at)
         if xcnd.size != cnd1.size:
-            ax1.scatter(data_x,data_y,c='k',marker='.')
+            ax1.plot(data_x,data_y,'k.')
         if flag:
-            ax1.scatter(xcnd,ycnd,c='#888888',marker='.')
-            im = ax1.scatter(xcnd2,ycnd2,c=zcnd2,marker='.',cmap=cm.jet,vmin=args.ax1_zmin,vmax=args.ax1_zmax)
+            ax1.plot(xcnd,ycnd,'.',color='#888888')
+            ax1.plot(xcnd2,ycnd2,'b.')
         else:
-            im = ax1.scatter(xcnd,ycnd,c=zcnd,marker='.',cmap=cm.jet,vmin=args.ax1_zmin,vmax=args.ax1_zmax)
+            ax1.plot(xcnd,ycnd,'b.')
         ax1.plot(xfit,np.polyval(result,xfit),'k:')
-        ax2 = plt.colorbar(im,ticks=np.arange(0.0,0.101,0.01)).ax
-        ax2.minorticks_on()
-        ax2.set_ylabel(band_u+' std')
         ax1.set_xlim(args.ax1_xmin,args.ax1_xmax)
         ax1.set_ylim(args.ax1_ymin,args.ax1_ymax)
         ax1.set_xlabel(band_u)
@@ -283,4 +243,4 @@ b4_std = np.array(b4_std)
 factor = np.array(factor)
 offset = np.array(offset)
 rmse = np.array(rmse)
-np.savez(args.output_fnam,number=number,corcoef=corcoef,b4_mean=b4_mean,b4_std=b4_std,factor=factor,offset=offset,rmse=rmse)
+np.savez(args.out_fnam,number=number,corcoef=corcoef,b4_mean=b4_mean,b4_std=b4_std,factor=factor,offset=offset,rmse=rmse)
