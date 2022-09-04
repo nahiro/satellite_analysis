@@ -76,7 +76,6 @@ if not args.rgi_red_band in S2_BAND:
     raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
 if not args.cr_band in S2_BAND:
     raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
-cr_band = S2_BAND[args.cr_band]
 inp_band = []
 for param in args.param:
     if param == 'NDVI':
@@ -103,6 +102,8 @@ for param in args.param:
 for band in args.norm_band:
     if not band in inp_band:
         inp_band.append(band)
+if not args.cr_band in inp_band:
+    inp_band.append(args.cr_band)
 inp_band = np.array(inp_band)
 indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
 inp_band = inp_band[indx]
@@ -153,7 +154,8 @@ for band in inp_band:
     iband = tmp_band.index(S2_BAND[band])
     band = ds.GetRasterBand(iband+1)
     src_data.append(band.ReadAsArray())
-src_data = np.array(src_data)
+src_data = np.array(src_data) # NBAND,NY,NX
+cr_data = src_data[src_indx[args.cr_band]].copy() # NY,NX
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 src_meta = ds.GetMetadata()
@@ -166,6 +168,26 @@ src_ymin = src_ymax+src_ny*src_ystp
 ds = None
 if src_nodata is not None and not np.isnan(src_nodata):
     src_data[src_data == src_nodata] = np.nan
+cnd = (np.isnan(cr_data)) | (cr_data > args.cthr)
+src_data[:,cnd] = np.nan
+
+# Read Statistic GeoTIFF
+ds = gdal.Open(args.stat_fnam)
+stat_nx = ds.RasterXSize
+stat_ny = ds.RasterYSize
+stat_nb = ds.RasterCount
+stat_shape = (stat_ny,stat_nx)
+if stat_shape != src_shape:
+    raise ValueError('Error, stat_shape={}, src_shape={} >>> {}'.format(stat_shape,src_shape,args.stat_fnam))
+stat_band = []
+for iband in range(stat_nb):
+    band = ds.GetRasterBand(iband+1)
+    stat_band.append(band.GetDescription())
+stat_data = ds.ReadAsArray().reshape(stat_nb,stat_ny,stat_nx)
+ds = None
+for band in args.param:
+    if not band in stat_band:
+        raise ValueError('Error in finding {} >>> {}'.format(band,args.stat_fnam))
 
 # Read Mask GeoTIFF
 if args.mask_fnam is not None:
@@ -182,10 +204,17 @@ if args.mask_fnam is not None:
     ds = None
     src_data[mask_data < 0.5] = np.nan
 
+# Read Index
+data = np.load(args.inds_fnam)
+nearest_inds = data['inds']
+object_ids = data['object_ids']
+nobject = len(object_ids)
+
 # Calculate indices
 all_nx = src_nx
 all_ny = src_ny
 all_nb = len(args.param)
+all_band = args.param
 all_data = np.full((all_nb,all_ny,all_nx),np.nan)
 norm = 0.0
 for band in args.norm_band:
@@ -230,15 +259,9 @@ for iband,param in enumerate(args.param):
     else:
         raise ValueError('Error, param={}'.format(param))
 
-
-
 """
-stat = np.load(args.stat_fnam)
-data_y_all = stat['mean'].flatten()
-nearest_inds = np.load(args.inds_fnam)
-nobject = len(nearest_inds)
-
 data_x_all = data_img.flatten()
+data_y_all = stat['mean'].flatten()
 data_b_all = b4_img.flatten()
 if data_x_all.shape != data_y_all.shape:
     raise ValueError('Error, data_x_all.shape={}, data_y_all.shape={}'.format(data_x_all.shape,data_y_all.shape))
@@ -254,8 +277,8 @@ else:
 
 number = []
 corcoef = []
-b4_mean = []
-b4_std = []
+cr_mean = []
+cr_std = []
 factor = []
 offset = []
 rmse = []
@@ -307,8 +330,8 @@ for i in range(nobject):
             flag = True
     number.append(calc_y.size)
     corcoef.append(r_value)
-    b4_mean.append(b4_value)
-    b4_std.append(b4_error)
+    cr_mean.append(b4_value)
+    cr_std.append(b4_error)
     factor.append(result[0])
     offset.append(result[1])
     rmse.append(rms_value)
@@ -351,10 +374,10 @@ if args.debug:
     pdf.close()
 number = np.array(number)
 corcoef = np.array(corcoef)
-b4_mean = np.array(b4_mean)
-b4_std = np.array(b4_std)
+cr_mean = np.array(cr_mean)
+cr_std = np.array(cr_std)
 factor = np.array(factor)
 offset = np.array(offset)
 rmse = np.array(rmse)
-np.savez(args.out_fnam,number=number,corcoef=corcoef,b4_mean=b4_mean,b4_std=b4_std,factor=factor,offset=offset,rmse=rmse)
+np.savez(args.out_fnam,number=number,corcoef=corcoef,cr_mean=cr_mean,cr_std=cr_std,factor=factor,offset=offset,rmse=rmse)
 """
