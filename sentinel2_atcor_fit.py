@@ -197,27 +197,27 @@ for iband,param in enumerate(args.param):
         red = src_data[src_indx['r']]
         nir = src_data[src_indx['n1']]
         pnams.append(param)
-        all_data[:,iband] = ((nir-red)/(nir+red))
+        all_data[iband] = ((nir-red)/(nir+red))
     elif param == 'GNDVI':
         green = src_data[src_indx['g']]
         nir = src_data[src_indx['n1']]
         pnams.append(param)
-        all_data[:,iband] = ((nir-green)/(nir+green))
+        all_data[iband] = ((nir-green)/(nir+green))
     elif param == 'RGI':
         green = src_data[src_indx['g']]
         red = src_data[src_indx[args.rgi_red_band]]
         pnams.append(param)
-        all_data[:,iband] = (green*red)
+        all_data[iband] = (green*red)
     elif param == 'NRGI':
         green = src_data[src_indx['g']]
         red = src_data[src_indx[args.rgi_red_band]]
         pnams.append(param)
-        all_data[:,iband] = (green*norm*red*norm)
+        all_data[iband] = (green*norm*red*norm)
     elif param[0] == 'S':
         if len(param) in [2,3]:
             band = param[1:]
             pnams.append('{}'.format(BAND_NAME[band]))
-            all_data[:,iband] = src_data[src_indx[band]]
+            all_data[iband] = src_data[src_indx[band]]
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
     elif param[0] == 'N':
