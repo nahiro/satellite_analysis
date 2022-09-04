@@ -164,19 +164,70 @@ if src_nodata is not None and not np.isnan(src_nodata):
     src_data[src_data == src_nodata] = np.nan
 
 # Read Mask GeoTIFF
-if args.mask_geotiff is not None:
-    ds = gdal.Open(args.mask_geotiff)
+if args.mask_fnam is not None:
+    ds = gdal.Open(args.mask_fnam)
     mask_nx = ds.RasterXSize
     mask_ny = ds.RasterYSize
     mask_nb = ds.RasterCount
     if mask_nb != 1:
-        raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_geotiff))
+        raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_fnam))
     mask_shape = (mask_ny,mask_nx)
     if mask_shape != src_shape:
-        raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_geotiff))
+        raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_fnam))
     mask_data = ds.ReadAsArray().reshape(mask_ny,mask_nx)
     ds = None
-    src_data[:,mask_data < 0.5] = np.nan
+    src_data[mask_data < 0.5] = np.nan
+
+# Calculate indices
+all_nx = src_nx
+all_ny = src_ny
+all_nb = len(args.param)
+all_data = np.full((all_nb,all_ny,all_nx),np.nan)
+norm = 0.0
+for band in args.norm_band:
+    norm += src_data[src_indx[band]]
+norm = len(args.norm_band)/norm
+pnams = []
+for iband,param in enumerate(args.param):
+    if param == 'NDVI':
+        red = src_data[src_indx['r']]
+        nir = src_data[src_indx['n1']]
+        pnams.append(param)
+        all_data[:,iband] = ((nir-red)/(nir+red))
+    elif param == 'GNDVI':
+        green = src_data[src_indx['g']]
+        nir = src_data[src_indx['n1']]
+        pnams.append(param)
+        all_data[:,iband] = ((nir-green)/(nir+green))
+    elif param == 'RGI':
+        green = src_data[src_indx['g']]
+        red = src_data[src_indx[args.rgi_red_band]]
+        pnams.append(param)
+        all_data[:,iband] = (green*red)
+    elif param == 'NRGI':
+        green = src_data[src_indx['g']]
+        red = src_data[src_indx[args.rgi_red_band]]
+        pnams.append(param)
+        all_data[:,iband] = (green*norm*red*norm)
+    elif param[0] == 'S':
+        if len(param) in [2,3]:
+            band = param[1:]
+            pnams.append('{}'.format(BAND_NAME[band]))
+            all_data[:,iband] = src_data[src_indx[band]]
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    elif param[0] == 'N':
+        if len(param) in [2,3]:
+            band = param[1:]
+            pnams.append('Normalized {}'.format(BAND_NAME[band]))
+            all_data[iband] = src_data[src_indx[band]]*norm
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    else:
+        raise ValueError('Error, param={}'.format(param))
+
+
+
 
 stat = np.load(args.stat_fnam)
 data_y_all = stat['mean'].flatten()
