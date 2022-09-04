@@ -113,6 +113,9 @@ src_trans = None
 src_data = []
 cln_data = [] # Clean-day Selection Data
 src_band = [S2_BAND[band] for band in inp_band]
+src_indx = {}
+for band in inp_band:
+    src_indx[band] = src_band.index(S2_BAND[band])
 src_dtim = []
 for year in data_years:
     ystr = '{}'.format(year)
@@ -206,9 +209,51 @@ indx_all = np.arange(ncnd)
 
 # Calculate indices
 all_nx = src_nx
-all_ny = src_nx
+all_ny = src_ny
 all_nb = len(args.param)
 all_data = np.full((ncnd,all_nb,dst_ny,dst_nx),np.nan)
+norm = 0.0
+for band in args.norm_band:
+    norm += src_data_selected[:,src_indx[band]]
+norm = len(args.norm_band)/norm
+pnams = []
+for iband,param in enumerate(args.param):
+    if param == 'NDVI':
+        red = src_data_selected[:,src_indx['r']]
+        nir = src_data_selected[:,src_indx['n1']]
+        pnams.append(param)
+        all_data[:,iband] = ((nir-red)/(nir+red))
+    elif param == 'GNDVI':
+        green = src_data_selected[:,src_indx['g']]
+        nir = src_data_selected[:,src_indx['n1']]
+        pnams.append(param)
+        all_data[:,iband] = ((nir-green)/(nir+green))
+    elif param == 'RGI':
+        green = src_data_selected[:,src_indx['g']]
+        red = src_data_selected[:,src_indx[args.rgi_red_band]]
+        pnams.append(param)
+        all_data[:,iband] = (green*red)
+    elif param == 'NRGI':
+        green = src_data_selected[:,src_indx['g']]
+        red = src_data_selected[:,src_indx[args.rgi_red_band]]
+        pnams.append(param)
+        all_data[:,iband] = (green*norm*red*norm)
+    elif param[0] == 'S':
+        if len(param) in [2,3]:
+            band = param[1:]
+            pnams.append('{}'.format(BAND_NAME[band]))
+            all_data[:,iband] = src_data_selected[:,src_indx[band]]
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    elif param[0] == 'N':
+        if len(param) in [2,3]:
+            band = param[1:]
+            pnams.append('Normalized {}'.format(BAND_NAME[band]))
+            all_data[:,iband] = src_data_selected[:,src_indx[band]*norm]
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    else:
+        raise ValueError('Error, param={}'.format(param))
 
 # Calculate stats for clean-day pixels
 dst_nx = src_nx
