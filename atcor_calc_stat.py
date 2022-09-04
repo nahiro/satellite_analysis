@@ -169,9 +169,6 @@ src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 cln_data = np.array(cln_data)*1.0e-4 # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
-src_indy,src_indx = np.indices(src_shape)
-src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
-src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
 
 # Read Mask GeoTIFF
 ds = gdal.Open(args.mask_fnam)
