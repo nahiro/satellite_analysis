@@ -10,8 +10,12 @@ except Exception:
 import shapefile
 from shapely.geometry import shape
 from datetime import datetime
-from matplotlib.dates import date2num
 import numpy as np
+from matplotlib.dates import date2num
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
@@ -47,11 +51,13 @@ parser.add_argument('--cthr_avg',default=CTHR_AVG,type=float,help='Threshold of 
 parser.add_argument('--cthr_std',default=CTHR_STD,type=float,help='Threshold of std for clean-day select (%(default)s)')
 parser.add_argument('--cthr_dif',default=CTHR_DIF,type=float,help='Threshold of deviation in sigma for clean-day select (%(default)s)')
 parser.add_argument('-n','--cln_nmin',default=CLN_NMIN,type=int,help='Minimum clean-day number (%(default)s)')
-#parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
-#parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
-#parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
-#parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
-#parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
+parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
+parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
+parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
+parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
+parser.add_argument('-D','--fig_dpi',default=None,type=int,help='DPI of figure for debug (%(default)s)')
+parser.add_argument('--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -99,6 +105,15 @@ for band in args.norm_band:
 inp_band = np.array(inp_band)
 indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
 inp_band = inp_band[indx]
+if args.ax1_zmin is not None:
+    while len(args.ax1_zmin) < len(args.param):
+        args.ax1_zmin.append(args.ax1_zmin[-1])
+if args.ax1_zmax is not None:
+    while len(args.ax1_zmax) < len(args.param):
+        args.ax1_zmax.append(args.ax1_zmax[-1])
+if args.ax1_zstp is not None:
+    while len(args.ax1_zstp) < len(args.param):
+        args.ax1_zstp.append(args.ax1_zstp[-1])
 d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
 d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 data_years = np.arange(d1.year,d2.year+1,1)
@@ -172,6 +187,12 @@ src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 cln_data = np.array(cln_data)*1.0e-4 # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
+src_xmin = src_trans[0]
+src_xstp = src_trans[1]
+src_xmax = src_xmin+src_nx*src_xstp
+src_ymax = src_trans[3]
+src_ystp = src_trans[5]
+src_ymin = src_ymax+src_ny*src_ystp
 
 # Read Mask GeoTIFF
 ds = gdal.Open(args.mask_fnam)
@@ -203,6 +224,8 @@ cln_avg = np.nanmean(cnd_data,axis=1)
 cln_std = np.nanstd(cnd_data,axis=1)
 cnd = (cln_avg < args.cthr_avg) & (cln_std < args.cthr_std)
 ncnd = cnd.sum()
+if ncnd < args.cln_nmin:
+    raise ValueError('Error, not enough clean-day found >>> {}'.format(ncnd))
 src_data_selected = src_data[cnd] # NTIM,NBAND,NY,NX
 cln_data_selected = cln_data[cnd] # NTIM,NY,NX
 indx_all = np.arange(ncnd)
@@ -211,7 +234,7 @@ indx_all = np.arange(ncnd)
 all_nx = src_nx
 all_ny = src_ny
 all_nb = len(args.param)
-all_data = np.full((ncnd,all_nb,dst_ny,dst_nx),np.nan)
+all_data = np.full((ncnd,all_nb,all_ny,all_nx),np.nan)
 norm = 0.0
 for band in args.norm_band:
     norm += src_data_selected[:,src_indx[band]]
@@ -249,7 +272,7 @@ for iband,param in enumerate(args.param):
         if len(param) in [2,3]:
             band = param[1:]
             pnams.append('Normalized {}'.format(BAND_NAME[band]))
-            all_data[:,iband] = src_data_selected[:,src_indx[band]*norm]
+            all_data[:,iband] = src_data_selected[:,src_indx[band]]*norm
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
     else:
@@ -310,3 +333,79 @@ for iband in range(dst_nb):
 band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
 ds.FlushCache()
 ds = None # close dataset
+
+# For debug
+if args.debug:
+    if not args.batch:
+        plt.interactive(True)
+    fig = plt.figure(1,facecolor='w',figsize=(5,5))
+    plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.85)
+    pdf = PdfPages(args.fignam)
+    for i,param in enumerate(args.param):
+        fig.clear()
+        ax1 = plt.subplot(111)
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        if args.fig_dpi is None:
+            if args.ax1_zmin is not None and args.ax1_zmax is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],vmax=args.ax1_zmax[i],cmap=cm.jet,interpolation='none')
+            elif args.ax1_zmin is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],cmap=cm.jet,interpolation='none')
+            elif args.ax1_zmax is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=args.ax1_zmax[i],cmap=cm.jet,interpolation='none')
+            else:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet,interpolation='none')
+        else:
+            if args.ax1_zmin is not None and args.ax1_zmax is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],vmax=args.ax1_zmax[i],cmap=cm.jet)
+            elif args.ax1_zmin is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],cmap=cm.jet)
+            elif args.ax1_zmax is not None:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=args.ax1_zmax[i],cmap=cm.jet)
+            else:
+                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet)
+        divider = make_axes_locatable(ax1)
+        cax = divider.append_axes('right',size='5%',pad=0.05)
+        if args.ax1_zstp is not None:
+            if args.ax1_zmin is not None:
+                zmin = (np.floor(args.ax1_zmin[i]/args.ax1_zstp[i])-1.0)*args.ax1_zstp[i]
+            else:
+                zmin = (np.floor(np.nanmin(dst_data[i])/args.ax1_zstp[i])-1.0)*args.ax1_zstp[i]
+            if args.ax1_zmax is not None:
+                zmax = args.ax1_zmax[i]+0.1*args.ax1_zstp[i]
+            else:
+                zmax = np.nanmax(dst_data[i])+0.1*args.ax1_zstp[i]
+            ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,args.ax1_zstp[i])).ax
+        else:
+            ax2 = plt.colorbar(im,cax=cax).ax
+        ax2.minorticks_on()
+        ax2.set_ylabel(pnams[i])
+        ax2.yaxis.set_label_coords(3.5,0.5)
+        if args.remove_nan:
+            src_indy,src_indx = np.indices(src_shape)
+            src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
+            src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
+            cnd = ~np.isnan(dst_data[i])
+            xp = src_xp[cnd]
+            yp = src_yp[cnd]
+            fig_xmin = xp.min()
+            fig_xmax = xp.max()
+            fig_ymin = yp.min()
+            fig_ymax = yp.max()
+        else:
+            fig_xmin = src_xmin
+            fig_xmax = src_xmax
+            fig_ymin = src_ymin
+            fig_ymax = src_ymax
+        ax1.set_xlim(fig_xmin,fig_xmax)
+        ax1.set_ylim(fig_ymin,fig_ymax)
+        if args.ax1_title is not None:
+            ax1.set_title('{}'.format(args.ax1_title))
+        if args.fig_dpi is None:
+            plt.savefig(pdf,format='pdf')
+        else:
+            plt.savefig(pdf,dpi=args.fig_dpi,format='pdf')
+        if not args.batch:
+            plt.draw()
+            plt.pause(0.1)
+    pdf.close()
