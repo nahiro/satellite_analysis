@@ -16,11 +16,25 @@ from matplotlib.offsetbox import AnchoredText
 from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
+# Constants
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
+S2_PARAM = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
+S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
+BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
+
 # Default values
-BAND = '4'
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
+NORM_BAND = ['b','g','r','e1','e2','e3','n1']
+RGI_RED_BAND = 'e1'
+CR_BAND = 'r'
+VTHR = {'b':0.02,'g':0.02,'r':0.02,'e1':0.02,'e2':0.02,'e3':0.02,'n1':0.02,'n2':0.02,'s1':0.02,'s2':0.02,
+'Nb':0.02,'Ng':0.02,'Nr':0.02,'Ne1':0.02,'Ne2':0.02,'Ne3':0.02,'Nn1':0.02,'Nn2':0.02,'Ns1':0.02,'Ns2':0.02,
+'NDVI':0.1,'GNDVI':0.1,'RGI':0.1,'NRGI':0.1}
 RTHR = 1.0
 MTHR = 2.0
-BAND4_MAX = 0.35
+CTHR = 0.35
 INDS_FNAM = 'nearest_inds.npy'
 
 # Read options
@@ -29,11 +43,11 @@ parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name 
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
 parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
-parser.add_argument('-b','--band',default=BAND,help='Target band (%(default)s)')
-parser.add_argument('-v','--vthr',default=None,type=float,help='Absolute threshold to remove outliers (%(default)s)')
+parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
+parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
+parser.add_argument('-v','--vthr',default=None,type=float,help='Absolute threshold to remove outliers ({})'.format(VTHR))
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Relative threshold for 2-step outlier removal (%(default)s)')
 parser.add_argument('--mthr',default=MTHR,type=float,help='Multiplying factor of vthr for 2-step outlier removal (%(default)s)')
-parser.add_argument('--band4_max',default=BAND4_MAX,type=float,help='Band4 threshold (%(default)s)')
 parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',help='Axis1 X min for debug (%(default)s)')
 parser.add_argument('-X','--ax1_xmax',default=None,type=float,action='append',help='Axis1 X max for debug (%(default)s)')
 parser.add_argument('-y','--ax1_ymin',default=None,type=float,action='append',help='Axis1 Y min for debug (%(default)s)')
@@ -48,6 +62,50 @@ parser.add_argument('--ignore_band4',default=False,action='store_true',help='Ign
 parser.add_argument('--outlier_remove2',default=False,action='store_true',help='2-step outlier removal mode (%(default)s)')
 parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 args = parser.parse_args()
+if args.param is None:
+    args.param = PARAM
+for param in args.param:
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter >>> {}'.format(param))
+if args.norm_band is None:
+    args.norm_band = NORM_BAND
+for band in args.norm_band:
+    if not band in S2_BAND:
+        raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
+if not args.rgi_red_band in S2_BAND:
+    raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
+if not args.cr_band in S2_BAND:
+    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
+cr_band = S2_BAND[args.cr_band]
+inp_band = []
+for param in args.param:
+    if param == 'NDVI':
+        for band in ['r','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param == 'GNDVI':
+        for band in ['g','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param in ['RGI','NRGI']:
+        for band in ['g',args.rgi_red_band]:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param[0] in ['S','N']:
+        if len(param) in [2,3]:
+            band = param[1:]
+            if not band in inp_band:
+                inp_band.append(band)
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    else:
+        raise ValueError('Error, param={}'.format(param))
+for band in args.norm_band:
+    if not band in inp_band:
+        inp_band.append(band)
+inp_band = np.array(inp_band)
+indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
+inp_band = inp_band[indx]
 if args.ax1_xmin is not None:
     while len(args.ax1_xmin) < len(args.param):
         args.ax1_xmin.append(args.ax1_xmin[-1])
