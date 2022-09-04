@@ -29,6 +29,8 @@ RGI_RED_BAND = 'e1'
 CLN_BAND = 'r'
 CTHR_AVG = 0.06
 CTHR_STD = 0.05
+CTHR_DIF = 1.0
+CLN_NMIN = 4
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -43,6 +45,8 @@ parser.add_argument('--data_tmin',default=None,help='Min date of input data in t
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--cthr_avg',default=CTHR_AVG,type=float,help='Threshold of mean for clean-day select (%(default)s)')
 parser.add_argument('--cthr_std',default=CTHR_STD,type=float,help='Threshold of std for clean-day select (%(default)s)')
+parser.add_argument('--cthr_dif',default=CTHR_DIF,type=float,help='Threshold of deviation in sigma for clean-day select (%(default)s)')
+parser.add_argument('-n','--cln_nmin',default=CLN_NMIN,type=int,help='Minimum clean-day number (%(default)s)')
 #parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 #parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 #parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
@@ -231,23 +235,23 @@ for iy in range(src_ny):
         vc = cln_data_tmp[indx].copy()
         vm = vc.mean()
         ve = vc.std()
-        cnd = (vc < vm+ve)
+        cnd = (vc < vm+ve*args.cthr_dif)
         ncnd = cnd.sum()
-        if (ncnd != vc.size) and (ncnd > 4):
+        if (ncnd != vc.size) and (ncnd >= args.cln_nmin):
             indx = indx[cnd]
             vc = cln_data_tmp[indx].copy()
             vm = vc.mean()
             ve = vc.std()
-            cnd = (vc < vm+ve)
+            cnd = (vc < vm+ve*args.cthr_dif)
             ncnd = cnd.sum()
-            if (ncnd != vc.size) and (ncnd > 4):
+            if (ncnd != vc.size) and (ncnd >= args.cln_nmin):
                 indx = indx[cnd]
                 vc = cln_data_tmp[indx].copy()
                 vm = vc.mean()
                 ve = vc.std()
-                cnd = (vc < vm+ve)
+                cnd = (vc < vm+ve*args.cthr_dif)
                 ncnd = cnd.sum()
-                if (ncnd != vc.size) and (ncnd > 4):
+                if (ncnd != vc.size) and (ncnd >= args.cln_nmin):
                     indx = indx[cnd]
         dst_data[:,iy,ix] = np.nanmean(all_data_tmp[indx],axis=0)
 
