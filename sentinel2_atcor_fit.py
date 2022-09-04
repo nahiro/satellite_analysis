@@ -36,6 +36,7 @@ RTHR = 1.0
 MTHR = 2.0
 CTHR = 0.35
 INDS_FNAM = 'nearest_inds.npy'
+NFIG = 1000
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -46,7 +47,7 @@ parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength 
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
 parser.add_argument('-v','--vthr',default=None,type=float,help='Absolute threshold to remove outliers ({})'.format(VTHR))
-parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Relative threshold for 2-step outlier removal (%(default)s)')
+parser.add_argument('-R','--rthr',default=RTHR,type=float,help='Relative threshold for 2-step outlier removal (%(default)s)')
 parser.add_argument('--mthr',default=MTHR,type=float,help='Multiplying factor of vthr for 2-step outlier removal (%(default)s)')
 parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',help='Axis1 X min for debug (%(default)s)')
 parser.add_argument('-X','--ax1_xmax',default=None,type=float,action='append',help='Axis1 X max for debug (%(default)s)')
@@ -58,7 +59,6 @@ parser.add_argument('--inds_fnam',default=INDS_FNAM,help='Index file name (%(def
 parser.add_argument('-F','--fig_fnam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
 parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
-parser.add_argument('--ignore_band4',default=False,action='store_true',help='Ignore exceeding the band4 threshold (%(default)s)')
 parser.add_argument('--outlier_remove2',default=False,action='store_true',help='2-step outlier removal mode (%(default)s)')
 parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 args = parser.parse_args()
@@ -133,26 +133,30 @@ if args.out_fnam is None or args.fig_fnam is None:
 ds = gdal.Open(args.src_geotiff)
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
-src_nb = len(band_list)
+src_nb = len(inp_band)
 src_shape = (src_ny,src_nx)
 src_prj = ds.GetProjection()
 src_trans = ds.GetGeoTransform()
 if src_trans[2] != 0.0 or src_trans[4] != 0.0:
     raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
-src_meta = ds.GetMetadata()
+src_band = [S2_BAND[band] for band in inp_band]
+src_indx = {}
+for band in inp_band:
+    src_indx[band] = src_band.index(S2_BAND[band])
+tmp_nb = ds.RasterCount
+tmp_band = []
+for iband in range(tmp_nb):
+    band = ds.GetRasterBand(iband+1)
+    tmp_band.append(band.GetDescription())
 src_data = []
-src_band = []
-for band in band_list:
-    bnam = band_dict[band]
-    if not bnam in band_name:
-        raise ValueError('Error, {} is not in the band name list.'.format(bnam))
-    iband = band_name.index(bnam)
-    b = ds.GetRasterBand(iband+1)
-    src_data.append(b.ReadAsArray().astype(np.float64).reshape(src_ny,src_nx))
-    src_band.append(b.GetDescription())
+for band in inp_band:
+    iband = tmp_band.index(S2_BAND[band])
+    band = ds.GetRasterBand(iband+1)
+    src_data.append(band.ReadAsArray())
 src_data = np.array(src_data)
-src_dtype = b.DataType
-src_nodata = b.GetNoDataValue()
+src_dtype = band.DataType
+src_nodata = band.GetNoDataValue()
+src_meta = ds.GetMetadata()
 src_xmin = src_trans[0]
 src_xstp = src_trans[1]
 src_xmax = src_xmin+src_nx*src_xstp
@@ -228,7 +232,7 @@ for iband,param in enumerate(args.param):
 
 
 
-
+"""
 stat = np.load(args.stat_fnam)
 data_y_all = stat['mean'].flatten()
 nearest_inds = np.load(args.inds_fnam)
@@ -353,3 +357,4 @@ factor = np.array(factor)
 offset = np.array(offset)
 rmse = np.array(rmse)
 np.savez(args.out_fnam,number=number,corcoef=corcoef,b4_mean=b4_mean,b4_std=b4_std,factor=factor,offset=offset,rmse=rmse)
+"""
