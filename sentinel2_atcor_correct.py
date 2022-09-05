@@ -28,8 +28,9 @@ R_MIN = 0.3
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-i','--parcel_fnam',default=None,help='Parcel file name (%(default)s)')
+parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-P','--parcel_fnam',default=None,help='Parcel file name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
@@ -62,21 +63,165 @@ cflag_ref = data['cflag_ref']
 cloud_band = str(data['cloud_band'])
 cloud_thr = float(data['cloud_thr'])
 
-cal_band = []
+cal_param = []
 for param in args.param:
     if not param in org_band:
-        cal_band.append(param)
+        cal_param.append(param)
     else:
         iband = org_band.index(param)
         if cflag_sc[iband]: # cloud removal by SC is applied
-            cal_band.append(param)
+            cal_param.append(param)
         elif not cflag_ref[iband]: # cloud removal by reflectance is not appplied
-            cal_band.append(param)
+            cal_param.append(param)
         elif cloud_band != args.cr_band:
-            cal_band.append(param)
+            cal_param.append(param)
         elif not np.allclose(cloud_thr,args.cthr):
-            cal_band.append(param)
-if len(cal_band) > 0: # Parcellate data
+            cal_param.append(param)
+if len(cal_param) > 0: # Parcellate data
+    # Read Source GeoTIFF
+    ds = gdal.Open(args.src_geotiff)
+    src_nx = ds.RasterXSize
+    src_ny = ds.RasterYSize
+    src_nb = len(cal_param)
+    ngrd = src_nx*src_ny
+    src_shape = (src_ny,src_nx)
+    src_prj = ds.GetProjection()
+    src_trans = ds.GetGeoTransform()
+    if src_trans[2] != 0.0 or src_trans[4] != 0.0:
+        raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
+    src_meta = ds.GetMetadata()
+    src_band = cal_param
+    tmp_nb = ds.RasterCount
+    tmp_band = []
+    for iband in range(tmp_nb):
+        band = ds.GetRasterBand(iband+1)
+        tmp_band.append(band.GetDescription())
+    src_data = []
+    for param in cal_param:
+        if not param in tmp_band:
+            raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
+        iband = tmp_band.index(param)
+        band = ds.GetRasterBand(iband+1)
+        src_data.append(band.ReadAsArray().astype(np.float64).reshape(ngrd))
+    src_data = np.array(src_data)
+    src_dtype = band.DataType
+    src_nodata = band.GetNoDataValue()
+    src_xmin = src_trans[0]
+    src_xstp = src_trans[1]
+    src_xmax = src_xmin+src_nx*src_xstp
+    src_ymax = src_trans[3]
+    src_ystp = src_trans[5]
+    src_ymin = src_ymax+src_ny*src_ystp
+    ds = None
+    if src_nodata is not None and not np.isnan(src_nodata):
+        src_data[src_data == src_nodata] = np.nan
+
+    # Read Resample GeoTIFF
+    ds = gdal.Open(args.res_geotiff)
+    res_nx = ds.RasterXSize
+    res_ny = ds.RasterYSize
+    res_nb = ds.RasterCount
+    res_shape = (res_ny,res_nx)
+    if res_shape != src_shape:
+        raise ValueError('Error, res_shape={}, src_shape={} >>> {}'.format(res_shape,src_shape,args.res_geotiff))
+    res_data = ds.ReadAsArray().reshape(res_nb,ngrd)
+    res_band = []
+    for iband in range(res_nb):
+        band = ds.GetRasterBand(iband+1)
+        res_band.append(band.GetDescription())
+    res_nodata = band.GetNoDataValue()
+    ds = None
+    if True in cflag_sc.values():
+        if not 'quality_scene_classification' in res_band:
+            raise ValueError('Error in finding SC band in {}'.format(args.res_geotiff))
+        iband = res_band.index('quality_scene_classification')
+        scl = res_data[iband]
+        mask_sc = ((scl < 1.9) | ((scl > 2.1) & (scl < 3.9)) | (scl > 7.1))
+    else:
+        mask_sc = None
+    if True in cflag_ref.values():
+        band = S2_BAND[args.cloud_band]
+        if not band in res_band:
+            raise ValueError('Error in finding {} band in {}'.format(band,args.res_geotiff))
+        iband = res_band.index(band)
+        v = res_data[iband]*1.0e-4
+        mask_ref = (v > args.cloud_thr)
+    else:
+        mask_ref = None
+
+    # Read Mask GeoTIFF
+    ds = gdal.Open(args.mask_geotiff)
+    mask_nx = ds.RasterXSize
+    mask_ny = ds.RasterYSize
+    mask_nb = ds.RasterCount
+    if mask_nb != 1:
+        raise ValueError('Error, mask_nb={} >>> {}'.format(mask_nb,args.mask_geotiff))
+    mask_shape = (mask_ny,mask_nx)
+    if mask_shape != src_shape:
+        raise ValueError('Error, mask_shape={}, src_shape={} >>> {}'.format(mask_shape,src_shape,args.mask_geotiff))
+    mask_data = ds.ReadAsArray().reshape(ngrd)
+    band = ds.GetRasterBand(1)
+    mask_dtype = band.DataType
+    mask_nodata = band.GetNoDataValue()
+    if mask_dtype in [gdal.GDT_Int16,gdal.GDT_Int32]:
+        if mask_nodata < 0.0:
+            mask_nodata = -int(abs(mask_nodata)+0.5)
+        else:
+            mask_nodata = int(mask_nodata+0.5)
+    elif mask_dtype in [gdal.GDT_UInt16,gdal.GDT_UInt32]:
+        mask_nodata = int(mask_nodata+0.5)
+    ds = None
+
+    # Get OBJECTID
+    object_ids = np.unique(mask_data[mask_data != mask_nodata])
+    ndat = object_ids.size
+    object_inds = []
+    indp = np.arange(ngrd)
+    for object_id in object_ids:
+        cnd = (mask_data == object_id)
+        object_inds.append(indp[cnd])
+    object_inds = np.array(object_inds,dtype='object')
+    out_data = np.full((ndat,src_nb),np.nan)
+
+    # Read Shapefile
+    r = shapefile.Reader(args.shp_fnam)
+    nobject = len(r)
+
+    # Calculate mean indices
+    for iband,param in enumerate(cal_param):
+        data = src_data[iband]
+        if cflag_sc[param]:
+            data[mask_sc] = np.nan
+        if cflag_ref[param]:
+            data[mask_ref] = np.nan
+        out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
+
+    if args.use_index:
+        all_ids = np.arange(nobject)+1
+        if np.array_equal(object_ids,all_ids):
+            all_data = out_data
+        else:
+            if (object_ids[0] < 1) or (object_ids[-1] > nobject):
+                raise ValueError('Error, object_ids[0]={}, object_ids[-1]={}, nobject={} >>> {}'.format(object_ids[0],object_ids[-1],nobject,args.mask_geotiff))
+            indx = object_ids-1
+            all_data = np.full((nobject,src_nb),np.nan)
+            all_data[indx] = out_data
+    else:
+        all_ids = []
+        for rec in r.iterRecords():
+            all_ids.append(rec.OBJECTID)
+        if np.array_equal(object_ids,np.array(all_ids)):
+            all_data = out_data
+        else:
+            try:
+                indx = np.array([all_ids.index(object_id) for object_id in object_ids])
+            except Exception:
+                raise ValueError('Error in finding OBJECTID in {}'.format(args.shp_fnam))
+            all_data = np.full((nobject,src_nb),np.nan)
+            all_data[indx] = out_data
+
+
+
 
 """
 # Read atcor paramater
