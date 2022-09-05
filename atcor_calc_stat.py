@@ -28,8 +28,6 @@ BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
-NORM_BAND = ['b','g','r','e1','e2','e3','n1']
-RGI_RED_BAND = 'e1'
 CLN_BAND = 'r'
 CTHR_AVG = 0.06
 CTHR_STD = 0.05
@@ -41,8 +39,6 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-O','--dst_geotiff',default=None,help='Destination GeoTIFF name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
-parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
-parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
 parser.add_argument('-C','--cln_band',default=CLN_BAND,help='Wavelength band for clean-day select (%(default)s)')
 parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
@@ -66,14 +62,7 @@ if args.param is None:
 for param in args.param:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter >>> {}'.format(param))
-if args.norm_band is None:
-    args.norm_band = NORM_BAND
-for band in args.norm_band:
-    if not band in S2_BAND:
-        raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
-if not args.rgi_red_band in S2_BAND:
-    raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
-if not args.cln_band in S2_BAND:
+if not args.cln_band in S2_PARAM:
     raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cln_band))
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
@@ -211,7 +200,6 @@ dst_nodata = np.nan
 dst_meta = {}
 dst_meta['data_tmin'] = '{:%Y%m%d}'.format(d1)
 dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
-dst_meta['rgi_red_band'] = args.rgi_red_band
 for iy in range(src_ny):
     for ix in range(src_nx):
         all_data_tmp = all_data[:,:,iy,ix]

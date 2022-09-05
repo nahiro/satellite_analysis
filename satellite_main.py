@@ -59,7 +59,7 @@ def set_title(pnam):
     proc_pnam = 'mask_fnam'
     proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'paddy_mask.tif')
     proc_pnam = 'stat_fnam'
-    proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'indices_stat.npz')
+    proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'atcor_stat.tif')
     proc_pnam = 'inds_fnam'
     proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'nearest_inds.npy')
     proc_pnam = 'stat_period'
