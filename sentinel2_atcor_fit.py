@@ -30,9 +30,10 @@ PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
 NORM_BAND = ['b','g','r','e1','e2','e3','n1']
 RGI_RED_BAND = 'e1'
 CR_BAND = 'r'
-VTHR = {'b':0.02,'g':0.02,'r':0.02,'e1':0.02,'e2':0.02,'e3':0.02,'n1':0.02,'n2':0.02,'s1':0.02,'s2':0.02,
-'Nb':0.02,'Ng':0.02,'Nr':0.02,'Ne1':0.02,'Ne2':0.02,'Ne3':0.02,'Nn1':0.02,'Nn2':0.02,'Ns1':0.02,'Ns2':0.02,
-'NDVI':0.1,'GNDVI':0.1,'RGI':0.1,'NRGI':0.1}
+VTHR = [
+'Sb:0.02','Sg:0.02','Sr:0.02','Se1:0.02','Se2:0.02','Se3:0.02','Sn1:0.02','Sn2:0.02','Ss1:0.02','Ss2:0.02',
+'Nb:0.02','Ng:0.02','Nr:0.02','Ne1:0.02','Ne2:0.02','Ne3:0.02','Nn1:0.02','Nn2:0.02','Ns1:0.02','Ns2:0.02',
+'NDVI:0.1','GNDVI:0.1','RGI:0.1','NRGI:0.1']
 RTHR = 1.0
 MTHR = 2.0
 CTHR = 0.35
@@ -109,6 +110,19 @@ if not args.cr_band in inp_band:
 inp_band = np.array(inp_band)
 indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
 inp_band = inp_band[indx]
+if args.vthr is None:
+    args.vthr = VTHR
+vthr = {}
+for s in args.vthr:
+    m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+    if not m:
+        raise ValueError('Error, invalid threshold to remove outliers >>> {}'.format(s))
+    param = m.group(1)
+    value = float(m.group(2))
+    if not param in PARAMS:
+        raise ValueError('Error, unknown objective variable for vthr ({}) >>> {}'.format(param,s))
+    if not np.isnan(value):
+        vthr[param] = value
 if args.ax1_xmin is not None:
     while len(args.ax1_xmin) < len(args.param):
         args.ax1_xmin.append(args.ax1_xmin[-1])
@@ -156,7 +170,7 @@ for band in inp_band:
     iband = tmp_band.index(S2_BAND[band])
     band = ds.GetRasterBand(iband+1)
     src_data.append(band.ReadAsArray())
-src_data = np.array(src_data) # NBAND,NY,NX
+src_data = np.array(src_data)*1.0e-4 # NBAND,NY,NX
 cr_data = src_data[src_indx[args.cr_band]].copy() # NY,NX
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
@@ -301,7 +315,7 @@ for iband,param in enumerate(args.param):
         data_y = data_y_all[indx]
         data_b = data_b_all[indx]
         if args.outlier_remove2:
-            cnd1 = (~np.isnan(data_x)) & (np.abs(data_x-data_y) < (np.abs(data_y)*args.rthr).clip(min=args.vthr*args.mthr))
+            cnd1 = (~np.isnan(data_x)) & (np.abs(data_x-data_y) < (np.abs(data_y)*args.rthr).clip(min=vthr[param]*args.mthr))
         else:
             cnd1 = ~np.isnan(data_x)
         xcnd = data_x[cnd1]
@@ -318,7 +332,7 @@ for iband,param in enumerate(args.param):
         else:
             result = np.polyfit(xcnd,ycnd,1)
             calc_y = xcnd*result[0]+result[1]
-            cnd2 = np.abs(calc_y-ycnd) < args.vthr
+            cnd2 = np.abs(calc_y-ycnd) < vthr[param]
             xcnd2 = xcnd[cnd2]
             ycnd2 = ycnd[cnd2]
             bcnd2 = bcnd[cnd2]
