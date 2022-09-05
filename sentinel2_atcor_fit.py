@@ -20,6 +20,7 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'NDVI','GNDVI','RGI','NRGI']
 S2_PARAM = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
+NORM_BAND = ['b','g','r','e1','e2','e3','n1']
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
@@ -133,8 +134,11 @@ if not param in src_band:
     raise ValueError('Error in finding {} >>> {}'.format(param,args.src_geotiff))
 cr_data = src_data[src_band.index(param)].copy() # NY,NX
 if not 'norm_band' in src_meta:
-    raise ValueError('Error in finding {} in metadata >>> {}'.format('norm_band',args.src_geotiff))
-norm_band = [s.strip() for s in src_meta['norm_band'].split(',')]
+    sys.stderr.write('Warning, failed in finding {} in metadata >>> {}\n'.format('norm_band',args.src_geotiff))
+    sys.stderr.flush()
+    norm_band = NORM_BAND
+else:
+    norm_band = [s.strip() for s in src_meta['norm_band'].split(',')]
 all_data = []
 for param in args.param:
     iband = src_band.index(param)
@@ -184,6 +188,7 @@ nearest_inds = data['inds']
 object_ids = data['object_ids']
 nobject = len(object_ids)
 
+# Calculate correction factor
 if args.debug:
     if not args.batch:
         plt.interactive(True)
