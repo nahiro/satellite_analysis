@@ -272,7 +272,9 @@ if args.debug:
     dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
 # Output file
-np.savez(args.out_fnam,object_ids=all_ids)
+np.savez(args.out_fnam,params=args.param,object_ids=all_ids,data_org=all_data,
+cflag_sc=[cflag_sc[param] for param in args.param],
+cflag_ref=[cflag_ref[param] for param in args.param])
 
 # Output Shapefile
 w = shapefile.Writer(args.out_shp)
