@@ -125,8 +125,8 @@ if args.ax1_ymax is None:
 else:
     while len(args.ax1_ymax) < len(args.param):
         args.ax1_ymax.append(args.ax1_ymax[-1])
+bnam,enam = os.path.splitext(os.path.basename(args.src_geotiff))
 if args.out_fnam is None or args.fig_fnam is None:
-    bnam,enam = os.path.splitext(args.src_geotiff)
     if args.out_fnam is None:
         args.out_fnam = '{}_atcor_fit.npz'.format(bnam)
     if args.fig_fnam is None:
@@ -268,8 +268,16 @@ if args.debug:
     plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fig_fnam)
     xfit = np.arange(-1.0,float(len(args.norm_band))+0.001,0.01)
+    fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 else:
     warnings.simplefilter('ignore')
+number_array = []
+corcoef_array = []
+cr_mean_array = []
+cr_std_array = []
+factor_array = []
+offset_array = []
+rmse_array = []
 for iband,param in enumerate(args.param):
     data_x_all = all_data[iband].flatten()
     data_y_all = stat_data[iband].flatten()
@@ -283,10 +291,11 @@ for iband,param in enumerate(args.param):
     factor = []
     offset = []
     rmse = []
-    for iobj in range(nobject):
-        if args.debug and (iobj%500 == 0):
-            sys.stderr.write('{}\n'.format(iobj))
-        object_id = iobj+1
+    for iobj,object_id in enumerate(object_ids):
+        if args.debug and (iobj%fig_interval == 0):
+            fig_flag = True
+        else:
+            fig_flag = False
         indx = nearest_inds[iobj]
         data_x = data_x_all[indx]
         data_y = data_y_all[indx]
@@ -334,7 +343,7 @@ for iband,param in enumerate(args.param):
         factor.append(result[0])
         offset.append(result[1])
         rmse.append(rms_value)
-        if args.debug:
+        if fig_flag:
             fig.clear()
             ax1 = plt.subplot(111)#,aspect='equal')
             ax1.minorticks_on()
@@ -358,25 +367,32 @@ for iband,param in enumerate(args.param):
             ax1.plot(xfit,np.polyval(result,xfit),'k:')
             ax1.set_xlim(args.ax1_xmin,args.ax1_xmax)
             ax1.set_ylim(args.ax1_ymin,args.ax1_ymax)
-            ax1.set_xlabel(band_u)
-            ax1.set_ylabel(band_u+' mean')
+            ax1.set_xlabel(pnams[iband])
+            ax1.set_ylabel(pnams[iband]+' (clean-day)')
             ax1.xaxis.set_tick_params(pad=7)
             ax1.xaxis.set_label_coords(0.5,-0.14)
             ax1.yaxis.set_label_coords(-0.15,0.5)
-            ax2.yaxis.set_label_coords(5.0,0.5)
-            ax1.set_title('{} (OBJECTID={})'.format(dstr,object_id))
+            ax1.set_title('{} (OBJECTID={})'.format(bnam,object_id))
             plt.savefig(pdf,format='pdf')
             if not args.batch:
                 plt.draw()
                 plt.pause(0.1)
             #break
+    number_array.append(number)
+    corcoef_array.append(corcoef)
+    cr_mean_array.append(cr_mean)
+    cr_std_array.append(cr_std)
+    factor_array.append(factor)
+    offset_array.append(offset)
+    rmse_array.append(rmse)
 if args.debug:
     pdf.close()
-number = np.array(number)
-corcoef = np.array(corcoef)
-cr_mean = np.array(cr_mean)
-cr_std = np.array(cr_std)
-factor = np.array(factor)
-offset = np.array(offset)
-rmse = np.array(rmse)
-np.savez(args.out_fnam,number=number,corcoef=corcoef,cr_mean=cr_mean,cr_std=cr_std,factor=factor,offset=offset,rmse=rmse)
+number_array = np.array(number_array)
+corcoef_array = np.array(corcoef_array)
+cr_mean_array = np.array(cr_mean_array)
+cr_std_array = np.array(cr_std_array)
+factor_array = np.array(factor_array)
+offset_array = np.array(offset_array)
+rmse_array = np.array(rmse_array)
+np.savez(args.out_fnam,number=number_array,corcoef=corcoef_array,cr_mean=cr_mean_array,cr_std=cr_std_array,
+         factor=factor_array,offset=offset_array,rmse=rmse_array)
