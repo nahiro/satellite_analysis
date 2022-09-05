@@ -134,7 +134,7 @@ if not param in src_band:
 cr_data = src_data[src_band.index(param)].copy() # NY,NX
 if not 'norm_band' in src_meta:
     raise ValueError('Error in finding {} in metadata >>> {}'.format('norm_band',args.src_geotiff))
-norm_band = src_meta['norm_band']
+norm_band = [s.strip() for s in src_meta['norm_band'].split(',')]
 all_data = []
 for param in args.param:
     iband = src_band.index(param)
