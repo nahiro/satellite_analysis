@@ -115,7 +115,7 @@ class Parcel(Satellite_Process):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_data,'parcel',ystr)
-            gnam = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
+            gnam = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
             if os.path.exists(gnam) and self.values['oflag'][1]:
                 os.remove(gnam)
             if not os.path.exists(gnam):
@@ -142,7 +142,7 @@ class Parcel(Satellite_Process):
                 command += ' --res_geotiff "{}"'.format(rnam)
                 command += ' --mask_geotiff "{}"'.format(mask_fnam)
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                command += ' --out_csv "{}"'.format(gnam)
+                command += ' --out_fnam "{}"'.format(gnam)
                 command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
