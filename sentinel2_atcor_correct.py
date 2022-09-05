@@ -28,10 +28,9 @@ R_MIN = 0.3
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-i','--parcel_fnam',default=None,help='Parcel file name (%(default)s)')
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
-parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
-parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
 parser.add_argument('--r_min',default=R_MIN,type=float,help='R threshold (%(default)s)')
@@ -44,52 +43,35 @@ if args.param is None:
 for param in args.param:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter >>> {}'.format(param))
-if args.norm_band is None:
-    args.norm_band = NORM_BAND
-for band in args.norm_band:
-    if not band in S2_BAND:
-        raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
-if not args.rgi_red_band in S2_BAND:
-    raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
-if not args.cr_band in S2_BAND:
-    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
-inp_band = []
-for param in args.param:
-    if param == 'NDVI':
-        for band in ['r','n1']:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param == 'GNDVI':
-        for band in ['g','n1']:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param in ['RGI','NRGI']:
-        for band in ['g',args.rgi_red_band]:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param[0] in ['S','N']:
-        if len(param) in [2,3]:
-            band = param[1:]
-            if not band in inp_band:
-                inp_band.append(band)
-        else:
-            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
-    else:
-        raise ValueError('Error, param={}'.format(param))
-for band in args.norm_band:
-    if not band in inp_band:
-        inp_band.append(band)
-if not args.cr_band in inp_band:
-    inp_band.append(args.cr_band)
-inp_band = np.array(inp_band)
-indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
-inp_band = inp_band[indx]
+if not args.cr_band in S2_PARAM:
+    raise ValueError('Error, unknown band for cloud removal >>> {}'.format(args.cr_band))
+if not os.path.exists(args.parcel_fnam):
+    raise IOError('Error, no such file >>> '+args.parcel_fnam)
 if not os.path.exists(args.param_fnam):
     raise IOError('Error, no such file >>> '+args.param_fnam)
-
 if not args.debug:
     warnings.simplefilter('ignore')
 
+# Read parcel data
+data = np.load(args.parcel_fnam)
+org_band = data['params'].tolist()
+org_data = data['data_org']
+object_ids = data['object_ids']
+cflag_sc = data['cflag_sc']
+cflag_ref = data['cflag_ref']
+
+cal_band = []
+for param in args.param:
+    if not param in org_band:
+        cal_band.append(param)
+    else:
+        iband = obs_band.index(param)
+        if cflag_sc[iband]: # cloud removal by SC
+            cal_band.append(param)
+        elif not cflag_ref[iband]: # cloud removal by reflectance
+            cal_band.append(param)
+
+"""
 # Read atcor paramater
 param = np.load(args.param_fnam)
 corcoef = param['corcoef']
@@ -197,3 +179,4 @@ for iobj in range(nobject):
 data_org = np.array(data_org)
 data_cor = data_org*factor+offset
 np.savez(args.out_fnam,data_org=data_org,data_cor=data_cor)
+"""

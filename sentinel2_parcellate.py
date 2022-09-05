@@ -274,7 +274,9 @@ if args.debug:
 # Output file
 np.savez(args.out_fnam,params=args.param,object_ids=all_ids,data_org=all_data,
 cflag_sc=[cflag_sc[param] for param in args.param],
-cflag_ref=[cflag_ref[param] for param in args.param])
+cflag_ref=[cflag_ref[param] for param in args.param],
+cloud_band=args.cloud_band,
+cloud_thr=args.cloud_thr)
 
 # Output Shapefile
 w = shapefile.Writer(args.out_shp)

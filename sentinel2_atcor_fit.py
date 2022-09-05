@@ -65,7 +65,7 @@ for param in args.param:
     if not param in PARAMS:
         raise ValueError('Error, unknown parameter >>> {}'.format(param))
 if not args.cr_band in S2_PARAM:
-    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
+    raise ValueError('Error, unknown band for cloud removal >>> {}'.format(args.cr_band))
 if args.vthr is None:
     args.vthr = VTHR
 vthr = {}
