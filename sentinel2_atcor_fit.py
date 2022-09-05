@@ -132,6 +132,9 @@ param = 'S'+args.cr_band
 if not param in src_band:
     raise ValueError('Error in finding {} >>> {}'.format(param,args.src_geotiff))
 cr_data = src_data[src_band.index(param)].copy() # NY,NX
+if not 'norm_band' in src_meta:
+    raise ValueError('Error in finding {} in metadata >>> {}'.format('norm_band',args.src_geotiff))
+norm_band = src_meta['norm_band']
 all_data = []
 for param in args.param:
     iband = src_band.index(param)
@@ -187,7 +190,7 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(6,6))
     plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fignam)
-    xfit = np.arange(-1.0,float(len(args.norm_band))+0.001,0.01)
+    xfit = np.arange(-1.0,float(len(norm_band))+0.001,0.01)
     fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 else:
     warnings.simplefilter('ignore')

@@ -55,8 +55,6 @@ for band in args.norm_band:
         raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
 if not args.rgi_red_band in S2_BAND:
     raise ValueError('Error, unknown band for RGI >>> {}'.format(args.rgi_red_band))
-if not args.cr_band in S2_BAND:
-    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
 inp_band = []
 for param in args.param:
     if param == 'NDVI':
@@ -83,8 +81,6 @@ for param in args.param:
 for band in args.norm_band:
     if not band in inp_band:
         inp_band.append(band)
-if not args.cr_band in inp_band:
-    inp_band.append(args.cr_band)
 inp_band = np.array(inp_band)
 indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
 inp_band = inp_band[indx]
@@ -131,7 +127,6 @@ for band in inp_band:
     band = ds.GetRasterBand(iband+1)
     src_data.append(band.ReadAsArray())
 src_data = np.array(src_data)*1.0e-4 # NBAND,NY,NX
-cr_data = src_data[src_indx[args.cr_band]].copy() # NY,NX
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 src_meta = ds.GetMetadata()
@@ -144,8 +139,6 @@ src_ymin = src_ymax+src_ny*src_ystp
 ds = None
 if src_nodata is not None and not np.isnan(src_nodata):
     src_data[src_data == src_nodata] = np.nan
-cnd = (np.isnan(cr_data)) | (cr_data > args.cthr)
-src_data[:,cnd] = np.nan
 
 # Read Mask GeoTIFF
 if args.mask_fnam is not None:
