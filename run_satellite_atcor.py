@@ -50,13 +50,41 @@ class Atcor(Satellite_Process):
             self.run_command(command,message='<<< Select nearest pixels >>>')
 
         # Calculate stats
-        if os.path.exists(self.values['stat_fnam']) and self.values['oflag'][1]:
-            os.remove(self.values['stat_fnam'])
-        if not os.path.exists(self.values['stat_fnam']):
+        stat_tif = self.values['stat_fnam']
+        bnam,enam = os.path.splitext(stat_tif)
+        stat_pdf = bnam+'.pdf'
+        if os.path.exists(stat_tif) and self.values['oflag'][1]:
+            os.remove(stat_tif)
+        if not os.path.exists(stat_tif):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
-            command += ' --dst_geotiff "{}"'.format(self.values['stat_fnam'])
+            command += ' --mask_fnam "{}"'.format(os.path.join(self.s2_data,'studyarea_mask.tif'))
+            command += ' --dst_geotiff "{}"'.format(stat_tif)
+            atcor_flag = False
+            for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
+                if flag:
+                    command += ' --param {}'.format(param)
+                    atcor_flag = True
+            for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
+                if flag:
+                    command += ' --param {}'.format(param)
+                    atcor_flag = True
+            for param,flag in zip(self.list_labels['atcor_inds'],self.values['atcor_inds']):
+                if flag:
+                    command += ' --param {}'.format(param)
+                    atcor_flag = True
+            command += ' --cln_band {}'.format(self.values['clean_band'])
+            command += ' --data_tmin {:%Y%m%d}'.format(d1)
+            command += ' --data_tmax {:%Y%m%d}'.format(d2)
+            command += ' --cthr_avg {}'.format(self.values['clean_thr'][0])
+            command += ' --cthr_std {}'.format(self.values['clean_thr'][1])
+            command += ' --cthr_dif {}'.format(self.values['clean_thr'][2])
+            command += ' --cln_nmin {}'.format(self.values['clean_nmin'])
+            command += ' --fignam "{}"'.format(stat_pdf)
+            command += ' --debug'
+            if atcor_flag:
+                self.run_command(command,message='<<< Calculate stats >>>')
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))

@@ -61,7 +61,7 @@ def set_title(pnam):
     proc_pnam = 'stat_fnam'
     proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'atcor_stat.tif')
     proc_pnam = 'inds_fnam'
-    proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'nearest_inds.npy')
+    proc_atcor.values[proc_pnam] = os.path.join(s2_analysis,'nearest_inds.npz')
     proc_pnam = 'stat_period'
     data_tmin = (first_dtim+relativedelta(years=-2)).strftime(date_fmt)
     data_tmax = last_dtim.strftime(date_fmt)
