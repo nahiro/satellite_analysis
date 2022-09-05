@@ -37,7 +37,6 @@ R_MIN = 0.3
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
-parser.add_argument('-R','--res_geotiff',default=None,help='Resample GeoTIFF name (%(default)s)')
 parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
 parser.add_argument('-A','--atcor_fnam',default=None,help='Atcor parameter file name (%(default)s)')
 parser.add_argument('-P','--parcel_fnam',default=None,help='Parcel file name (%(default)s)')
@@ -183,6 +182,12 @@ if len(cal_band) > 0:
     src_data = np.array(src_data)
     src_dtype = band.DataType
     src_nodata = band.GetNoDataValue()
+    param = 'S'+args.cr_band
+    if not param in tmp_band:
+        raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
+    iband = tmp_band.index(param)
+    band = ds.GetRasterBand(iband+1)
+    cr_data = band.ReadAsArray().reshape(ngrd)
     src_xmin = src_trans[0]
     src_xstp = src_trans[1]
     src_xmax = src_xmin+src_nx*src_xstp
@@ -192,34 +197,13 @@ if len(cal_band) > 0:
     ds = None
     if src_nodata is not None and not np.isnan(src_nodata):
         src_data[src_data == src_nodata] = np.nan
+    mask_ref = (cr_data > args.cthr)
     if 'norm_band' in src_meta:
         if (len(src_meta['norm_band']) > 0) and (not np.array_equal(norm_band,[s.strip() for s in src_meta['norm_band'].split(',')])):
             raise ValueError('Error, different band for normalization >>> {}'.format(args.src_geotiff))
     if 'rgi_red_band' in src_meta:
         if (rgi_red_band != '') and (rgi_red_band != src_meta['rgi_red_band']):
             raise ValueError('Error, different band for RGI >>> {}'.format(args.src_geotiff))
-
-    # Read Resample GeoTIFF
-    ds = gdal.Open(args.res_geotiff)
-    res_nx = ds.RasterXSize
-    res_ny = ds.RasterYSize
-    res_nb = ds.RasterCount
-    res_shape = (res_ny,res_nx)
-    if res_shape != src_shape:
-        raise ValueError('Error, res_shape={}, src_shape={} >>> {}'.format(res_shape,src_shape,args.res_geotiff))
-    res_data = ds.ReadAsArray().reshape(res_nb,ngrd)
-    res_band = []
-    for iband in range(res_nb):
-        band = ds.GetRasterBand(iband+1)
-        res_band.append(band.GetDescription())
-    res_nodata = band.GetNoDataValue()
-    ds = None
-    band = S2_BAND[args.cr_band]
-    if not band in res_band:
-        raise ValueError('Error in finding {} band in {}'.format(band,args.res_geotiff))
-    iband = res_band.index(band)
-    v = res_data[iband]*1.0e-4
-    mask_ref = (v > args.cthr)
 
     # Read Mask GeoTIFF
     ds = gdal.Open(args.mask_geotiff)
