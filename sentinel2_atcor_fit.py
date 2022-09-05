@@ -2,12 +2,13 @@
 import os
 import sys
 import re
-import warnings
+import zlib # import zlib before gdal to prevent segmentation fault when saving pdf
 try:
     import gdal
 except Exception:
     from osgeo import gdal
 from datetime import datetime
+import warnings
 import numpy as np
 from matplotlib.dates import date2num,num2date
 import matplotlib.pyplot as plt
@@ -60,7 +61,8 @@ parser.add_argument('-F','--fig_fnam',default=None,help='Output figure name for 
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
 parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
 parser.add_argument('--outlier_remove2',default=False,action='store_true',help='2-step outlier removal mode (%(default)s)')
-parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
 if args.param is None:
     args.param = PARAM
@@ -259,117 +261,115 @@ for iband,param in enumerate(args.param):
     else:
         raise ValueError('Error, param={}'.format(param))
 
-"""
-data_x_all = data_img.flatten()
-data_y_all = stat['mean'].flatten()
-data_b_all = b4_img.flatten()
-if data_x_all.shape != data_y_all.shape:
-    raise ValueError('Error, data_x_all.shape={}, data_y_all.shape={}'.format(data_x_all.shape,data_y_all.shape))
-
 if args.debug:
-    #plt.interactive(True)
+    if not args.batch:
+        plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(6,5))
     plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fig_fnam)
-    xfit = np.arange(-1.0,1.001,0.01)
+    xfit = np.arange(-1.0,float(len(args.norm_band))+0.001,0.01)
 else:
     warnings.simplefilter('ignore')
-
-number = []
-corcoef = []
-cr_mean = []
-cr_std = []
-factor = []
-offset = []
-rmse = []
-for i in range(nobject):
-    if args.debug and (i%500 == 0):
-        sys.stderr.write('{}\n'.format(i))
-    object_id = i+1
-    indx = nearest_inds[i]
-    data_x = data_x_all[indx]
-    data_y = data_y_all[indx]
-    data_b = data_b_all[indx]
-    if args.outlier_remove2:
-        cnd1 = (~np.isnan(data_x)) & (np.abs(data_x-data_y) < (np.abs(data_y)*args.rthr).clip(min=args.vthr*args.mthr))
-    else:
-        cnd1 = ~np.isnan(data_x)
-    if not args.ignore_band4:
-        cnd1 &= ((~np.isnan(data_b)) & (data_b < args.band4_max))
-    xcnd = data_x[cnd1]
-    ycnd = data_y[cnd1]
-    bcnd = data_b[cnd1]
-    if xcnd.size < 2:
-        result = [np.nan,np.nan]
-        calc_y = np.array([])
-        r_value = np.nan
-        b4_value = np.nan
-        b4_error = np.nan
-        rms_value = np.nan
-        flag = False
-    else:
-        result = np.polyfit(xcnd,ycnd,1)
-        calc_y = xcnd*result[0]+result[1]
-        cnd2 = np.abs(calc_y-ycnd) < args.vthr
-        xcnd2 = xcnd[cnd2]
-        ycnd2 = ycnd[cnd2]
-        bcnd2 = bcnd[cnd2]
-        if (xcnd2.size == cnd2.size) or (xcnd2.size < 2):
-            r_value = np.corrcoef(xcnd,ycnd)[0,1]
-            b4_value = np.nanmean(bcnd)
-            b4_error = np.nanstd(bcnd)
-            rms_value = np.sqrt(np.square(calc_y-ycnd).sum()/calc_y.size)
+for iband,param in enumerate(args.param):
+    data_x_all = all_data[iband].flatten()
+    data_y_all = stat_data[iband].flatten()
+    data_b_all = cr_data.flatten()
+    if data_x_all.shape != data_y_all.shape:
+        raise ValueError('Error, data_x_all.shape={}, data_y_all.shape={}'.format(data_x_all.shape,data_y_all.shape))
+    number = []
+    corcoef = []
+    cr_mean = []
+    cr_std = []
+    factor = []
+    offset = []
+    rmse = []
+    for iobj in range(nobject):
+        if args.debug and (iobj%500 == 0):
+            sys.stderr.write('{}\n'.format(iobj))
+        object_id = iobj+1
+        indx = nearest_inds[iobj]
+        data_x = data_x_all[indx]
+        data_y = data_y_all[indx]
+        data_b = data_b_all[indx]
+        if args.outlier_remove2:
+            cnd1 = (~np.isnan(data_x)) & (np.abs(data_x-data_y) < (np.abs(data_y)*args.rthr).clip(min=args.vthr*args.mthr))
+        else:
+            cnd1 = ~np.isnan(data_x)
+        xcnd = data_x[cnd1]
+        ycnd = data_y[cnd1]
+        bcnd = data_b[cnd1]
+        if xcnd.size < 2:
+            result = [np.nan,np.nan]
+            calc_y = np.array([])
+            r_value = np.nan
+            cr_value = np.nan
+            cr_error = np.nan
+            rms_value = np.nan
             flag = False
         else:
-            result = np.polyfit(xcnd2,ycnd2,1)
-            calc_y = xcnd2*result[0]+result[1]
-            r_value = np.corrcoef(xcnd2,ycnd2)[0,1]
-            b4_value = np.nanmean(bcnd2)
-            b4_error = np.nanstd(bcnd2)
-            rms_value = np.sqrt(np.square(calc_y-ycnd2).sum()/calc_y.size)
-            flag = True
-    number.append(calc_y.size)
-    corcoef.append(r_value)
-    cr_mean.append(b4_value)
-    cr_std.append(b4_error)
-    factor.append(result[0])
-    offset.append(result[1])
-    rmse.append(rms_value)
-    if args.debug:
-        fig.clear()
-        ax1 = plt.subplot(111)#,aspect='equal')
-        ax1.minorticks_on()
-        ax1.grid(True)
-        line = 'number: {}\n'.format(calc_y.size)
-        line += 'coeff: {:7.4f}\n'.format(r_value)
-        line += 'band4: {:6.4f}\n'.format(b4_value)
-        line += 'factor: {:5.4f}\n'.format(result[0])
-        line += 'offset: {:5.4f}\n'.format(result[1])
-        line += 'rmse: {:5.4f}'.format(rms_value)
-        at= AnchoredText(line,prop=dict(size=12),loc=2,pad=0.1,borderpad=0.8,frameon=True)
-        at.patch.set_boxstyle('round')
-        ax1.add_artist(at)
-        if xcnd.size != cnd1.size:
-            ax1.plot(data_x,data_y,'k.')
-        if flag:
-            ax1.plot(xcnd,ycnd,'.',color='#888888')
-            ax1.plot(xcnd2,ycnd2,'b.')
-        else:
-            ax1.plot(xcnd,ycnd,'b.')
-        ax1.plot(xfit,np.polyval(result,xfit),'k:')
-        ax1.set_xlim(args.ax1_xmin,args.ax1_xmax)
-        ax1.set_ylim(args.ax1_ymin,args.ax1_ymax)
-        ax1.set_xlabel(band_u)
-        ax1.set_ylabel(band_u+' mean')
-        ax1.xaxis.set_tick_params(pad=7)
-        ax1.xaxis.set_label_coords(0.5,-0.14)
-        ax1.yaxis.set_label_coords(-0.15,0.5)
-        ax2.yaxis.set_label_coords(5.0,0.5)
-        ax1.set_title('{} (OBJECTID={})'.format(dstr,object_id))
-        plt.savefig(pdf,format='pdf')
-        #plt.draw()
-        #plt.pause(0.1)
-        #break
+            result = np.polyfit(xcnd,ycnd,1)
+            calc_y = xcnd*result[0]+result[1]
+            cnd2 = np.abs(calc_y-ycnd) < args.vthr
+            xcnd2 = xcnd[cnd2]
+            ycnd2 = ycnd[cnd2]
+            bcnd2 = bcnd[cnd2]
+            if (xcnd2.size == cnd2.size) or (xcnd2.size < 2):
+                r_value = np.corrcoef(xcnd,ycnd)[0,1]
+                cr_value = np.nanmean(bcnd)
+                cr_error = np.nanstd(bcnd)
+                rms_value = np.sqrt(np.square(calc_y-ycnd).sum()/calc_y.size)
+                flag = False
+            else:
+                result = np.polyfit(xcnd2,ycnd2,1)
+                calc_y = xcnd2*result[0]+result[1]
+                r_value = np.corrcoef(xcnd2,ycnd2)[0,1]
+                cr_value = np.nanmean(bcnd2)
+                cr_error = np.nanstd(bcnd2)
+                rms_value = np.sqrt(np.square(calc_y-ycnd2).sum()/calc_y.size)
+                flag = True
+        number.append(calc_y.size)
+        corcoef.append(r_value)
+        cr_mean.append(cr_value)
+        cr_std.append(cr_error)
+        factor.append(result[0])
+        offset.append(result[1])
+        rmse.append(rms_value)
+        if args.debug:
+            fig.clear()
+            ax1 = plt.subplot(111)#,aspect='equal')
+            ax1.minorticks_on()
+            ax1.grid(True)
+            line = 'number: {}\n'.format(calc_y.size)
+            line += 'coeff: {:7.4f}\n'.format(r_value)
+            line += 'band4: {:6.4f}\n'.format(cr_value)
+            line += 'factor: {:5.4f}\n'.format(result[0])
+            line += 'offset: {:5.4f}\n'.format(result[1])
+            line += 'rmse: {:5.4f}'.format(rms_value)
+            at= AnchoredText(line,prop=dict(size=12),loc=2,pad=0.1,borderpad=0.8,frameon=True)
+            at.patch.set_boxstyle('round')
+            ax1.add_artist(at)
+            if xcnd.size != cnd1.size:
+                ax1.plot(data_x,data_y,'k.')
+            if flag:
+                ax1.plot(xcnd,ycnd,'.',color='#888888')
+                ax1.plot(xcnd2,ycnd2,'b.')
+            else:
+                ax1.plot(xcnd,ycnd,'b.')
+            ax1.plot(xfit,np.polyval(result,xfit),'k:')
+            ax1.set_xlim(args.ax1_xmin,args.ax1_xmax)
+            ax1.set_ylim(args.ax1_ymin,args.ax1_ymax)
+            ax1.set_xlabel(band_u)
+            ax1.set_ylabel(band_u+' mean')
+            ax1.xaxis.set_tick_params(pad=7)
+            ax1.xaxis.set_label_coords(0.5,-0.14)
+            ax1.yaxis.set_label_coords(-0.15,0.5)
+            ax2.yaxis.set_label_coords(5.0,0.5)
+            ax1.set_title('{} (OBJECTID={})'.format(dstr,object_id))
+            plt.savefig(pdf,format='pdf')
+            if not args.batch:
+                plt.draw()
+                plt.pause(0.1)
+            #break
 if args.debug:
     pdf.close()
 number = np.array(number)
@@ -380,4 +380,3 @@ factor = np.array(factor)
 offset = np.array(offset)
 rmse = np.array(rmse)
 np.savez(args.out_fnam,number=number,corcoef=corcoef,cr_mean=cr_mean,cr_std=cr_std,factor=factor,offset=offset,rmse=rmse)
-"""
