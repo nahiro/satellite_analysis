@@ -32,7 +32,7 @@ RGI_RED_BAND = 'e1'
 CR_BAND = 'r'
 VTHR = [
 'Sb:0.02','Sg:0.02','Sr:0.02','Se1:0.02','Se2:0.02','Se3:0.02','Sn1:0.02','Sn2:0.02','Ss1:0.02','Ss2:0.02',
-'Nb:0.02','Ng:0.02','Nr:0.02','Ne1:0.02','Ne2:0.02','Ne3:0.02','Nn1:0.02','Nn2:0.02','Ns1:0.02','Ns2:0.02',
+'Nb:0.05','Ng:0.05','Nr:0.05','Ne1:0.05','Ne2:0.05','Ne3:0.05','Nn1:0.05','Nn2:0.05','Ns1:0.05','Ns2:0.05',
 'NDVI:0.1','GNDVI:0.1','RGI:0.1','NRGI:0.1']
 RTHR = 1.0
 MTHR = 2.0
@@ -55,6 +55,7 @@ parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',he
 parser.add_argument('-X','--ax1_xmax',default=None,type=float,action='append',help='Axis1 X max for debug (%(default)s)')
 parser.add_argument('-y','--ax1_ymin',default=None,type=float,action='append',help='Axis1 Y min for debug (%(default)s)')
 parser.add_argument('-Y','--ax1_ymax',default=None,type=float,action='append',help='Axis1 Y max for debug (%(default)s)')
+parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--mask_fnam',default=None,help='Mask file name (%(default)s)')
 parser.add_argument('--stat_fnam',default=None,help='Statistic file name (%(default)s)')
 parser.add_argument('--inds_fnam',default=INDS_FNAM,help='Index file name (%(default)s)')
@@ -278,7 +279,7 @@ for iband,param in enumerate(args.param):
 if args.debug:
     if not args.batch:
         plt.interactive(True)
-    fig = plt.figure(1,facecolor='w',figsize=(6,5))
+    fig = plt.figure(1,facecolor='w',figsize=(6,6))
     plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fig_fnam)
     xfit = np.arange(-1.0,float(len(args.norm_band))+0.001,0.01)
@@ -359,12 +360,11 @@ for iband,param in enumerate(args.param):
         rmse.append(rms_value)
         if fig_flag:
             fig.clear()
-            ax1 = plt.subplot(111)#,aspect='equal')
+            ax1 = plt.subplot(111,aspect='equal')
             ax1.minorticks_on()
-            ax1.grid(True)
             line = 'number: {}\n'.format(calc_y.size)
             line += 'coeff: {:7.4f}\n'.format(r_value)
-            line += 'band4: {:6.4f}\n'.format(cr_value)
+            line += 'cr_band: {:6.4f}\n'.format(cr_value)
             line += 'factor: {:5.4f}\n'.format(result[0])
             line += 'offset: {:5.4f}\n'.format(result[1])
             line += 'rmse: {:5.4f}'.format(rms_value)
@@ -379,14 +379,45 @@ for iband,param in enumerate(args.param):
             else:
                 ax1.plot(xcnd,ycnd,'b.')
             ax1.plot(xfit,np.polyval(result,xfit),'k:')
-            ax1.set_xlim(args.ax1_xmin,args.ax1_xmax)
-            ax1.set_ylim(args.ax1_ymin,args.ax1_ymax)
-            ax1.set_xlabel(pnams[iband])
+            if args.ax1_xmin is None or args.ax1_ymin is None:
+                if flag:
+                    xmin = min(np.nanmin(xcnd),np.nanmin(xcnd2))
+                    ymin = min(np.nanmin(ycnd),np.nanmin(ycnd2))
+                else:
+                    xmin = np.nanmin(xcnd)
+                    ymin = np.nanmin(ycnd)
+            if args.ax1_xmax is None or args.ax1_ymax is None:
+                if flag:
+                    xmax = max(np.nanmax(xcnd),np.nanmax(xcnd2))
+                    ymax = max(np.nanmax(ycnd),np.nanmax(ycnd2))
+                else:
+                    xmax = np.nanmax(xcnd)
+                    ymax = np.nanmax(ycnd)
+            if args.ax1_xmin is not None and args.ax1_xmax is not None:
+                ax1.set_xlim(args.ax1_xmin[iband],args.ax1_xmax[iband])
+            elif args.ax1_xmin is not None:
+                ax1.set_xlim(args.ax1_xmin[iband],max(xmax,ymax))
+            elif args.ax1_xmax is not None:
+                ax1.set_xlim(min(xmin,ymin),args.ax1_xmax[iband])
+            else:
+                ax1.set_xlim(min(xmin,ymin),max(xmax,ymax))
+            if args.ax1_ymin is not None and args.ax1_ymax is not None:
+                ax1.set_ylim(args.ax1_ymin[iband],args.ax1_ymax[iband])
+            elif args.ax1_ymin is not None:
+                ax1.set_ylim(args.ax1_ymin[iband],max(xmax,ymax))
+            elif args.ax1_ymax is not None:
+                ax1.set_ylim(min(xmin,ymin),args.ax1_ymax[iband])
+            else:
+                ax1.set_ylim(min(xmin,ymin),max(xmax,ymax))
+            ax1.set_xlabel(pnams[iband]+' (target)')
             ax1.set_ylabel(pnams[iband]+' (clean-day)')
             ax1.xaxis.set_tick_params(pad=7)
             ax1.xaxis.set_label_coords(0.5,-0.14)
-            ax1.yaxis.set_label_coords(-0.15,0.5)
-            ax1.set_title('{} (OBJECTID={})'.format(bnam,object_id))
+            ax1.yaxis.set_label_coords(-0.14,0.5)
+            if args.ax1_title is not None:
+                ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
+            else:
+                ax1.set_title('{} (OBJECTID={})'.format(bnam,object_id))
             plt.savefig(pdf,format='pdf')
             if not args.batch:
                 plt.draw()
@@ -408,5 +439,5 @@ cr_std_array = np.array(cr_std_array)
 factor_array = np.array(factor_array)
 offset_array = np.array(offset_array)
 rmse_array = np.array(rmse_array)
-np.savez(args.out_fnam,number=number_array,corcoef=corcoef_array,cr_mean=cr_mean_array,cr_std=cr_std_array,
+np.savez(args.out_fnam,params=args.param,number=number_array,corcoef=corcoef_array,cr_mean=cr_mean_array,cr_std=cr_std_array,
          factor=factor_array,offset=offset_array,rmse=rmse_array)
