@@ -46,7 +46,14 @@ parser.add_argument('-a','--atcor_param',default=None,action='append',help='Para
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
 parser.add_argument('--r_min',default=R_MIN,type=float,help='R threshold (%(default)s)')
-parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
+parser.add_argument('-O','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
+parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
+parser.add_argument('--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
+parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
+parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
+parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 args = parser.parse_args()
@@ -64,10 +71,36 @@ for param in args.atcor_param:
         raise ValueError('Error, not included in output parameter >>> {}'.format(param))
 if not args.cr_band in S2_PARAM:
     raise ValueError('Error, unknown band for cloud removal >>> {}'.format(args.cr_band))
+if args.ax1_zmin is not None:
+    while len(args.ax1_zmin) < len(args.param):
+        args.ax1_zmin.append(args.ax1_zmin[-1])
+    ax1_zmin = {}
+    for i,param in enumerate(args.param):
+        ax1_zmin[param] = args.ax1_zmin[i]
+if args.ax1_zmax is not None:
+    while len(args.ax1_zmax) < len(args.param):
+        args.ax1_zmax.append(args.ax1_zmax[-1])
+    ax1_zmax = {}
+    for i,param in enumerate(args.param):
+        ax1_zmax[param] = args.ax1_zmax[i]
+if args.ax1_zstp is not None:
+    while len(args.ax1_zstp) < len(args.param):
+        args.ax1_zstp.append(args.ax1_zstp[-1])
+    ax1_zstp = {}
+    for i,param in enumerate(args.param):
+        ax1_zstp[param] = args.ax1_zstp[i]
 if not os.path.exists(args.parcel_fnam):
     raise IOError('Error, no such file >>> '+args.parcel_fnam)
 if not os.path.exists(args.atcor_fnam):
     raise IOError('Error, no such file >>> '+args.atcor_fnam)
+if args.out_fnam is None or args.out_shp is None or args.fignam is None:
+    bnam,enam = os.path.splitext(os.path.basename(args.src_geotiff))
+    if args.out_fnam is None:
+        args.out_fnam = bnam+'_atcor.npz'
+    if args.out_shp is None:
+        args.out_shp = bnam+'_atcor.shp'
+    if args.fignam is None:
+        args.fignam = bnam+'_atcor.pdf'
 if not args.debug:
     warnings.simplefilter('ignore')
 
@@ -249,29 +282,29 @@ if len(cal_band) > 0:
             cal_data[indx] = tmp_data
 
 # Data before correction
+org_nb = len(args.param)
 org_band = []
-org_data = []
+org_data = np.full((nobject,org_nb),np.nan)
 org_cflag_sc = []
 org_cflag_ref = []
 org_cr_band = []
 org_cthr = []
-for param in args.param:
+for iband,param in enumerate(args.param):
     org_band.append(param)
     if param in cal_band:
         indx = cal_band.index(param)
-        org_data.append(cal_data[:,indx])
+        org_data[:,iband] = cal_data[:,indx]
         org_cflag_sc.append(cal_cflag_sc)
         org_cflag_ref.append(cal_cflag_ref)
         org_cr_band.append(cal_cr_band)
         org_cthr.append(cal_cthr)
     else:
         indx = inp_band.index(param)
-        org_data.append(inp_data[:,indx])
+        org_data[:,iband] = inp_data[:,indx]
         org_cflag_sc.append(inp_cflag_sc[indx])
         org_cflag_ref.append(inp_cflag_ref[indx])
         org_cr_band.append(inp_cr_band)
         org_cthr.append(inp_cthr)
-org_data = np.array(org_data)
 
 # Read atcor paramater
 param = np.load(args.atcor_fnam)
@@ -290,14 +323,14 @@ for param in args.atcor_param:
         raise ValueError('Error in finding {} in {}'.format(param,args.atcor_fnam))
 
 # Atmospheric correction
-cor_data = []
+cor_nb = len(args.param)
+cor_data = np.full((nobject,cor_nb),np.nan)
 for iband,param in enumerate(args.param):
     if param in args.atcor_param:
         indx = atcor_band.index(param)
-        cor_data.append(org_data[iband]*factor[indx]+offset[indx])
+        cor_data[:,iband] = org_data[:,iband]*factor[indx]+offset[indx]
     else:
-        cor_data.append(org_data[iband])
-cor_data = np.array(cor_data)
+        cor_data[:,iband] = org_data[:,iband]
 
 # Output file
 np.savez(args.out_fnam,
@@ -313,3 +346,114 @@ cflag_ref=org_cflag_ref,
 cloud_band=org_cr_band,
 cloud_thr=org_cthr
 )
+
+# Output Shapefile
+w = shapefile.Writer(args.out_shp)
+w.shapeType = shapefile.POLYGON
+w.fields = r.fields[1:] # skip first deletion field
+for param in args.param:
+    w.field(param,'F',13,6)
+for iobj,shaperec in enumerate(r.iterShapeRecords()):
+    rec = shaperec.record
+    shp = shaperec.shape
+    rec.extend(list(cor_data[iobj]))
+    w.shape(shp)
+    w.record(*rec)
+w.close()
+shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
+
+# Output CSV
+if args.out_csv is not None:
+    with open(args.out_csv,'w') as fp:
+        fp.write('{:>8s}'.format('OBJECTID'))
+        for param in args.param:
+            fp.write(', {:>13s}'.format(param))
+        fp.write('\n')
+        for iobj,object_id in enumerate(all_ids):
+            fp.write('{:8d}'.format(object_id))
+            for iband,param in enumerate(args.param):
+                fp.write(', {:>13.6e}'.format(cor_data[iobj,iband]))
+            fp.write('\n')
+
+# For debug
+if args.debug:
+    if args.shp_fnam is not None:
+        r = shapefile.Reader(args.out_shp)
+    if not args.batch:
+        plt.interactive(True)
+    fig = plt.figure(1,facecolor='w',figsize=(5,5))
+    plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
+    pdf = PdfPages(args.fignam)
+    for iband,param in enumerate(args.param):
+        fig.clear()
+        ax1 = plt.subplot(111)
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+            zmin = ax1_zmin[param]
+        else:
+            zmin = np.nanmin(data)
+            if np.isnan(zmin):
+                zmin = 0.0
+        if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+            zmax = ax1_zmax[param]
+        else:
+            zmax = np.nanmax(data)
+            if np.isnan(zmax):
+                zmax = 1.0
+        zdif = zmax-zmin
+        for iobj,shaperec in enumerate(r.iterShapeRecords()):
+            rec = shaperec.record
+            shp = shaperec.shape
+            z = getattr(rec,param)
+            if not np.isnan(z):
+                ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
+        im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
+        divider = make_axes_locatable(ax1)
+        cax = divider.append_axes('right',size='5%',pad=0.05)
+        if args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
+            if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+                zmin = (np.floor(ax1_zmin[param]/ax1_zstp[param])-1.0)*ax1_zstp[param]
+            else:
+                zmin = (np.floor(np.nanmin(data)/ax1_zstp[param])-1.0)*ax1_zstp[param]
+            if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+                zmax = ax1_zmax[param]+0.1*ax1_zstp[param]
+            else:
+                zmax = np.nanmax(data)+0.1*ax1_zstp[param]
+            ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,ax1_zstp[param])).ax
+        else:
+            ax2 = plt.colorbar(im,cax=cax).ax
+        ax2.minorticks_on()
+        ax2.set_ylabel('{}'.format(param))
+        ax2.yaxis.set_label_coords(6.5,0.5)
+        if args.remove_nan:
+            src_indy,src_indx = np.indices(src_shape)
+            src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
+            src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
+            cnd = ~np.isnan(data)
+            if cnd.sum() < 1:
+                fig_xmin = src_xmin
+                fig_xmax = src_xmax
+                fig_ymin = src_ymin
+                fig_ymax = src_ymax
+            else:
+                xp = src_xp[cnd]
+                yp = src_yp[cnd]
+                fig_xmin = xp.min()
+                fig_xmax = xp.max()
+                fig_ymin = yp.min()
+                fig_ymax = yp.max()
+        else:
+            fig_xmin = src_xmin
+            fig_xmax = src_xmax
+            fig_ymin = src_ymin
+            fig_ymax = src_ymax
+        ax1.set_xlim(fig_xmin,fig_xmax)
+        ax1.set_ylim(fig_ymin,fig_ymax)
+        if args.ax1_title is not None:
+            ax1.set_title(args.ax1_title)
+        plt.savefig(pdf,format='pdf')
+        if not args.batch:
+            plt.draw()
+            plt.pause(0.1)
+    pdf.close()
