@@ -34,8 +34,9 @@ parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
 parser.add_argument('-R','--res_geotiff',default=None,help='Resample GeoTIFF name (%(default)s)')
 parser.add_argument('-M','--mask_geotiff',default=None,help='Mask GeoTIFF name (%(default)s)')
-parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
+parser.add_argument('--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-c','--cflag_sc',default=None,action='append',help='Cloud removal by SC ({})'.format(CFLAG_SC))
 parser.add_argument('-C','--cflag_ref',default=None,action='append',help='Cloud removal by Reflectance ({})'.format(CFLAG_REF))
@@ -108,10 +109,10 @@ if args.ax1_zstp is not None:
     ax1_zstp = {}
     for i,param in enumerate(args.param):
         ax1_zstp[param] = args.ax1_zstp[i]
-if args.out_csv is None or args.out_shp is None or args.fignam is None:
+if args.out_fnam is None or args.out_shp is None or args.fignam is None:
     bnam,enam = os.path.splitext(args.src_geotiff)
-    if args.out_csv is None:
-        args.out_csv = bnam+'_parcel.csv'
+    if args.out_fnam is None:
+        args.out_fnam = bnam+'_parcel.npz'
     if args.out_shp is None:
         args.out_shp = bnam+'_parcel.shp'
     if args.fignam is None:
@@ -270,17 +271,8 @@ if args.debug:
         dst_data[:,inds] = out_data[i,:].reshape(-1,1)
     dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
-# Output CSV
-with open(args.out_csv,'w') as fp:
-    fp.write('{:>8s}'.format('OBJECTID'))
-    for param in args.param:
-        fp.write(', {:>13s}'.format(param))
-    fp.write('\n')
-    for iobj,object_id in enumerate(all_ids):
-        fp.write('{:8d}'.format(object_id))
-        for iband,param in enumerate(args.param):
-            fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
-        fp.write('\n')
+# Output file
+np.savez(args.out_fnam,object_ids=all_ids)
 
 # Output Shapefile
 w = shapefile.Writer(args.out_shp)
@@ -296,6 +288,19 @@ for iobj,shaperec in enumerate(r.iterShapeRecords()):
     w.record(*rec)
 w.close()
 shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
+
+# Output CSV
+if args.out_csv is not None:
+    with open(args.out_csv,'w') as fp:
+        fp.write('{:>8s}'.format('OBJECTID'))
+        for param in args.param:
+            fp.write(', {:>13s}'.format(param))
+        fp.write('\n')
+        for iobj,object_id in enumerate(all_ids):
+            fp.write('{:8d}'.format(object_id))
+            for iband,param in enumerate(args.param):
+                fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
+            fp.write('\n')
 
 # For debug
 if args.debug:
