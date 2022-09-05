@@ -122,7 +122,7 @@ if args.out_fnam is None or args.out_shp is None or args.fignam is None:
 ds = gdal.Open(args.src_geotiff)
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
-src_nb = ds.RasterCount
+src_nb = len(args.param)
 ngrd = src_nx*src_ny
 src_shape = (src_ny,src_nx)
 src_prj = ds.GetProjection()
@@ -130,20 +130,20 @@ src_trans = ds.GetGeoTransform()
 if src_trans[2] != 0.0 or src_trans[4] != 0.0:
     raise ValueError('Error, src_trans={} >>> {}'.format(src_trans,args.src_geotiff))
 src_meta = ds.GetMetadata()
-src_band = []
-for iband in range(src_nb):
+src_band = args.param
+tmp_nb = ds.RasterCount
+tmp_band = []
+for iband in range(tmp_nb):
     band = ds.GetRasterBand(iband+1)
-    src_band.append(band.GetDescription())
+    tmp_band.append(band.GetDescription())
 src_data = []
 for param in args.param:
-    if not param in src_band:
+    if not param in tmp_band:
         raise ValueError('Error in finding {} in {}'.format(param,args.src_geotiff))
-    iband = src_band.index(param)
+    iband = tmp_band.index(param)
     band = ds.GetRasterBand(iband+1)
     src_data.append(band.ReadAsArray().astype(np.float64).reshape(ngrd))
 src_data = np.array(src_data)
-src_band = args.param
-src_nb = len(args.param)
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 src_xmin = src_trans[0]
