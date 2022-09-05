@@ -125,7 +125,6 @@ config_defaults.update({
 'geocor.middle_left_frame_width'      : 1000,
 #----------- parcel -----------
 'parcel.gis_fnam'                     : gis_fnam,
-'parcel.band_fnam'                    : os.path.join(main_s2_data,'band_names.txt'),
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_refs'                   : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_refs'                  : [True,True,True,True,True,True,True,True,True,True],

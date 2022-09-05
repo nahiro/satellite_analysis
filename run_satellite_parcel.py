@@ -75,7 +75,6 @@ class Parcel(Satellite_Process):
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_calc_indices.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
                 command += ' --dst_geotiff "{}"'.format(gnam)
-                command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_indices.pdf'.format(dstr)))
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:

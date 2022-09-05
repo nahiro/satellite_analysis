@@ -5,7 +5,6 @@ proc_parcel = Parcel()
 proc_parcel.proc_name = 'parcel'
 proc_parcel.proc_title = 'Parcellate Data'
 proc_parcel.pnams.append('gis_fnam')
-proc_parcel.pnams.append('band_fnam')
 proc_parcel.pnams.append('out_refs')
 proc_parcel.pnams.append('cr_sc_refs')
 proc_parcel.pnams.append('cr_ref_refs')
@@ -22,7 +21,6 @@ proc_parcel.pnams.append('cloud_thr')
 proc_parcel.pnams.append('buffer')
 proc_parcel.pnams.append('oflag')
 proc_parcel.params['gis_fnam'] = 'Polygon File'
-proc_parcel.params['band_fnam'] = 'Sentinel-2 Band File'
 proc_parcel.params['out_refs'] = 'Output Reflectance'
 proc_parcel.params['cr_sc_refs'] = 'CR-SC Reflactance'
 proc_parcel.params['cr_ref_refs'] = 'CR-Ref Reflactance'
@@ -39,7 +37,6 @@ proc_parcel.params['cloud_thr'] = 'Thres. for Cloud Removal'
 proc_parcel.params['buffer'] = 'Buffer Radius (m)'
 proc_parcel.params['oflag'] = 'Overwrite Flag'
 proc_parcel.param_types['gis_fnam'] = 'string'
-proc_parcel.param_types['band_fnam'] = 'string'
 proc_parcel.param_types['out_refs'] = 'boolean_list'
 proc_parcel.param_types['cr_sc_refs'] = 'boolean_list'
 proc_parcel.param_types['cr_ref_refs'] = 'boolean_list'
@@ -58,7 +55,6 @@ proc_parcel.param_types['oflag'] = 'boolean_list'
 proc_parcel.param_range['cloud_thr'] = (0.0,10.0)
 proc_parcel.param_range['buffer'] = (0.0,10.0e3)
 proc_parcel.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
-proc_parcel.defaults['band_fnam'] = 'band_names.txt'
 proc_parcel.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_parcel.defaults['cr_sc_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_parcel.defaults['cr_ref_refs'] = [True,True,True,True,True,True,True,True,True,True]
@@ -101,7 +97,6 @@ proc_parcel.list_labels['cr_ref_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_parcel.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_parcel.list_labels['oflag'] = ['indices','parcel']
 proc_parcel.input_types['gis_fnam'] = 'ask_file'
-proc_parcel.input_types['band_fnam'] = 'ask_file'
 proc_parcel.input_types['out_refs'] = 'boolean_list'
 proc_parcel.input_types['cr_sc_refs'] = 'boolean_list'
 proc_parcel.input_types['cr_ref_refs'] = 'boolean_list'
