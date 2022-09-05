@@ -197,6 +197,24 @@ if args.debug:
     pdf = PdfPages(args.fignam)
     xfit = np.arange(-1.0,float(len(norm_band))+0.001,0.01)
     fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
+    pnams = []
+    for param in args.param:
+        if param in ['NDVI','GNDVI','RGI','NRGI']:
+            pnams.append(param)
+        elif param[0] == 'S':
+            if len(param) in [2,3]:
+                band = param[1:]
+                pnams.append('{}'.format(BAND_NAME[band]))
+            else:
+                raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+        elif param[0] == 'N':
+            if len(param) in [2,3]:
+                band = param[1:]
+                pnams.append('Normalized {}'.format(BAND_NAME[band]))
+            else:
+                raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+        else:
+            raise ValueError('Error, param={}'.format(param))
 else:
     warnings.simplefilter('ignore')
 number_array = []
