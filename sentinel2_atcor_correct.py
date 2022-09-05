@@ -209,6 +209,7 @@ if len(cal_band) > 0:
         data[mask_ref] = np.nan
         tmp_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
 
+    # Store data
     if args.use_index:
         all_ids = np.arange(nobject)+1
         if np.array_equal(object_ids,all_ids):
