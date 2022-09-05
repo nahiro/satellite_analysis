@@ -75,36 +75,6 @@ if not args.rgi_red_band in S2_BAND:
     raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
 if not args.cln_band in S2_BAND:
     raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cln_band))
-cln_band = S2_BAND[args.cln_band]
-inp_band = []
-for param in args.param:
-    if param == 'NDVI':
-        for band in ['r','n1']:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param == 'GNDVI':
-        for band in ['g','n1']:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param in ['RGI','NRGI']:
-        for band in ['g',args.rgi_red_band]:
-            if not band in inp_band:
-                inp_band.append(band)
-    elif param[0] in ['S','N']:
-        if len(param) in [2,3]:
-            band = param[1:]
-            if not band in inp_band:
-                inp_band.append(band)
-        else:
-            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
-    else:
-        raise ValueError('Error, param={}'.format(param))
-for band in args.norm_band:
-    if not band in inp_band:
-        inp_band.append(band)
-inp_band = np.array(inp_band)
-indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
-inp_band = inp_band[indx]
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
@@ -121,16 +91,13 @@ data_years = np.arange(d1.year,d2.year+1,1)
 # Read Source GeoTIFF
 src_nx = None
 src_ny = None
-src_nb = len(inp_band)
+src_nb = len(args.param)
 src_shape = None
 src_prj = None
 src_trans = None
 src_data = []
 cln_data = [] # Clean-day Selection Data
-src_band = [S2_BAND[band] for band in inp_band]
-src_indx = {}
-for band in inp_band:
-    src_indx[band] = src_band.index(S2_BAND[band])
+src_band = args.param
 src_dtim = []
 for year in data_years:
     ystr = '{}'.format(year)
@@ -138,7 +105,7 @@ for year in data_years:
     if not os.path.isdir(dnam):
         continue
     for f in sorted(os.listdir(dnam)):
-        m = re.search('^('+'\d'*8+')_resample\.tif$',f)
+        m = re.search('^('+'\d'*8+')_indices\.tif$',f)
         if not m:
             continue
         dstr = m.group(1)
@@ -177,14 +144,15 @@ for year in data_years:
             if not band in tmp_band:
                 raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
             tmp_indx.append(tmp_band.index(band))
-        if not cln_band in tmp_band:
-            raise ValueError('Error in finding {} >>> {}'.format(cln_band,fnam))
-        cln_indx = tmp_band.index(cln_band)
+        band = 'S'+args.cln_band
+        if not band in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
+        cln_indx = tmp_band.index(band)
         src_data.append(tmp_data[tmp_indx])
         cln_data.append(tmp_data[cln_indx])
         src_dtim.append(d)
-src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
-cln_data = np.array(cln_data)*1.0e-4 # NTIM,NY,NX
+src_data = np.array(src_data) # NTIM,NBAND,NY,NX
+cln_data = np.array(cln_data) # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
 src_ntim = date2num(src_dtim)
 src_xmin = src_trans[0]
@@ -226,57 +194,9 @@ cnd = (cln_avg < args.cthr_avg) & (cln_std < args.cthr_std)
 ncnd = cnd.sum()
 if ncnd < args.cln_nmin:
     raise ValueError('Error, not enough clean-day found >>> {}'.format(ncnd))
-src_data_selected = src_data[cnd] # NTIM,NBAND,NY,NX
+all_data = src_data[cnd] # NTIM,NBAND,NY,NX
 cln_data_selected = cln_data[cnd] # NTIM,NY,NX
 indx_all = np.arange(ncnd)
-
-# Calculate indices
-all_nx = src_nx
-all_ny = src_ny
-all_nb = len(args.param)
-all_data = np.full((ncnd,all_nb,all_ny,all_nx),np.nan)
-norm = 0.0
-for band in args.norm_band:
-    norm += src_data_selected[:,src_indx[band]]
-norm = len(args.norm_band)/norm
-pnams = []
-for iband,param in enumerate(args.param):
-    if param == 'NDVI':
-        red = src_data_selected[:,src_indx['r']]
-        nir = src_data_selected[:,src_indx['n1']]
-        pnams.append(param)
-        all_data[:,iband] = ((nir-red)/(nir+red))
-    elif param == 'GNDVI':
-        green = src_data_selected[:,src_indx['g']]
-        nir = src_data_selected[:,src_indx['n1']]
-        pnams.append(param)
-        all_data[:,iband] = ((nir-green)/(nir+green))
-    elif param == 'RGI':
-        green = src_data_selected[:,src_indx['g']]
-        red = src_data_selected[:,src_indx[args.rgi_red_band]]
-        pnams.append(param)
-        all_data[:,iband] = (green*red)
-    elif param == 'NRGI':
-        green = src_data_selected[:,src_indx['g']]
-        red = src_data_selected[:,src_indx[args.rgi_red_band]]
-        pnams.append(param)
-        all_data[:,iband] = (green*norm*red*norm)
-    elif param[0] == 'S':
-        if len(param) in [2,3]:
-            band = param[1:]
-            pnams.append('{}'.format(BAND_NAME[band]))
-            all_data[:,iband] = src_data_selected[:,src_indx[band]]
-        else:
-            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
-    elif param[0] == 'N':
-        if len(param) in [2,3]:
-            band = param[1:]
-            pnams.append('Normalized {}'.format(BAND_NAME[band]))
-            all_data[:,iband] = src_data_selected[:,src_indx[band]]*norm
-        else:
-            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
-    else:
-        raise ValueError('Error, param={}'.format(param))
 
 # Calculate stats for clean-day pixels
 dst_nx = src_nx
@@ -341,6 +261,24 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.85)
     pdf = PdfPages(args.fignam)
+    pnams = []
+    for param in args.param:
+        if param in ['NDVI','GNDVI','RGI','NRGI']:
+            pnams.append(param)
+        elif param[0] == 'S':
+            if len(param) in [2,3]:
+                band = param[1:]
+                pnams.append('{}'.format(BAND_NAME[band]))
+            else:
+                raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+        elif param[0] == 'N':
+            if len(param) in [2,3]:
+                band = param[1:]
+                pnams.append('Normalized {}'.format(BAND_NAME[band]))
+            else:
+                raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+        else:
+            raise ValueError('Error, param={}'.format(param))
     for i,param in enumerate(args.param):
         fig.clear()
         ax1 = plt.subplot(111)
