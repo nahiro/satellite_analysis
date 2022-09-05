@@ -59,17 +59,24 @@ org_data = data['data_org']
 object_ids = data['object_ids']
 cflag_sc = data['cflag_sc']
 cflag_ref = data['cflag_ref']
+cloud_band = str(data['cloud_band'])
+cloud_thr = float(data['cloud_thr'])
 
 cal_band = []
 for param in args.param:
     if not param in org_band:
         cal_band.append(param)
     else:
-        iband = obs_band.index(param)
-        if cflag_sc[iband]: # cloud removal by SC
+        iband = org_band.index(param)
+        if cflag_sc[iband]: # cloud removal by SC is applied
             cal_band.append(param)
-        elif not cflag_ref[iband]: # cloud removal by reflectance
+        elif not cflag_ref[iband]: # cloud removal by reflectance is not appplied
             cal_band.append(param)
+        elif cloud_band != args.cr_band:
+            cal_band.append(param)
+        elif not np.allclose(cloud_thr,args.cthr):
+            cal_band.append(param)
+if len(cal_band) > 0: # Parcellate data
 
 """
 # Read atcor paramater
