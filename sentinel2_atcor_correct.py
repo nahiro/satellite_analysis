@@ -142,6 +142,12 @@ if len(cal_band) > 0:
     ds = None
     if src_nodata is not None and not np.isnan(src_nodata):
         src_data[src_data == src_nodata] = np.nan
+    if 'norm_band' in src_meta:
+        if not array_equal(norm_band,[s.strip() for s in src_meta['norm_band'].split(',')]):
+            raise ValueError('Error, different band for normalization >>> {}'.format(args.src_geotiff))
+    if 'rgi_red_band' in src_meta:
+        if rgi_red_band != src_meta['rgi_red_band']:
+            raise ValueError('Error, different band for RGI >>> {}'.format(args.src_geotiff))
 
     # Read Resample GeoTIFF
     ds = gdal.Open(args.res_geotiff)
@@ -234,6 +240,7 @@ if len(cal_band) > 0:
             cal_data = np.full((nobject,src_nb),np.nan)
             cal_data[indx] = tmp_data
 
+# Data before correction
 
 
 

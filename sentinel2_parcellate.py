@@ -20,8 +20,6 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
 S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
-NORM_BAND = ['b','g','r','e1','e2','e3','n1']
-RGI_RED_BAND = 'e1'
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
@@ -160,13 +158,13 @@ if src_nodata is not None and not np.isnan(src_nodata):
 if not 'norm_band' in src_meta:
     sys.stderr.write('Warning, failed in finding {} in metadata >>> {}\n'.format('norm_band',args.src_geotiff))
     sys.stderr.flush()
-    norm_band = NORM_BAND
+    norm_band = []
 else:
     norm_band = [s.strip() for s in src_meta['norm_band'].split(',')]
 if not 'rgi_red_band' in src_meta:
     sys.stderr.write('Warning, failed in finding {} in metadata >>> {}\n'.format('rgi_red_band',args.src_geotiff))
     sys.stderr.flush()
-    rgi_red_band = RGI_RED_BAND
+    rgi_red_band = ''
 else:
     rgi_red_band = src_meta['rgi_red_band']
 
