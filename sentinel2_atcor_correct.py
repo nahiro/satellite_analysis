@@ -71,40 +71,56 @@ if not os.path.exists(args.atcor_fnam):
 if not args.debug:
     warnings.simplefilter('ignore')
 
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    all_ids = np.arange(nobject)+1
+else:
+    list_ids = []
+    for rec in r.iterRecords():
+        list_ids.append(rec.OBJECTID)
+    all_ids = np.array(list_ids)
+
 # Read parcel data
 data = np.load(args.parcel_fnam)
-org_band = data['params'].tolist()
-org_data = data['data_org']
+inp_band = data['params'].tolist()
+inp_data = data['data']
 norm_band = data['norm_band'].tolist()
 rgi_red_band = str(data['rgi_red_band'])
-object_ids = data['object_ids']
-cflag_sc = data['cflag_sc']
-cflag_ref = data['cflag_ref']
-cloud_band = str(data['cloud_band'])
-cloud_thr = float(data['cloud_thr'])
+if not np.array_equal(data['object_ids'],all_ids):
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.parcel_fnam))
+inp_cflag_sc = data['cflag_sc']
+inp_cflag_ref = data['cflag_ref']
+inp_cr_band = str(data['cloud_band'])
+inp_cthr = float(data['cloud_thr'])
 for param in args.param:
-    if not param in org_band:
+    if not param in inp_band:
         if not param in args.atcor_param:
             raise ValueError('Error in finding {} in {}'.format(param,args.parcel_fnam))
 
 # Check parameters to be collected
 cal_band = []
 for param in args.atcor_param:
-    if not param in org_band:
+    if not param in inp_band:
         cal_band.append(param)
     else:
-        iband = org_band.index(param)
-        if cflag_sc[iband]: # cloud removal by SC is applied
+        iband = inp_band.index(param)
+        if inp_cflag_sc[iband]: # cloud removal by SC is applied
             cal_band.append(param)
-        elif not cflag_ref[iband]: # cloud removal by reflectance is not appplied
+        elif not inp_cflag_ref[iband]: # cloud removal by reflectance is not appplied
             cal_band.append(param)
-        elif cloud_band != args.cr_band:
+        elif inp_cr_band != args.cr_band:
             cal_band.append(param)
-        elif not np.allclose(cloud_thr,args.cthr):
+        elif not np.allclose(inp_cthr,args.cthr):
             cal_band.append(param)
 
 # Parcellate data
 if len(cal_band) > 0:
+    cal_cflag_sc = False
+    cal_cflag_ref = True
+    cal_cr_band = args.cr_band
+    cal_cthr = args.cthr
     # Read Source GeoTIFF
     ds = gdal.Open(args.src_geotiff)
     src_nx = ds.RasterXSize
@@ -143,10 +159,10 @@ if len(cal_band) > 0:
     if src_nodata is not None and not np.isnan(src_nodata):
         src_data[src_data == src_nodata] = np.nan
     if 'norm_band' in src_meta:
-        if not array_equal(norm_band,[s.strip() for s in src_meta['norm_band'].split(',')]):
+        if (len(src_meta['norm_band']) > 0) and (not np.array_equal(norm_band,[s.strip() for s in src_meta['norm_band'].split(',')])):
             raise ValueError('Error, different band for normalization >>> {}'.format(args.src_geotiff))
     if 'rgi_red_band' in src_meta:
-        if rgi_red_band != src_meta['rgi_red_band']:
+        if (rgi_red_band != '') and (rgi_red_band != src_meta['rgi_red_band']):
             raise ValueError('Error, different band for RGI >>> {}'.format(args.src_geotiff))
 
     # Read Resample GeoTIFF
@@ -205,10 +221,6 @@ if len(cal_band) > 0:
     object_inds = np.array(object_inds,dtype='object')
     tmp_data = np.full((ndat,src_nb),np.nan)
 
-    # Read Shapefile
-    r = shapefile.Reader(args.shp_fnam)
-    nobject = len(r)
-
     # Calculate mean indices
     for iband,param in enumerate(cal_band):
         data = src_data[iband]
@@ -217,7 +229,6 @@ if len(cal_band) > 0:
 
     # Store data
     if args.use_index:
-        all_ids = np.arange(nobject)+1
         if np.array_equal(object_ids,all_ids):
             cal_data = tmp_data
         else:
@@ -227,129 +238,78 @@ if len(cal_band) > 0:
             cal_data = np.full((nobject,src_nb),np.nan)
             cal_data[indx] = tmp_data
     else:
-        all_ids = []
-        for rec in r.iterRecords():
-            all_ids.append(rec.OBJECTID)
-        if np.array_equal(object_ids,np.array(all_ids)):
+        if np.array_equal(object_ids,all_ids):
             cal_data = tmp_data
         else:
             try:
-                indx = np.array([all_ids.index(object_id) for object_id in object_ids])
+                indx = np.array([list_ids.index(object_id) for object_id in object_ids])
             except Exception:
                 raise ValueError('Error in finding OBJECTID in {}'.format(args.shp_fnam))
             cal_data = np.full((nobject,src_nb),np.nan)
             cal_data[indx] = tmp_data
 
 # Data before correction
+org_band = []
+org_data = []
+org_cflag_sc = []
+org_cflag_ref = []
+org_cr_band = []
+org_cthr = []
+for param in args.param:
+    org_band.append(param)
+    if param in cal_band:
+        indx = cal_band.index(param)
+        org_data.append(cal_data[:,indx])
+        org_cflag_sc.append(cal_cflag_sc)
+        org_cflag_ref.append(cal_cflag_ref)
+        org_cr_band.append(cal_cr_band)
+        org_cthr.append(cal_cthr)
+    else:
+        indx = inp_band.index(param)
+        org_data.append(inp_data[:,indx])
+        org_cflag_sc.append(inp_cflag_sc[indx])
+        org_cflag_ref.append(inp_cflag_ref[indx])
+        org_cr_band.append(inp_cr_band)
+        org_cthr.append(inp_cthr)
+org_data = np.array(org_data)
 
-
-
-"""
 # Read atcor paramater
 param = np.load(args.atcor_fnam)
+atcor_band = param['params']
 corcoef = param['corcoef']
 factor = param['factor']
 offset = param['offset']
 cnd = (corcoef < args.r_min)
 factor[cnd] = np.nan
 offset[cnd] = np.nan
-npar = factor.size
+npar = factor.shape[1]
+if npar != nobject:
+    raise ValueError('Error, npar={}, nobject={}'.format(npar,nobject))
+for param in args.atcor_param:
+    if not param in atcor_band:
+        raise ValueError('Error in finding {} in {}'.format(param,args.atcor_fnam))
 
-ds = gdal.Open(input_fnam)
-data = ds.ReadAsArray()
-band_list = []
-if args.band_fnam is not None:
-    with open(args.band_fnam,'r') as fp:
-        for line in fp:
-            item = line.split()
-            if len(item) <= args.band_col or item[0][0]=='#':
-                continue
-            band_list.append(item[args.band_col])
-    if len(data) != len(band_list):
-        raise ValueError('Error, len(data)={}, len(band_list)={} >>> {}'.format(len(data),len(band_list),input_fnam))
-else:
-    for i in range(ds.RasterCount):
-        band = ds.GetRasterBand(i+1)
-        band_name = band.GetDescription()
-        if not band_name:
-            raise ValueError('Error, faild to read band name >>> {}'.format(input_fnam))
-        band_list.append(band_name)
-ds = None
-if args.band.upper() == 'NDVI':
-    band_name = 'B4'
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band4_index = band_list.index(band_name)
-    b4_img = data[band4_index].astype(np.float64).flatten()
-    band_name = 'B8'
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band8_index = band_list.index(band_name)
-    b8_img = data[band8_index].astype(np.float64).flatten()
-    data_img = (b8_img-b4_img)/(b8_img+b4_img)
-    if not args.ignore_band4:
-        b4_img *= 1.0e-4
-else:
-    band_name = 'B{}'.format(args.band)
-    if not band_name in band_list:
-        raise ValueError('Error, faild to search index for {}'.format(band_name))
-    band_index = band_list.index(band_name)
-    data_img = data[band_index].astype(np.float64).flatten()*1.0e-4
-    if not args.ignore_band4:
-        if args.band == 4:
-            b4_img = data_img.copy()
-        else:
-            band_name = 'B4'
-            if not band_name in band_list:
-                raise ValueError('Error, faild to search index for {}'.format(band_name))
-            band4_index = band_list.index(band_name)
-            b4_img = data[band4_index].astype(np.float64).flatten()*1.0e-4
-
-object_ids = []
-blocks = []
-inds = []
-areas = []
-with open(args.area_fnam,'r') as fp:
-    for line in fp:
-        item = line.split()
-        if len(item) < 3 or item[0] == '#':
-            continue
-        object_ids.append(int(item[0]))
-        blocks.append(item[1])
-        inds.append([])
-        areas.append([])
-        n = int(item[2])
-        if len(item) < 5 and n != 0:
-            raise ValueError('Error, len(item)={}, n={}, expected n=0.'.format(len(item),n))
-        for nn in range(3,n*2+3,2):
-            inds[-1].append(int(item[nn]))
-            areas[-1].append(float(item[nn+1]))
-        inds[-1] = np.array(inds[-1])
-        areas[-1] = np.array(areas[-1])
-object_ids = np.array(object_ids)
-blocks = np.array(blocks)
-nobject = object_ids.size
-if nobject != npar:
-    raise ValueError('Error, nobject={}, npar={}'.format(nobject,npar))
-
-data_org = []
-for iobj in range(nobject):
-    if inds[iobj].size < 1:
-        data_org.append(np.nan)
-        continue
-    data_value = data_img[inds[iobj]]
-    data_weight = areas[iobj]
-    if args.ignore_band4:
-        cnd = ~np.isnan(data_value)
+# Atmospheric correction
+cor_data = []
+for iband,param in enumerate(args.param):
+    if param in args.atcor_param:
+        indx = atcor_band.index(param)
+        cor_data.append(org_data[iband]*factor[indx]+offset[indx])
     else:
-        data_band4 = b4_img[inds[iobj]]
-        cnd = (~np.isnan(data_value)) & (~np.isnan(data_band4)) & (data_band4 < args.band4_max)
-    if cnd.sum() <= 1:
-        data_org.append(data_value[cnd].mean())
-    else:
-        data_weighted_stats = DescrStatsW(data_value[cnd],weights=data_weight[cnd],ddof=0)
-        data_org.append(data_weighted_stats.mean)
-data_org = np.array(data_org)
-data_cor = data_org*factor+offset
-np.savez(args.out_fnam,data_org=data_org,data_cor=data_cor)
-"""
+        cor_data.append(org_data[iband])
+cor_data = np.array(cor_data)
+
+# Output file
+np.savez(args.out_fnam,
+params=args.param,
+atcor_params=args.atcor_param,
+norm_band=norm_band,
+rgi_red_band=rgi_red_band,
+object_ids=all_ids,
+data_org=org_data,
+data=cor_data,
+cflag_sc=org_cflag_sc,
+cflag_ref=org_cflag_ref,
+cloud_band=org_cr_band,
+cloud_thr=org_cthr
+)
