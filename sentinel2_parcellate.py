@@ -387,7 +387,9 @@ if args.debug:
         ax2.minorticks_on()
         ax2.set_ylabel('{}'.format(param))
         ax2.yaxis.set_label_coords(6.5,0.5)
-        if args.remove_nan:
+        if args.shp_fnam is not None:
+            fig_xmin,fig_ymin,fig_xmax,fig_ymax = r.bbox
+        elif args.remove_nan:
             src_indy,src_indx = np.indices(src_shape)
             src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
             src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
