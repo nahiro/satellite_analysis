@@ -8,55 +8,94 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
-from statsmodels.stats.weightstats import DescrStatsW
-from optparse import OptionParser,IndentedHelpFormatter
+from argparse import ArgumentParser,RawTextHelpFormatter
+
+# Constants
+PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+          'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+          'NDVI','GNDVI','RGI','NRGI']
+S2_PARAM = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
+S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
+BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
 
 # Default values
-BAND = 'NDVI'
-BAND_COL = 1
-BAND4_MAX = 0.35
+PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
+NORM_BAND = ['b','g','r','e1','e2','e3','n1']
+RGI_RED_BAND = 'e1'
+CR_BAND = 'r'
+CTHR = 0.35
 R_MIN = 0.3
-AREA_FNAM = 'pixel_area_block.dat'
 
 # Read options
-parser = OptionParser(formatter=IndentedHelpFormatter(max_help_position=200,width=200))
-parser.set_usage('Usage: %prog input_fnam [options]')
-parser.add_option('--band',default=BAND,help='Target band (%default)')
-parser.add_option('-B','--band_fnam',default=None,help='Band file name (%default)')
-parser.add_option('--band_col',default=BAND_COL,help='Band column number (%default)')
-parser.add_option('--band4_max',default=BAND4_MAX,type='float',help='Band4 threshold (%default)')
-parser.add_option('--r_min',default=R_MIN,type='float',help='R threshold (%default)')
-parser.add_option('--area_fnam',default=AREA_FNAM,help='Pixel area file name (%default)')
-parser.add_option('--param_fnam',default=None,help='Atcor parameter file name (%default)')
-parser.add_option('-o','--output_fnam',default=None,help='Output NPZ name (%default)')
-parser.add_option('--ignore_band4',default=False,action='store_true',help='Ignore exceeding the band4 threshold (%default)')
-parser.add_option('--debug',default=False,action='store_true',help='Debug mode (%default)')
-(opts,args) = parser.parse_args()
-if len(args) < 1:
-    parser.print_help()
-    sys.exit(0)
-input_fnam = args[0]
-m = re.search('^('+'\d'*8+')_',os.path.basename(input_fnam))
-if not m:
-    raise ValueError('Error in file name >>> '+input_fnam)
-dstr = m.group(1)
-if not opts.debug:
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
+parser.add_argument('-N','--norm_band',default=None,action='append',help='Wavelength band for normalization ({})'.format(NORM_BAND))
+parser.add_argument('-r','--rgi_red_band',default=RGI_RED_BAND,help='Wavelength band for RGI (%(default)s)')
+parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
+parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
+parser.add_argument('--r_min',default=R_MIN,type=float,help='R threshold (%(default)s)')
+parser.add_argument('--param_fnam',default=None,help='Atcor parameter file name (%(default)s)')
+parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
+parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+args = parser.parse_args()
+if args.param is None:
+    args.param = PARAM
+for param in args.param:
+    if not param in PARAMS:
+        raise ValueError('Error, unknown parameter >>> {}'.format(param))
+if args.norm_band is None:
+    args.norm_band = NORM_BAND
+for band in args.norm_band:
+    if not band in S2_BAND:
+        raise ValueError('Error, unknown band for normalization >>> {}'.format(band))
+if not args.rgi_red_band in S2_BAND:
+    raise ValueError('Error, unknown band for rgi >>> {}'.format(args.rgi_red_band))
+if not args.cr_band in S2_BAND:
+    raise ValueError('Error, unknown band for clean-day select >>> {}'.format(args.cr_band))
+inp_band = []
+for param in args.param:
+    if param == 'NDVI':
+        for band in ['r','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param == 'GNDVI':
+        for band in ['g','n1']:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param in ['RGI','NRGI']:
+        for band in ['g',args.rgi_red_band]:
+            if not band in inp_band:
+                inp_band.append(band)
+    elif param[0] in ['S','N']:
+        if len(param) in [2,3]:
+            band = param[1:]
+            if not band in inp_band:
+                inp_band.append(band)
+        else:
+            raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
+    else:
+        raise ValueError('Error, param={}'.format(param))
+for band in args.norm_band:
+    if not band in inp_band:
+        inp_band.append(band)
+if not args.cr_band in inp_band:
+    inp_band.append(args.cr_band)
+inp_band = np.array(inp_band)
+indx = np.argsort([S2_PARAM.index(band) for band in inp_band])
+inp_band = inp_band[indx]
+if not os.path.exists(args.param_fnam):
+    raise IOError('Error, no such file >>> '+args.param_fnam)
+
+if not args.debug:
     warnings.simplefilter('ignore')
-if opts.band.upper() == 'NDVI':
-    band_l = 'ndvi'
-else:
-    band_l = 'band'+opts.band
-if opts.param_fnam is None:
-    opts.param_fnam = 'atcor_param_{}_{}.npz'.format(band_l,dstr)
-if not os.path.exists(opts.param_fnam):
-    raise IOError('Error, no such file >>> '+opts.param_fnam)
-if opts.output_fnam is None:
-    opts.output_fnam = 'atcor_data_{}_{}.npz'.format(band_l,dstr)
-param = np.load(opts.param_fnam)
+
+# Read atcor paramater
+param = np.load(args.param_fnam)
 corcoef = param['corcoef']
 factor = param['factor']
 offset = param['offset']
-cnd = (corcoef < opts.r_min)
+cnd = (corcoef < args.r_min)
 factor[cnd] = np.nan
 offset[cnd] = np.nan
 npar = factor.size
@@ -64,13 +103,13 @@ npar = factor.size
 ds = gdal.Open(input_fnam)
 data = ds.ReadAsArray()
 band_list = []
-if opts.band_fnam is not None:
-    with open(opts.band_fnam,'r') as fp:
+if args.band_fnam is not None:
+    with open(args.band_fnam,'r') as fp:
         for line in fp:
             item = line.split()
-            if len(item) <= opts.band_col or item[0][0]=='#':
+            if len(item) <= args.band_col or item[0][0]=='#':
                 continue
-            band_list.append(item[opts.band_col])
+            band_list.append(item[args.band_col])
     if len(data) != len(band_list):
         raise ValueError('Error, len(data)={}, len(band_list)={} >>> {}'.format(len(data),len(band_list),input_fnam))
 else:
@@ -81,7 +120,7 @@ else:
             raise ValueError('Error, faild to read band name >>> {}'.format(input_fnam))
         band_list.append(band_name)
 ds = None
-if opts.band.upper() == 'NDVI':
+if args.band.upper() == 'NDVI':
     band_name = 'B4'
     if not band_name in band_list:
         raise ValueError('Error, faild to search index for {}'.format(band_name))
@@ -93,16 +132,16 @@ if opts.band.upper() == 'NDVI':
     band8_index = band_list.index(band_name)
     b8_img = data[band8_index].astype(np.float64).flatten()
     data_img = (b8_img-b4_img)/(b8_img+b4_img)
-    if not opts.ignore_band4:
+    if not args.ignore_band4:
         b4_img *= 1.0e-4
 else:
-    band_name = 'B{}'.format(opts.band)
+    band_name = 'B{}'.format(args.band)
     if not band_name in band_list:
         raise ValueError('Error, faild to search index for {}'.format(band_name))
     band_index = band_list.index(band_name)
     data_img = data[band_index].astype(np.float64).flatten()*1.0e-4
-    if not opts.ignore_band4:
-        if opts.band == 4:
+    if not args.ignore_band4:
+        if args.band == 4:
             b4_img = data_img.copy()
         else:
             band_name = 'B4'
@@ -115,7 +154,7 @@ object_ids = []
 blocks = []
 inds = []
 areas = []
-with open(opts.area_fnam,'r') as fp:
+with open(args.area_fnam,'r') as fp:
     for line in fp:
         item = line.split()
         if len(item) < 3 or item[0] == '#':
@@ -145,11 +184,11 @@ for iobj in range(nobject):
         continue
     data_value = data_img[inds[iobj]]
     data_weight = areas[iobj]
-    if opts.ignore_band4:
+    if args.ignore_band4:
         cnd = ~np.isnan(data_value)
     else:
         data_band4 = b4_img[inds[iobj]]
-        cnd = (~np.isnan(data_value)) & (~np.isnan(data_band4)) & (data_band4 < opts.band4_max)
+        cnd = (~np.isnan(data_value)) & (~np.isnan(data_band4)) & (data_band4 < args.band4_max)
     if cnd.sum() <= 1:
         data_org.append(data_value[cnd].mean())
     else:
@@ -157,4 +196,4 @@ for iobj in range(nobject):
         data_org.append(data_weighted_stats.mean)
 data_org = np.array(data_org)
 data_cor = data_org*factor+offset
-np.savez(opts.output_fnam,data_org=data_org,data_cor=data_cor)
+np.savez(args.out_fnam,data_org=data_org,data_cor=data_cor)
