@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
-import sys
 import re
+import shutil
 import warnings
 import numpy as np
 try:
@@ -56,6 +56,7 @@ parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',he
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
 if args.param is None:
     args.param = PARAM
@@ -308,7 +309,7 @@ for iband,param in enumerate(args.param):
 
 # Read atcor paramater
 param = np.load(args.atcor_fnam)
-atcor_band = param['params']
+atcor_band = param['params'].tolist()
 corcoef = param['corcoef']
 factor = param['factor']
 offset = param['offset']
@@ -377,13 +378,12 @@ if args.out_csv is not None:
 
 # For debug
 if args.debug:
-    if args.shp_fnam is not None:
-        r = shapefile.Reader(args.out_shp)
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
+    r = shapefile.Reader(args.out_shp)
     for iband,param in enumerate(args.param):
         fig.clear()
         ax1 = plt.subplot(111)
@@ -392,13 +392,13 @@ if args.debug:
         if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
             zmin = ax1_zmin[param]
         else:
-            zmin = np.nanmin(data)
+            zmin = np.nanmin(cor_data[:,iband])
             if np.isnan(zmin):
                 zmin = 0.0
         if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
             zmax = ax1_zmax[param]
         else:
-            zmax = np.nanmax(data)
+            zmax = np.nanmax(cor_data[:,iband])
             if np.isnan(zmax):
                 zmax = 1.0
         zdif = zmax-zmin
@@ -415,39 +415,18 @@ if args.debug:
             if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
                 zmin = (np.floor(ax1_zmin[param]/ax1_zstp[param])-1.0)*ax1_zstp[param]
             else:
-                zmin = (np.floor(np.nanmin(data)/ax1_zstp[param])-1.0)*ax1_zstp[param]
+                zmin = (np.floor(np.nanmin(cor_data[:,iband])/ax1_zstp[param])-1.0)*ax1_zstp[param]
             if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
                 zmax = ax1_zmax[param]+0.1*ax1_zstp[param]
             else:
-                zmax = np.nanmax(data)+0.1*ax1_zstp[param]
+                zmax = np.nanmax(cor_data[:,iband])+0.1*ax1_zstp[param]
             ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,ax1_zstp[param])).ax
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
         ax2.set_ylabel('{}'.format(param))
         ax2.yaxis.set_label_coords(6.5,0.5)
-        if args.remove_nan:
-            src_indy,src_indx = np.indices(src_shape)
-            src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
-            src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
-            cnd = ~np.isnan(data)
-            if cnd.sum() < 1:
-                fig_xmin = src_xmin
-                fig_xmax = src_xmax
-                fig_ymin = src_ymin
-                fig_ymax = src_ymax
-            else:
-                xp = src_xp[cnd]
-                yp = src_yp[cnd]
-                fig_xmin = xp.min()
-                fig_xmax = xp.max()
-                fig_ymin = yp.min()
-                fig_ymax = yp.max()
-        else:
-            fig_xmin = src_xmin
-            fig_xmax = src_xmax
-            fig_ymin = src_ymin
-            fig_ymax = src_ymax
+        fig_xmin,fig_ymin,fig_xmax,fig_ymax = r.bbox
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
         if args.ax1_title is not None:
