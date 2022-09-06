@@ -22,7 +22,6 @@ proc_atcor.pnams.append('ref_thr')
 proc_atcor.pnams.append('clean_nmin')
 proc_atcor.pnams.append('clean_band')
 proc_atcor.pnams.append('clean_thr')
-proc_atcor.pnams.append('cloud_flag')
 proc_atcor.pnams.append('cr2_flag')
 proc_atcor.pnams.append('cloud_band')
 proc_atcor.pnams.append('cloud_thr')
@@ -50,7 +49,6 @@ proc_atcor.params['ref_thr'] = 'Thres. for Reference Select'
 proc_atcor.params['clean_nmin'] = 'Min Clean-day Number'
 proc_atcor.params['clean_band'] = 'Band for Clean-day Select'
 proc_atcor.params['clean_thr'] = 'Thres. for Clean-day Select'
-proc_atcor.params['cloud_flag'] = 'Cloud Rem. by Reflectance'
 proc_atcor.params['cr2_flag'] = '2-step Cloud Removal'
 proc_atcor.params['cloud_band'] = 'Band for Cloud Removal'
 proc_atcor.params['cloud_thr'] = 'Thres. for Cloud Removal'
@@ -78,7 +76,6 @@ proc_atcor.param_types['ref_thr'] = 'float'
 proc_atcor.param_types['clean_nmin'] = 'int'
 proc_atcor.param_types['clean_band'] = 'string_select'
 proc_atcor.param_types['clean_thr'] = 'float_list'
-proc_atcor.param_types['cloud_flag'] = 'boolean_list'
 proc_atcor.param_types['cr2_flag'] = 'boolean'
 proc_atcor.param_types['cloud_band'] = 'string_select'
 proc_atcor.param_types['cloud_thr'] = 'float'
@@ -116,7 +113,6 @@ proc_atcor.defaults['ref_thr'] = 0.035
 proc_atcor.defaults['clean_nmin'] = 4
 proc_atcor.defaults['clean_band'] = 'r'
 proc_atcor.defaults['clean_thr'] = [0.06,0.05,1.0]
-proc_atcor.defaults['cloud_flag'] = [True,True,True]
 proc_atcor.defaults['cr2_flag'] = False
 proc_atcor.defaults['cloud_band'] = 'r'
 proc_atcor.defaults['cloud_thr'] = 0.35
@@ -136,7 +132,6 @@ proc_atcor.list_sizes['stat_period'] = 2
 proc_atcor.list_sizes['ref_band'] = 10
 proc_atcor.list_sizes['clean_band'] = 10
 proc_atcor.list_sizes['clean_thr'] = 3
-proc_atcor.list_sizes['cloud_flag'] = 3
 proc_atcor.list_sizes['cloud_band'] = 10
 proc_atcor.list_sizes['refs_thr'] = 10
 proc_atcor.list_sizes['nrefs_thr'] = 10
@@ -152,7 +147,6 @@ proc_atcor.list_labels['stat_period'] = ['Start :',' End :']
 proc_atcor.list_labels['ref_band'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['clean_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_atcor.list_labels['clean_thr'] = ['Mean :',' Std :',' Deviation :']
-proc_atcor.list_labels['cloud_flag'] = ['Reflectance','Norm. Reflectance','Index']
 proc_atcor.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 #proc_atcor.list_labels['refs_thr'] = [' b :','  g :','  r :','  e1 :','  e2 :','  e3 :','  n1 :','  n2 :','  s1 :','  s2 :']
 proc_atcor.list_labels['refs_thr'] = ['   b :','    g :','    r :','    e1 :','    e2 :','    e3 :','    n1 :','    n2 :','    s1 :','    s2 :']
@@ -177,7 +171,6 @@ proc_atcor.input_types['ref_thr'] = 'box'
 proc_atcor.input_types['clean_nmin'] = 'box'
 proc_atcor.input_types['clean_band'] = 'string_select'
 proc_atcor.input_types['clean_thr'] = 'float_list'
-proc_atcor.input_types['cloud_flag'] = 'boolean_list'
 proc_atcor.input_types['cr2_flag'] = 'boolean'
 proc_atcor.input_types['cloud_band'] = 'string_select'
 proc_atcor.input_types['cloud_thr'] = 'box'

@@ -164,7 +164,6 @@ config_defaults.update({
 'atcor.clean_nmin'                    : 4,
 'atcor.clean_band'                    : 'r',
 'atcor.clean_thr'                     : [0.06,0.05,1.0],
-'atcor.cloud_flag'                    : [True,True,True],
 'atcor.cr2_flag'                      : False,
 'atcor.cloud_band'                    : 'r',
 'atcor.cloud_thr'                     : 0.35,
