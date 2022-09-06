@@ -30,6 +30,7 @@ proc_atcor.pnams.append('nrefs_thr')
 proc_atcor.pnams.append('inds_thr')
 proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('mul_thr')
+proc_atcor.pnams.append('fit_thr')
 proc_atcor.pnams.append('oflag')
 proc_atcor.params['gis_fnam'] = 'Polygon File'
 proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
@@ -57,6 +58,7 @@ proc_atcor.params['nrefs_thr'] = 'Norm. Reflect. Thres. for Fit'
 proc_atcor.params['inds_thr'] = 'Index Thres. for Fit'
 proc_atcor.params['rel_thr'] = 'Relative Thres. for Fit'
 proc_atcor.params['mul_thr'] = 'Thres. Factor for Fit'
+proc_atcor.params['fit_thr'] = 'Thres. for Correction'
 proc_atcor.params['oflag'] = 'Overwrite Flag'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
@@ -84,6 +86,7 @@ proc_atcor.param_types['nrefs_thr'] = 'float_list'
 proc_atcor.param_types['inds_thr'] = 'float_list'
 proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['mul_thr'] = 'float'
+proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['oflag'] = 'boolean_list'
 proc_atcor.param_range['n_ref'] = (10,1000000)
 proc_atcor.param_range['ref_thr'] = (0.0,10.0)
@@ -95,6 +98,7 @@ proc_atcor.param_range['nrefs_thr'] = (0.0,10.0)
 proc_atcor.param_range['inds_thr'] = (0.0,10.0)
 proc_atcor.param_range['rel_thr'] = (0.0,10.0)
 proc_atcor.param_range['mul_thr'] = (0.0,10.0)
+proc_atcor.param_range['fit_thr'] = (0.0,10.0)
 proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
 proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
@@ -121,6 +125,7 @@ proc_atcor.defaults['nrefs_thr'] = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1]
 proc_atcor.defaults['inds_thr'] = [0.1,0.1,0.1,0.1]
 proc_atcor.defaults['rel_thr'] = 1.0
 proc_atcor.defaults['mul_thr'] = 2.0
+proc_atcor.defaults['fit_thr'] = 0.3
 proc_atcor.defaults['oflag'] = [False,False,False,False,False]
 proc_atcor.list_sizes['out_refs'] = 10
 proc_atcor.list_sizes['atcor_refs'] = 10
@@ -179,6 +184,7 @@ proc_atcor.input_types['nrefs_thr'] = 'float_list'
 proc_atcor.input_types['inds_thr'] = 'float_list'
 proc_atcor.input_types['rel_thr'] = 'box'
 proc_atcor.input_types['mul_thr'] = 'box'
+proc_atcor.input_types['fit_thr'] = 'box'
 proc_atcor.input_types['oflag'] = 'boolean_list'
 proc_atcor.flag_check['mask_studyarea'] = False
 proc_atcor.flag_check['stat_fnam'] = False

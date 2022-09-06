@@ -172,6 +172,7 @@ config_defaults.update({
 'atcor.inds_thr'                      : [0.1,0.1,0.1,0.1],
 'atcor.rel_thr'                       : 1.0,
 'atcor.mul_thr'                       : 2.0,
+'atcor.fit_thr'                       : 0.3,
 'atcor.oflag'                         : [False,False,False,False,False],
 'atcor.python_path'                   : python_path,
 'atcor.scr_dir'                       : scr_dir,
