@@ -125,6 +125,7 @@ config_defaults.update({
 'geocor.middle_left_frame_width'      : 1000,
 #----------- parcel -----------
 'parcel.gis_fnam'                     : gis_fnam,
+'parcel.mask_parcel'                  : mask_parcel,
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_refs'                   : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_refs'                  : [True,True,True,True,True,True,True,True,True,True],
