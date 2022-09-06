@@ -225,6 +225,7 @@ class Atcor(Satellite_Process):
                         atcor_flag = True
                 command += ' --cr_band {}'.format(self.values['cloud_band'])
                 command += ' --cthr {}'.format(self.values['cloud_thr'])
+                command += ' --fignam "{}"'.format(atcor_pdf)
                 command += ' --use_index'
                 command += ' --debug'
                 command += ' --batch'
