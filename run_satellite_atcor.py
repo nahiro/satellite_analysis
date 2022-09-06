@@ -210,6 +210,15 @@ class Atcor(Satellite_Process):
                 command += ' --atcor_fnam "{}"'.format(fact_npz)
                 command += ' --out_fnam "{}"'.format(atcor_npz)
                 command += ' --out_shp "{}"'.format(atcor_shp)
+                for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
+                    if flag:
+                        command += ' --param S{}'.format(param.strip())
+                for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
+                    if flag:
+                        command += ' --param {}'.format(param.strip())
+                for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
+                    if flag:
+                        command += ' --param {}'.format(param.strip())
                 atcor_flag = False
                 for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                     if flag:
