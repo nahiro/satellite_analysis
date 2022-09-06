@@ -61,6 +61,31 @@ class Atcor(Satellite_Process):
             command += ' --use_index'
             self.run_command(command,message='<<< Select nearest pixels >>>')
 
+        # Check Indices
+        indices_fnams = []
+        indices_dstrs = []
+        for year in data_years:
+            ystr = '{}'.format(year)
+            dnam = os.path.join(self.s2_data,'indices',ystr)
+            if not os.path.isdir(dnam):
+                continue
+            for f in sorted(os.listdir(dnam)):
+                m = re.search('^('+'\d'*8+')_indices\.tif$',f)
+                if not m:
+                    continue
+                dstr = m.group(1)
+                d = datetime.strptime(dstr,'%Y%m%d')
+                if d < first_dtim or d > last_dtim:
+                    continue
+                fnam = os.path.join(dnam,f)
+                indices_fnams.append(fnam)
+                indices_dstrs.append(dstr)
+        inds = np.argsort(indices_dstrs)#[::-1]
+        indices_fnams = [indices_fnams[i] for i in inds]
+        indices_dstrs = [indices_dstrs[i] for i in inds]
+        if len(indices_fnams) < 1:
+            self.print_message('No indices data for process.',print_time=False)
+
         # Calculate stats
         stat_tif = self.values['stat_fnam']
         bnam,enam = os.path.splitext(stat_tif)
@@ -97,34 +122,12 @@ class Atcor(Satellite_Process):
             command += ' --debug'
             command += ' --batch'
             if atcor_flag:
-                self.run_command(command,message='<<< Calculate stats >>>')
+                if len(indices_fnams) < 1:
+                    raise IOError('No indices data')
+                else:
+                    self.run_command(command,message='<<< Calculate stats >>>')
             else:
                 self.print_message('No parameters to be corrected.',print_time=False)
-
-        # Check Indices
-        indices_fnams = []
-        indices_dstrs = []
-        for year in data_years:
-            ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_data,'indices',ystr)
-            if not os.path.isdir(dnam):
-                continue
-            for f in sorted(os.listdir(dnam)):
-                m = re.search('^('+'\d'*8+')_indices\.tif$',f)
-                if not m:
-                    continue
-                dstr = m.group(1)
-                d = datetime.strptime(dstr,'%Y%m%d')
-                if d < first_dtim or d > last_dtim:
-                    continue
-                fnam = os.path.join(dnam,f)
-                indices_fnams.append(fnam)
-                indices_dstrs.append(dstr)
-        inds = np.argsort(indices_dstrs)#[::-1]
-        indices_fnams = [indices_fnams[i] for i in inds]
-        indices_dstrs = [indices_dstrs[i] for i in inds]
-        if len(indices_fnams) < 1:
-            self.print_message('No indices data for process.',print_time=False)
 
         # Calculate correction factor
         for fnam,dstr in zip(indices_fnams,indices_dstrs):
