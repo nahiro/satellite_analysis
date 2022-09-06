@@ -311,14 +311,20 @@ for iband,param in enumerate(args.param):
                 ax1.plot(xcnd,ycnd,'b.')
             ax1.plot(xfit,np.polyval(result,xfit),'k:')
             if args.ax1_xmin is None or args.ax1_ymin is None:
-                if flag:
+                if xcnd.size < 1:
+                    xmin = -1.0
+                    ymin = -1.0
+                elif flag:
                     xmin = min(np.nanmin(xcnd),np.nanmin(xcnd2))
                     ymin = min(np.nanmin(ycnd),np.nanmin(ycnd2))
                 else:
                     xmin = np.nanmin(xcnd)
                     ymin = np.nanmin(ycnd)
             if args.ax1_xmax is None or args.ax1_ymax is None:
-                if flag:
+                if xcnd.size < 1:
+                    xmax = 1.0
+                    ymax = 1.0
+                elif flag:
                     xmax = max(np.nanmax(xcnd),np.nanmax(xcnd2))
                     ymax = max(np.nanmax(ycnd),np.nanmax(ycnd2))
                 else:
