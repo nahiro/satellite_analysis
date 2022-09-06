@@ -60,7 +60,7 @@ class Atcor(Satellite_Process):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
-            command += ' --mask_fnam "{}"'.format(os.path.join(self.s2_data,'studyarea_mask.tif'))
+            command += ' --mask_fnam "{}"'.format(self.values['mask_fnam'])
             command += ' --dst_geotiff "{}"'.format(stat_tif)
             atcor_flag = False
             for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
