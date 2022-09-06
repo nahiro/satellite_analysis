@@ -329,8 +329,7 @@ data=cor_data,
 cflag_sc=org_cflag_sc,
 cflag_ref=org_cflag_ref,
 cloud_band=org_cr_band,
-cloud_thr=org_cthr
-)
+cloud_thr=org_cthr)
 
 # Output Shapefile
 w = shapefile.Writer(args.out_shp)

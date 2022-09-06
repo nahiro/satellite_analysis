@@ -53,6 +53,7 @@ class Atcor(Satellite_Process):
         stat_tif = self.values['stat_fnam']
         bnam,enam = os.path.splitext(stat_tif)
         stat_pdf = bnam+'.pdf'
+        atcor_flag = False
         if os.path.exists(stat_tif) and self.values['oflag'][1]:
             os.remove(stat_tif)
         if not os.path.exists(stat_tif):
@@ -61,7 +62,6 @@ class Atcor(Satellite_Process):
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
             command += ' --mask_fnam "{}"'.format(os.path.join(self.s2_data,'studyarea_mask.tif'))
             command += ' --dst_geotiff "{}"'.format(stat_tif)
-            atcor_flag = False
             for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                 if flag:
                     command += ' --param {}'.format(param)
@@ -85,6 +85,10 @@ class Atcor(Satellite_Process):
             command += ' --debug'
             if atcor_flag:
                 self.run_command(command,message='<<< Calculate stats >>>')
+            else:
+                self.print_message('No parameters to be corrected.',print_time=False)
+
+        # Calculate correction factor
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))

@@ -32,7 +32,7 @@ VTHR = [
 RTHR = 1.0
 MTHR = 2.0
 CTHR = 0.35
-INDS_FNAM = 'nearest_inds.npy'
+INDS_FNAM = 'nearest_inds.npz'
 NFIG = 1000
 
 # Read options
@@ -370,5 +370,15 @@ cr_std_array = np.array(cr_std_array)
 factor_array = np.array(factor_array)
 offset_array = np.array(offset_array)
 rmse_array = np.array(rmse_array)
-np.savez(args.out_fnam,params=args.param,number=number_array,corcoef=corcoef_array,cr_mean=cr_mean_array,cr_std=cr_std_array,
-         factor=factor_array,offset=offset_array,rmse=rmse_array)
+
+# Output file
+np.savez(args.out_fnam,
+params=args.param,
+object_ids=object_ids,
+number=number_array,
+corcoef=corcoef_array,
+cr_mean=cr_mean_array,
+cr_std=cr_std_array,
+factor=factor_array,
+offset=offset_array,
+rmse=rmse_array)
