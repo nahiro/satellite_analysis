@@ -162,6 +162,7 @@ class Atcor(Satellite_Process):
                 command += ' --rthr {}'.format(self.values['rel_thr'])
                 command += ' --mthr {}'.format(self.values['mul_thr'])
                 command += ' --fignam "{}"'.format(fact_pdf)
+                command += ' --nfig 10'
                 command += ' --debug'
                 command += ' --batch'
                 if atcor_flag:

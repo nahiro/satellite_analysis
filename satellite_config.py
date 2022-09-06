@@ -163,7 +163,7 @@ config_defaults.update({
 'atcor.cloud_band'                    : 'r',
 'atcor.cloud_thr'                     : 0.35,
 'atcor.refs_thr'                      : [0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02],
-'atcor.nrefs_thr'                     : [0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05],
+'atcor.nrefs_thr'                     : [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],
 'atcor.inds_thr'                      : [0.1,0.1,0.1,0.1],
 'atcor.rel_thr'                       : 1.0,
 'atcor.mul_thr'                       : 2.0,
