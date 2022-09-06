@@ -165,7 +165,7 @@ class Atcor(Satellite_Process):
                     command += ' --outlier_remove2'
                 for param,flag,value in zip(self.list_labels['atcor_refs'],self.values['atcor_refs'],self.values['refs_thr']):
                     if flag:
-                        command += ' --vthr "{}:{}"'.format(param.strip(),value)
+                        command += ' --vthr "S{}:{}"'.format(param.strip(),value)
                 for param,flag,value in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs'],self.values['nrefs_thr']):
                     if flag:
                         command += ' --vthr "{}:{}"'.format(param.strip(),value)
