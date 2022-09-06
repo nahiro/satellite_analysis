@@ -37,6 +37,9 @@ class Atcor(Satellite_Process):
         mask_studyarea = self.values['mask_studyarea']
         if not os.path.exists(mask_studyarea):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_studyarea))
+        mask_parcel = self.values['mask_parcel']
+        if not os.path.exists(mask_parcel):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
         # Select nearest pixels
         inds_npz = self.values['inds_fnam']
@@ -178,8 +181,55 @@ class Atcor(Satellite_Process):
                 if atcor_flag:
                     self.run_command(command,message='<<< Calculate correction factor for {} >>>'.format(dstr))
 
-
-
+        # Atmospheric correction
+        for fnam,dstr in zip(indices_fnams,indices_dstrs):
+            d = datetime.strptime(dstr,'%Y%m%d')
+            ystr = '{}'.format(d.year)
+            dnam = os.path.join(self.s2_data,'parcel',ystr)
+            gnam = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
+            if not os.path.exists(gnam):
+                raise ValueError('Error, no such file >>> {}'.format(gnam))
+            dnam = os.path.join(self.s2_data,'atcor',ystr)
+            fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
+            atcor_npz = os.path.join(dnam,'{}_atcor.npz'.format(dstr))
+            atcor_shp = os.path.join(dnam,'{}_atcor.shp'.format(dstr))
+            atcor_pdf = os.path.join(dnam,'{}_atcor.pdf'.format(dstr))
+            if os.path.exists(atcor_npz) and self.values['oflag'][4]:
+                os.remove(atcor_npz)
+            if not os.path.exists(atcor_npz):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_atcor_correct.py'))
+                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                command += ' --mask_geotiff "{}"'.format(mask_parcel)
+                command += ' --src_geotiff "{}"'.format(fnam)
+                command += ' --parcel_fnam "{}"'.format(gnam)
+                command += ' --atcor_fnam "{}"'.format(fact_npz)
+                command += ' --out_fnam "{}"'.format(atcor_npz)
+                command += ' --out_shp "{}"'.format(atcor_shp)
+                atcor_flag = False
+                for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
+                    if flag:
+                        command += ' --atcor_param {}'.format(param.strip())
+                        atcor_flag = True
+                for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
+                    if flag:
+                        command += ' --atcor_param {}'.format(param.strip())
+                        atcor_flag = True
+                for param,flag in zip(self.list_labels['atcor_inds'],self.values['atcor_inds']):
+                    if flag:
+                        command += ' --atcor_param {}'.format(param.strip())
+                        atcor_flag = True
+                command += ' --cr_band {}'.format(self.values['cloud_band'])
+                command += ' --cthr {}'.format(self.values['cloud_thr'])
+                command += ' --use_index'
+                command += ' --debug'
+                command += ' --batch'
+                if atcor_flag:
+                    self.run_command(command,message='<<< Atmospheric correction for {} >>>'.format(dstr))
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
