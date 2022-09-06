@@ -157,7 +157,6 @@ config_defaults.update({
 'atcor.atcor_nrefs'                   : [True,True,True,True,True,True,True,False,False,False],
 'atcor.out_inds'                      : [True,True,True,True],
 'atcor.atcor_inds'                    : [True,True,False,True],
-'atcor.rgi_red_band'                  : 'e1',
 'atcor.stat_period'                   : ['',''],
 'atcor.n_ref'                         : 1000,
 'atcor.ref_band'                      : [True,True,True,False,False,False,True,False,False,False],

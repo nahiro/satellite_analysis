@@ -15,7 +15,6 @@ proc_atcor.pnams.append('out_nrefs')
 proc_atcor.pnams.append('atcor_nrefs')
 proc_atcor.pnams.append('out_inds')
 proc_atcor.pnams.append('atcor_inds')
-proc_atcor.pnams.append('rgi_red_band')
 proc_atcor.pnams.append('stat_period')
 proc_atcor.pnams.append('n_ref')
 proc_atcor.pnams.append('ref_band')
@@ -44,7 +43,6 @@ proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
 proc_atcor.params['atcor_nrefs'] = 'Correct Norm. Reflectance'
 proc_atcor.params['out_inds'] = 'Output Index'
 proc_atcor.params['atcor_inds'] = 'Correct Index'
-proc_atcor.params['rgi_red_band'] = 'Band for RGI'
 proc_atcor.params['stat_period'] = 'Stats Calculation Period'
 proc_atcor.params['n_ref'] = 'Reference Number'
 proc_atcor.params['ref_band'] = 'Band for Reference Select'
@@ -73,7 +71,6 @@ proc_atcor.param_types['out_nrefs'] = 'boolean_list'
 proc_atcor.param_types['atcor_nrefs'] = 'boolean_list'
 proc_atcor.param_types['out_inds'] = 'boolean_list'
 proc_atcor.param_types['atcor_inds'] = 'boolean_list'
-proc_atcor.param_types['rgi_red_band'] = 'string'
 proc_atcor.param_types['stat_period'] = 'date_list'
 proc_atcor.param_types['n_ref'] = 'int'
 proc_atcor.param_types['ref_band'] = 'boolean_list'
@@ -112,7 +109,6 @@ proc_atcor.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True,True
 proc_atcor.defaults['atcor_nrefs'] = [True,True,True,True,True,True,True,False,False,False]
 proc_atcor.defaults['out_inds'] = [True,True,True,True]
 proc_atcor.defaults['atcor_inds'] = [True,True,False,True]
-proc_atcor.defaults['rgi_red_band'] = 'e1'
 proc_atcor.defaults['stat_period'] = ['','']
 proc_atcor.defaults['n_ref'] = 1000
 proc_atcor.defaults['ref_band'] = [True,True,True,False,False,False,True,False,False,False]
@@ -136,7 +132,6 @@ proc_atcor.list_sizes['out_nrefs'] = 10
 proc_atcor.list_sizes['atcor_nrefs'] = 10
 proc_atcor.list_sizes['out_inds'] = 4
 proc_atcor.list_sizes['atcor_inds'] = 4
-proc_atcor.list_sizes['rgi_red_band'] = 10
 proc_atcor.list_sizes['stat_period'] = 2
 proc_atcor.list_sizes['ref_band'] = 10
 proc_atcor.list_sizes['clean_band'] = 10
@@ -153,7 +148,6 @@ proc_atcor.list_labels['out_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','Ne3
 proc_atcor.list_labels['atcor_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','Ne3  ','Nn1  ','Nn2  ','Ns1  ','Ns2']
 proc_atcor.list_labels['out_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_atcor.list_labels['atcor_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
-proc_atcor.list_labels['rgi_red_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_atcor.list_labels['stat_period'] = ['Start :',' End :']
 proc_atcor.list_labels['ref_band'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['clean_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
@@ -176,7 +170,6 @@ proc_atcor.input_types['out_nrefs'] = 'boolean_list'
 proc_atcor.input_types['atcor_nrefs'] = 'boolean_list'
 proc_atcor.input_types['out_inds'] = 'boolean_list'
 proc_atcor.input_types['atcor_inds'] = 'boolean_list'
-proc_atcor.input_types['rgi_red_band'] = 'string_select'
 proc_atcor.input_types['stat_period'] = 'date_list'
 proc_atcor.input_types['n_ref'] = 'box'
 proc_atcor.input_types['ref_band'] = 'boolean_list'
