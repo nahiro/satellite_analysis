@@ -76,7 +76,7 @@ class Atcor(Satellite_Process):
             atcor_flag = False
             for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                 if flag:
-                    command += ' --param {}'.format(param.strip())
+                    command += ' --param S{}'.format(param.strip())
                     atcor_flag = True
             for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
                 if flag:
@@ -149,7 +149,7 @@ class Atcor(Satellite_Process):
                 atcor_flag = False
                 for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                     if flag:
-                        command += ' --param {}'.format(param.strip())
+                        command += ' --param S{}'.format(param.strip())
                         atcor_flag = True
                 for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
                     if flag:
@@ -222,7 +222,7 @@ class Atcor(Satellite_Process):
                 atcor_flag = False
                 for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                     if flag:
-                        command += ' --atcor_param {}'.format(param.strip())
+                        command += ' --atcor_param S{}'.format(param.strip())
                         atcor_flag = True
                 for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
                     if flag:
