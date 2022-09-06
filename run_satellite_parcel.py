@@ -123,7 +123,7 @@ class Parcel(Satellite_Process):
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
-                mask_fnam = os.path.join(self.s2_data,'parcel_mask.tif')
+                mask_fnam = self.values['mask_parcel']
                 if not os.path.exists(mask_fnam):
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
