@@ -6,6 +6,7 @@ proc_atcor.proc_name = 'atcor'
 proc_atcor.proc_title = 'Atmonspheric Correction'
 proc_atcor.pnams.append('gis_fnam')
 proc_atcor.pnams.append('mask_studyarea')
+proc_atcor.pnams.append('mask_parcel')
 proc_atcor.pnams.append('stat_fnam')
 proc_atcor.pnams.append('inds_fnam')
 proc_atcor.pnams.append('atcor_refs')
@@ -30,7 +31,8 @@ proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('mul_thr')
 proc_atcor.pnams.append('oflag')
 proc_atcor.params['gis_fnam'] = 'Polygon File'
-proc_atcor.params['mask_studyarea'] = 'Mask File'
+proc_atcor.params['mask_studyarea'] = 'Mask File for Reference Selection'
+proc_atcor.params['mask_parcel'] = 'Mask File for Parcellate'
 proc_atcor.params['stat_fnam'] = 'Stats File'
 proc_atcor.params['inds_fnam'] = 'Index File'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
@@ -56,6 +58,7 @@ proc_atcor.params['mul_thr'] = 'Thres. Factor for Fit'
 proc_atcor.params['oflag'] = 'Overwrite Flag'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
+proc_atcor.param_types['mask_parcel'] = 'string'
 proc_atcor.param_types['stat_fnam'] = 'string'
 proc_atcor.param_types['inds_fnam'] = 'string'
 proc_atcor.param_types['atcor_refs'] = 'boolean_list'
@@ -91,6 +94,7 @@ proc_atcor.param_range['rel_thr'] = (0.0,10.0)
 proc_atcor.param_range['mul_thr'] = (0.0,10.0)
 proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
+proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_atcor.defaults['stat_fnam'] = 'atcor_stat.tif'
 proc_atcor.defaults['inds_fnam'] = 'nearest_inds.npz'
 proc_atcor.defaults['atcor_refs'] = [False,False,False,False,False,False,False,False,False,False]
@@ -145,6 +149,7 @@ proc_atcor.list_labels['inds_thr'] = ['NDVI :',' GNDVI :',' RGI :',' NRGI :']
 proc_atcor.list_labels['oflag'] = ['mask','stats','index','factor','atcor']
 proc_atcor.input_types['gis_fnam'] = 'ask_file'
 proc_atcor.input_types['mask_studyarea'] = 'ask_file'
+proc_atcor.input_types['mask_parcel'] = 'ask_file'
 proc_atcor.input_types['stat_fnam'] = 'ask_file'
 proc_atcor.input_types['inds_fnam'] = 'ask_file'
 proc_atcor.input_types['atcor_refs'] = 'boolean_list'
@@ -173,6 +178,7 @@ proc_atcor.flag_check['stat_fnam'] = False
 proc_atcor.flag_check['inds_fnam'] = False
 proc_atcor.expected['gis_fnam'] = '*.shp'
 proc_atcor.expected['mask_studyarea'] = '*.tif'
+proc_atcor.expected['mask_parcel'] = '*.tif'
 proc_atcor.expected['stat_fnam'] = '*.tif'
 proc_atcor.expected['inds_fnam'] = '*.npz'
 for pnam in proc_atcor.pnams:

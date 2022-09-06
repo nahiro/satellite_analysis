@@ -40,6 +40,7 @@ gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_are
 ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_mul.tif')
 mask_paddy = os.path.join(main_s1_data,'paddy_mask.tif')
 mask_parcel = os.path.join(main_s2_data,'parcel_mask.tif')
+mask_studyarea = os.path.join(main_s2_data,'studyarea_mask.tif')
 
 # Set defaults
 config_defaults = dict(os.environ)
@@ -146,7 +147,8 @@ config_defaults.update({
 'parcel.middle_left_frame_width'      : 1000,
 #----------- atcor -----------
 'atcor.gis_fnam'                      : gis_fnam,
-'atcor.mask_studyarea'                : '',
+'atcor.mask_studyarea'                : mask_studyarea,
+'atcor.mask_parcel'                   : mask_parcel,
 'atcor.stat_fnam'                     : '',
 'atcor.inds_fnam'                     : '',
 'atcor.atcor_refs'                    : [False,False,False,False,False,False,False,False,False,False],
