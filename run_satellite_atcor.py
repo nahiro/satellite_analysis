@@ -150,6 +150,8 @@ class Atcor(Satellite_Process):
                         atcor_flag = True
                 command += ' --cr_band {}'.format(self.values['cloud_band'])
                 command += ' --cthr {}'.format(self.values['cloud_thr'])
+                if self.values['cr2_flag']:
+                    command += ' --outlier_remove2'
                 for param,flag,value in zip(self.list_labels['atcor_refs'],self.values['atcor_refs'],self.values['refs_thr']):
                     if flag:
                         command += ' --vthr "{}:{}"'.format(param.strip(),value)
