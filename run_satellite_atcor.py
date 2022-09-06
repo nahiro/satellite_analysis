@@ -54,7 +54,6 @@ class Atcor(Satellite_Process):
         stat_tif = self.values['stat_fnam']
         bnam,enam = os.path.splitext(stat_tif)
         stat_pdf = bnam+'.pdf'
-        atcor_flag = False
         if os.path.exists(stat_tif) and self.values['oflag'][1]:
             os.remove(stat_tif)
         if not os.path.exists(stat_tif):
@@ -63,6 +62,7 @@ class Atcor(Satellite_Process):
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
             command += ' --mask_fnam "{}"'.format(os.path.join(self.s2_data,'studyarea_mask.tif'))
             command += ' --dst_geotiff "{}"'.format(stat_tif)
+            atcor_flag = False
             for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                 if flag:
                     command += ' --param {}'.format(param.strip())
@@ -135,15 +135,19 @@ class Atcor(Satellite_Process):
                 command += ' --stat_fnam "{}"'.format(stat_tif)
                 command += ' --inds_fnam "{}"'.format(inds_npz)
                 command += ' --out_fnam "{}"'.format(fact_npz)
+                atcor_flag = False
                 for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
                     if flag:
                         command += ' --param {}'.format(param.strip())
+                        atcor_flag = True
                 for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
                     if flag:
                         command += ' --param {}'.format(param.strip())
+                        atcor_flag = True
                 for param,flag in zip(self.list_labels['atcor_inds'],self.values['atcor_inds']):
                     if flag:
                         command += ' --param {}'.format(param.strip())
+                        atcor_flag = True
                 command += ' --cr_band {}'.format(self.values['cloud_band'])
                 command += ' --cthr {}'.format(self.values['cloud_thr'])
                 for param,flag,value in zip(self.list_labels['atcor_refs'],self.values['atcor_refs'],self.values['refs_thr']):

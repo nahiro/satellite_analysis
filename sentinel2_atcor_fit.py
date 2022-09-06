@@ -41,7 +41,7 @@ parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name 
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
-parser.add_argument('-v','--vthr',default=None,type=float,help='Absolute threshold to remove outliers ({})'.format(VTHR))
+parser.add_argument('-v','--vthr',default=None,action='append',help='Absolute threshold to remove outliers ({})'.format(VTHR))
 parser.add_argument('-R','--rthr',default=RTHR,type=float,help='Relative threshold for 2-step outlier removal (%(default)s)')
 parser.add_argument('--mthr',default=MTHR,type=float,help='Multiplying factor of vthr for 2-step outlier removal (%(default)s)')
 parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',help='Axis1 X min for debug (%(default)s)')
