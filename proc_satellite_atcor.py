@@ -9,8 +9,11 @@ proc_atcor.pnams.append('mask_studyarea')
 proc_atcor.pnams.append('mask_parcel')
 proc_atcor.pnams.append('stat_fnam')
 proc_atcor.pnams.append('inds_fnam')
+proc_atcor.pnams.append('out_refs')
 proc_atcor.pnams.append('atcor_refs')
+proc_atcor.pnams.append('out_nrefs')
 proc_atcor.pnams.append('atcor_nrefs')
+proc_atcor.pnams.append('out_inds')
 proc_atcor.pnams.append('atcor_inds')
 proc_atcor.pnams.append('rgi_red_band')
 proc_atcor.pnams.append('stat_period')
@@ -35,8 +38,11 @@ proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
 proc_atcor.params['mask_parcel'] = 'Mask for Parcellate'
 proc_atcor.params['stat_fnam'] = 'Stats File'
 proc_atcor.params['inds_fnam'] = 'Index File'
+proc_atcor.params['out_refs'] = 'Output Reflectance'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
+proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
 proc_atcor.params['atcor_nrefs'] = 'Correct Norm. Reflectance'
+proc_atcor.params['out_inds'] = 'Output Index'
 proc_atcor.params['atcor_inds'] = 'Correct Index'
 proc_atcor.params['rgi_red_band'] = 'Band for RGI'
 proc_atcor.params['stat_period'] = 'Stats Calculation Period'
@@ -61,8 +67,11 @@ proc_atcor.param_types['mask_studyarea'] = 'string'
 proc_atcor.param_types['mask_parcel'] = 'string'
 proc_atcor.param_types['stat_fnam'] = 'string'
 proc_atcor.param_types['inds_fnam'] = 'string'
+proc_atcor.param_types['out_refs'] = 'boolean_list'
 proc_atcor.param_types['atcor_refs'] = 'boolean_list'
+proc_atcor.param_types['out_nrefs'] = 'boolean_list'
 proc_atcor.param_types['atcor_nrefs'] = 'boolean_list'
+proc_atcor.param_types['out_inds'] = 'boolean_list'
 proc_atcor.param_types['atcor_inds'] = 'boolean_list'
 proc_atcor.param_types['rgi_red_band'] = 'string'
 proc_atcor.param_types['stat_period'] = 'date_list'
@@ -97,8 +106,11 @@ proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
 proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_atcor.defaults['stat_fnam'] = 'atcor_stat.tif'
 proc_atcor.defaults['inds_fnam'] = 'nearest_inds.npz'
+proc_atcor.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['atcor_refs'] = [False,False,False,False,False,False,False,False,False,False]
+proc_atcor.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['atcor_nrefs'] = [True,True,True,True,True,True,True,False,False,False]
+proc_atcor.defaults['out_inds'] = [True,True,True,True]
 proc_atcor.defaults['atcor_inds'] = [True,True,False,True]
 proc_atcor.defaults['rgi_red_band'] = 'e1'
 proc_atcor.defaults['stat_period'] = ['','']
@@ -118,8 +130,11 @@ proc_atcor.defaults['inds_thr'] = [0.1,0.1,0.1,0.1]
 proc_atcor.defaults['rel_thr'] = 1.0
 proc_atcor.defaults['mul_thr'] = 2.0
 proc_atcor.defaults['oflag'] = [False,False,False,False,False]
+proc_atcor.list_sizes['out_refs'] = 10
 proc_atcor.list_sizes['atcor_refs'] = 10
+proc_atcor.list_sizes['out_nrefs'] = 10
 proc_atcor.list_sizes['atcor_nrefs'] = 10
+proc_atcor.list_sizes['out_inds'] = 4
 proc_atcor.list_sizes['atcor_inds'] = 4
 proc_atcor.list_sizes['rgi_red_band'] = 10
 proc_atcor.list_sizes['stat_period'] = 2
@@ -132,8 +147,11 @@ proc_atcor.list_sizes['refs_thr'] = 10
 proc_atcor.list_sizes['nrefs_thr'] = 10
 proc_atcor.list_sizes['inds_thr'] = 4
 proc_atcor.list_sizes['oflag'] = 5
+proc_atcor.list_labels['out_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['atcor_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
+proc_atcor.list_labels['out_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','Ne3  ','Nn1  ','Nn2  ','Ns1  ','Ns2']
 proc_atcor.list_labels['atcor_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','Ne3  ','Nn1  ','Nn2  ','Ns1  ','Ns2']
+proc_atcor.list_labels['out_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_atcor.list_labels['atcor_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_atcor.list_labels['rgi_red_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_atcor.list_labels['stat_period'] = ['Start :',' End :']
@@ -152,8 +170,11 @@ proc_atcor.input_types['mask_studyarea'] = 'ask_file'
 proc_atcor.input_types['mask_parcel'] = 'ask_file'
 proc_atcor.input_types['stat_fnam'] = 'ask_file'
 proc_atcor.input_types['inds_fnam'] = 'ask_file'
+proc_atcor.input_types['out_refs'] = 'boolean_list'
 proc_atcor.input_types['atcor_refs'] = 'boolean_list'
+proc_atcor.input_types['out_nrefs'] = 'boolean_list'
 proc_atcor.input_types['atcor_nrefs'] = 'boolean_list'
+proc_atcor.input_types['out_inds'] = 'boolean_list'
 proc_atcor.input_types['atcor_inds'] = 'boolean_list'
 proc_atcor.input_types['rgi_red_band'] = 'string_select'
 proc_atcor.input_types['stat_period'] = 'date_list'
