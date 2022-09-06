@@ -29,6 +29,14 @@ class Atcor(Satellite_Process):
         d1 = datetime.strptime(self.values['stat_period'][0],self.date_fmt)
         d2 = datetime.strptime(self.values['stat_period'][1],self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
+        wrk_dir = os.path.join(self.s2_data,self.proc_name)
+        if not os.path.exists(wrk_dir):
+            os.makedirs(wrk_dir)
+        if not os.path.isdir(wrk_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
+        mask_studyarea = self.values['mask_studyarea']
+        if not os.path.exists(mask_studyarea):
+            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_studyarea))
 
         # Select nearest pixels
         inds_npz = self.values['inds_fnam']
@@ -60,7 +68,7 @@ class Atcor(Satellite_Process):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
-            command += ' --mask_fnam "{}"'.format(self.values['mask_fnam'])
+            command += ' --mask_fnam "{}"'.format(mask_studyarea)
             command += ' --dst_geotiff "{}"'.format(stat_tif)
             atcor_flag = False
             for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):

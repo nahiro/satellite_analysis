@@ -145,7 +145,7 @@ config_defaults.update({
 'parcel.middle_left_frame_width'      : 1000,
 #----------- atcor -----------
 'atcor.gis_fnam'                      : gis_fnam,
-'atcor.mask_fnam'                     : '',
+'atcor.mask_studyarea'                : '',
 'atcor.stat_fnam'                     : '',
 'atcor.inds_fnam'                     : '',
 'atcor.atcor_refs'                    : [False,False,False,False,False,False,False,False,False,False],
