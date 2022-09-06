@@ -163,17 +163,16 @@ class Atcor(Satellite_Process):
                 command += ' --cthr {}'.format(self.values['cloud_thr'])
                 if self.values['cr2_flag']:
                     command += ' --outlier_remove2'
-                for param,flag,value in zip(self.list_labels['atcor_refs'],self.values['atcor_refs'],self.values['refs_thr']):
+                for param,flag,value in zip(self.list_labels['atcor_refs'],self.values['atcor_refs'],self.values['refs_stp']):
                     if flag:
-                        command += ' --vthr "S{}:{}"'.format(param.strip(),value)
-                for param,flag,value in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs'],self.values['nrefs_thr']):
+                        command += ' --vstp "S{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs'],self.values['nrefs_stp']):
                     if flag:
-                        command += ' --vthr "{}:{}"'.format(param.strip(),value)
-                for param,flag,value in zip(self.list_labels['atcor_inds'],self.values['atcor_inds'],self.values['inds_thr']):
+                        command += ' --vstp "{}:{}"'.format(param.strip(),value)
+                for param,flag,value in zip(self.list_labels['atcor_inds'],self.values['atcor_inds'],self.values['inds_stp']):
                     if flag:
-                        command += ' --vthr "{}:{}"'.format(param.strip(),value)
-                command += ' --rthr {}'.format(self.values['rel_thr'])
-                command += ' --mthr {}'.format(self.values['mul_thr'])
+                        command += ' --vstp "{}:{}"'.format(param.strip(),value)
+                command += ' --ethr {}'.format(self.values['rel_thr'])
                 command += ' --fignam "{}"'.format(fact_pdf)
                 command += ' --nfig 10'
                 command += ' --debug'

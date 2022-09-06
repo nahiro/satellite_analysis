@@ -28,7 +28,7 @@ CR_BAND = 'r'
 CTHR = 0.35
 VSTP = [
 'Sb:0.01','Sg:0.01','Sr:0.01','Se1:0.01','Se2:0.01','Se3:0.01','Sn1:0.01','Sn2:0.01','Ss1:0.01','Ss2:0.01',
-'Nb:0.01','Ng:0.01','Nr:0.01','Ne1:0.01','Ne2:0.01','Ne3:0.01','Nn1:0.01','Nn2:0.01','Ns1:0.01','Ns2:0.01',
+'Nb:0.05','Ng:0.05','Nr:0.05','Ne1:0.05','Ne2:0.05','Ne3:0.05','Nn1:0.05','Nn2:0.05','Ns1:0.05','Ns2:0.05',
 'NDVI:0.05','GNDVI:0.05','RGI:0.05','NRGI:0.05']
 ETHR = 2.0
 INDS_FNAM = 'nearest_inds.npz'
@@ -339,14 +339,14 @@ for iband,param in enumerate(args.param):
             ax1.plot(xs,ys,'ro')
             ax1.plot(xfit,np.polyval(result,xfit),'k:')
             if args.ax1_xmin is None or args.ax1_ymin is None:
-                if data_x.size < 3:
+                if calc_y.size < 1:
                     xmin = -1.0
                     ymin = -1.0
                 else:
                     xmin = np.min(data_x)
                     ymin = np.min(data_y)
             if args.ax1_xmax is None or args.ax1_ymax is None:
-                if data_x.size < 3:
+                if calc_y.size < 1:
                     xmax = 1.0
                     ymax = 1.0
                 else:
