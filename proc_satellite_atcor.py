@@ -31,8 +31,8 @@ proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('mul_thr')
 proc_atcor.pnams.append('oflag')
 proc_atcor.params['gis_fnam'] = 'Polygon File'
-proc_atcor.params['mask_studyarea'] = 'Mask File for Reference Selection'
-proc_atcor.params['mask_parcel'] = 'Mask File for Parcellate'
+proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
+proc_atcor.params['mask_parcel'] = 'Mask for Parcellate'
 proc_atcor.params['stat_fnam'] = 'Stats File'
 proc_atcor.params['inds_fnam'] = 'Index File'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
