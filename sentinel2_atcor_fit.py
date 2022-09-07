@@ -271,32 +271,38 @@ for iband,param in enumerate(args.param):
             v1 = np.ceil(np.min(data_y)/vstp[param])*vstp[param]
             v2 = np.floor(np.max(data_y)/vstp[param])*vstp[param]
             for v in np.arange(v1,v2+0.1*vstp[param],vstp[param]):
-                cnd = np.abs(data_y-v) < 0.5*(vstp[param])
-                xcnd = data_x[cnd]
-                ycnd = data_y[cnd]
-                if xcnd.size > 2:
-                    xm = np.mean(xcnd)
-                    ym = np.mean(ycnd)
-                    xe = np.std(xcnd)
-                    cnd = np.abs(xcnd-xm) < xe*args.ethr
-                    xcnd = xcnd[cnd]
-                    ycnd = ycnd[cnd]
-                    if xcnd.size > 0:
-                        xm = np.mean(xcnd)
-                        ym = np.mean(ycnd)
-                        xe = np.std(xcnd)
-                        cnd = np.abs(xcnd-xm) < xe*args.ethr
-                        xcnd = xcnd[cnd]
-                        ycnd = ycnd[cnd]
-                        if xcnd.size > 0:
-                            xm = np.mean(xcnd)
-                            ym = np.mean(ycnd)
+                cnd1 = np.abs(data_y-v) < 0.5*(vstp[param])
+                xcnd1 = data_x[cnd1]
+                ncnd1 = xcnd1.size
+                if ncnd1 > 2:
+                    xm = np.mean(xcnd1)
+                    xe = np.sqrt(np.square(xcnd1-xm).sum()/ncnd1)
+                    cnd2 = np.abs(xcnd1-xm) < xe*args.ethr
+                    xcnd2 = xcnd1[cnd2]
+                    ncnd2 = xcnd2.size
+                    if (ncnd2 != ncnd1) and (ncnd2 > 0):
+                        xm = np.mean(xcnd2)
+                        xe = np.sqrt(np.square(xcnd2-xm).sum()/ncnd2)
+                        cnd3 = np.abs(xcnd2-xm) < xe*args.ethr
+                        xcnd3 = xcnd2[cnd3]
+                        ncnd3 = xcnd3.size
+                        if (ncnd3 != ncnd2) and (ncnd3 > 0):
+                            ycnd1 = data_y[cnd1]
+                            ycnd2 = ycnd1[cnd2]
+                            ycnd3 = ycnd2[cnd3]
+                            xm = np.mean(xcnd3)
+                            ym = np.mean(ycnd3)
                             xs.append(xm)
                             ys.append(ym)
                         else:
+                            ycnd1 = data_y[cnd1]
+                            ycnd2 = ycnd1[cnd2]
+                            ym = np.mean(ycnd2)
                             xs.append(xm)
                             ys.append(ym)
                     else:
+                        ycnd1 = data_y[cnd1]
+                        ym = np.mean(ycnd1)
                         xs.append(xm)
                         ys.append(ym)
             xs = np.array(xs)
