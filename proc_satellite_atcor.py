@@ -22,12 +22,9 @@ proc_atcor.pnams.append('ref_thr')
 proc_atcor.pnams.append('clean_nmin')
 proc_atcor.pnams.append('clean_band')
 proc_atcor.pnams.append('clean_thr')
-proc_atcor.pnams.append('cr2_flag')
 proc_atcor.pnams.append('cloud_band')
 proc_atcor.pnams.append('cloud_thr')
-proc_atcor.pnams.append('refs_stp')
-proc_atcor.pnams.append('nrefs_stp')
-proc_atcor.pnams.append('inds_stp')
+proc_atcor.pnams.append('nstp')
 proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('fit_thr')
 proc_atcor.pnams.append('oflag')
@@ -49,14 +46,11 @@ proc_atcor.params['ref_thr'] = 'Thres. for Reference Select'
 proc_atcor.params['clean_nmin'] = 'Min Clean-day Number'
 proc_atcor.params['clean_band'] = 'Band for Clean-day Select'
 proc_atcor.params['clean_thr'] = 'Thres. for Clean-day Select'
-proc_atcor.params['cr2_flag'] = '2-step Cloud Removal'
 proc_atcor.params['cloud_band'] = 'Band for Cloud Removal'
 proc_atcor.params['cloud_thr'] = 'Thres. for Cloud Removal'
-proc_atcor.params['refs_stp'] = 'Reflectance Step for Fit'
-proc_atcor.params['nrefs_stp'] = 'Norm. Reflect. Step for Fit'
-proc_atcor.params['inds_stp'] = 'Index Step for Fit'
-proc_atcor.params['rel_thr'] = 'Relative Thres. for Fit'
-proc_atcor.params['fit_thr'] = 'Thres. for Correction'
+proc_atcor.params['nstp'] = 'Step Number for Fit'
+proc_atcor.params['rel_thr'] = 'Max Deviation for Fit'
+proc_atcor.params['fit_thr'] = 'Min Correction for Fit'
 proc_atcor.params['oflag'] = 'Overwrite Flag'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
@@ -76,12 +70,9 @@ proc_atcor.param_types['ref_thr'] = 'float'
 proc_atcor.param_types['clean_nmin'] = 'int'
 proc_atcor.param_types['clean_band'] = 'string_select'
 proc_atcor.param_types['clean_thr'] = 'float_list'
-proc_atcor.param_types['cr2_flag'] = 'boolean'
 proc_atcor.param_types['cloud_band'] = 'string_select'
 proc_atcor.param_types['cloud_thr'] = 'float'
-proc_atcor.param_types['refs_stp'] = 'float_list'
-proc_atcor.param_types['nrefs_stp'] = 'float_list'
-proc_atcor.param_types['inds_stp'] = 'float_list'
+proc_atcor.param_types['nstp'] = 'int'
 proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['oflag'] = 'boolean_list'
@@ -90,9 +81,7 @@ proc_atcor.param_range['ref_thr'] = (0.0,10.0)
 proc_atcor.param_range['clean_thr'] = (0.0,10.0)
 proc_atcor.param_range['clean_nmin'] = (1,10000)
 proc_atcor.param_range['cloud_thr'] = (0.0,10.0)
-proc_atcor.param_range['refs_stp'] = (0.0,10.0)
-proc_atcor.param_range['nrefs_stp'] = (0.0,10.0)
-proc_atcor.param_range['inds_stp'] = (0.0,10.0)
+proc_atcor.param_range['nstp'] = (2,10000)
 proc_atcor.param_range['rel_thr'] = (0.0,10.0)
 proc_atcor.param_range['fit_thr'] = (0.0,10.0)
 proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
@@ -113,12 +102,9 @@ proc_atcor.defaults['ref_thr'] = 0.035
 proc_atcor.defaults['clean_nmin'] = 4
 proc_atcor.defaults['clean_band'] = 'r'
 proc_atcor.defaults['clean_thr'] = [0.06,0.05,1.0]
-proc_atcor.defaults['cr2_flag'] = False
 proc_atcor.defaults['cloud_band'] = 'r'
 proc_atcor.defaults['cloud_thr'] = 0.35
-proc_atcor.defaults['refs_stp'] = [0.01,0.01,0.01,0.01,0.01,0.01,0.015,0.015,0.015,0.02]
-proc_atcor.defaults['nrefs_stp'] = [0.05,0.05,0.08,0.05,0.05,0.08,0.08,0.08,0.1,0.15]
-proc_atcor.defaults['inds_stp'] = [0.05,0.05,0.002,0.05]
+proc_atcor.defaults['nstp'] = 10
 proc_atcor.defaults['rel_thr'] = 2.0
 proc_atcor.defaults['fit_thr'] = 0.3
 proc_atcor.defaults['oflag'] = [False,False,False,False,False]
@@ -133,9 +119,6 @@ proc_atcor.list_sizes['ref_band'] = 10
 proc_atcor.list_sizes['clean_band'] = 10
 proc_atcor.list_sizes['clean_thr'] = 3
 proc_atcor.list_sizes['cloud_band'] = 10
-proc_atcor.list_sizes['refs_stp'] = 10
-proc_atcor.list_sizes['nrefs_stp'] = 10
-proc_atcor.list_sizes['inds_stp'] = 4
 proc_atcor.list_sizes['oflag'] = 5
 proc_atcor.list_labels['out_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['atcor_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
@@ -148,9 +131,6 @@ proc_atcor.list_labels['ref_band'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1
 proc_atcor.list_labels['clean_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_atcor.list_labels['clean_thr'] = ['Mean :',' Std :',' Deviation :']
 proc_atcor.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
-proc_atcor.list_labels['refs_stp'] = ['   b :','    g :','    r :','    e1 :','    e2 :','    e3 :','    n1 :','    n2 :','    s1 :','    s2 :']
-proc_atcor.list_labels['nrefs_stp'] = ['Nb :',' Ng :',' Nr :',' Ne1 :',' Ne2 :',' Ne3 :',' Nn1 :',' Nn2 :',' Ns1 :',' Ns2 :']
-proc_atcor.list_labels['inds_stp'] = ['NDVI :',' GNDVI :',' RGI :',' NRGI :']
 proc_atcor.list_labels['oflag'] = ['mask','stats','index','factor','atcor']
 proc_atcor.input_types['gis_fnam'] = 'ask_file'
 proc_atcor.input_types['mask_studyarea'] = 'ask_file'
@@ -170,12 +150,9 @@ proc_atcor.input_types['ref_thr'] = 'box'
 proc_atcor.input_types['clean_nmin'] = 'box'
 proc_atcor.input_types['clean_band'] = 'string_select'
 proc_atcor.input_types['clean_thr'] = 'float_list'
-proc_atcor.input_types['cr2_flag'] = 'boolean'
 proc_atcor.input_types['cloud_band'] = 'string_select'
 proc_atcor.input_types['cloud_thr'] = 'box'
-proc_atcor.input_types['refs_stp'] = 'float_list'
-proc_atcor.input_types['nrefs_stp'] = 'float_list'
-proc_atcor.input_types['inds_stp'] = 'float_list'
+proc_atcor.input_types['nstp'] = 'box'
 proc_atcor.input_types['rel_thr'] = 'box'
 proc_atcor.input_types['fit_thr'] = 'box'
 proc_atcor.input_types['oflag'] = 'boolean_list'

@@ -15,6 +15,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
+EPSILON = 1.0e-5
 PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
@@ -26,10 +27,7 @@ NORM_BAND = ['b','g','r','e1','e2','e3','n1']
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','NDVI','GNDVI','NRGI']
 CR_BAND = 'r'
 CTHR = 0.35
-VSTP = [
-'Sb:0.01','Sg:0.01','Sr:0.01','Se1:0.01','Se2:0.01','Se3:0.01','Sn1:0.01','Sn2:0.01','Ss1:0.01','Ss2:0.01',
-'Nb:0.05','Ng:0.05','Nr:0.05','Ne1:0.05','Ne2:0.05','Ne3:0.05','Nn1:0.05','Nn2:0.05','Ns1:0.05','Ns2:0.05',
-'NDVI:0.05','GNDVI:0.05','RGI:0.05','NRGI:0.05']
+NSTP = 10
 ETHR = 2.0
 INDS_FNAM = 'nearest_inds.npz'
 NFIG = 1000
@@ -40,7 +38,7 @@ parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name 
 parser.add_argument('-p','--param',default=None,action='append',help='Output parameter ({})'.format(PARAM))
 parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
 parser.add_argument('-c','--cthr',default=CTHR,type=float,help='Threshold for cloud removal (%(default)s)')
-parser.add_argument('-v','--vstp',default=None,action='append',help='Level step for fitting ({})'.format(VSTP))
+parser.add_argument('-n','--nstp',default=NSTP,type=int,help='Number of steps for fitting (%(default)s)')
 parser.add_argument('-E','--ethr',default=ETHR,type=float,help='Max error in sigma for fitting (%(default)s)')
 parser.add_argument('-x','--ax1_xmin',default=None,type=float,action='append',help='Axis1 X min for debug (%(default)s)')
 parser.add_argument('-X','--ax1_xmax',default=None,type=float,action='append',help='Axis1 X max for debug (%(default)s)')
@@ -53,7 +51,6 @@ parser.add_argument('--inds_fnam',default=INDS_FNAM,help='Index file name (%(def
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
 parser.add_argument('-o','--out_fnam',default=None,help='Output NPZ name (%(default)s)')
-parser.add_argument('--outlier_remove2',default=False,action='store_true',help='2-step outlier removal mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -64,19 +61,6 @@ for param in args.param:
         raise ValueError('Error, unknown parameter >>> {}'.format(param))
 if not args.cr_band in S2_PARAM:
     raise ValueError('Error, unknown band for cloud removal >>> {}'.format(args.cr_band))
-if args.vstp is None:
-    args.vstp = VSTP
-vstp = {}
-for s in args.vstp:
-    m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
-    if not m:
-        raise ValueError('Error, invalid threshold to remove outliers >>> {}'.format(s))
-    param = m.group(1)
-    value = float(m.group(2))
-    if not param in PARAMS:
-        raise ValueError('Error, unknown objective variable for vstp ({}) >>> {}'.format(param,s))
-    if not np.isnan(value):
-        vstp[param] = value
 if args.ax1_xmin is not None:
     while len(args.ax1_xmin) < len(args.param):
         args.ax1_xmin.append(args.ax1_xmin[-1])
@@ -268,10 +252,11 @@ for iband,param in enumerate(args.param):
         else:
             xs = []
             ys = []
-            v1 = np.ceil(np.min(data_y)/vstp[param])*vstp[param]
-            v2 = np.floor(np.max(data_y)/vstp[param])*vstp[param]
-            for v in np.arange(v1,v2+0.1*vstp[param],vstp[param]):
-                cnd1 = np.abs(data_y-v) < 0.5*(vstp[param])
+            v1 = np.min(data_y)
+            v2 = np.max(data_y)+EPSILON
+            vstp = (v2-v1)/args.nstp
+            for v in np.arange(v1,v2-0.1*vstp,vstp):
+                cnd1 = (data_y >= v) & (data_y < v+vstp)
                 xcnd1 = data_x[cnd1]
                 ncnd1 = xcnd1.size
                 if ncnd1 > 2:
