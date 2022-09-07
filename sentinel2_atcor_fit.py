@@ -252,11 +252,11 @@ for iband,param in enumerate(args.param):
         else:
             xs = []
             ys = []
-            v1 = np.min(data_y)
+            v1 = np.min(data_y)-EPSILON
             v2 = np.max(data_y)+EPSILON
             vstp = (v2-v1)/args.nstp
-            for v in np.arange(v1,v2-0.1*vstp,vstp):
-                cnd1 = (data_y >= v) & (data_y < v+vstp)
+            for v in np.arange(v1+0.5*vstp,v2,vstp):
+                cnd1 = (data_y >= v-0.5*vstp) & (data_y < v+0.5*vstp)
                 xcnd1 = data_x[cnd1]
                 ncnd1 = xcnd1.size
                 if ncnd1 > 2:
