@@ -174,9 +174,9 @@ config_defaults.update({
 'atcor.scr_dir'                       : scr_dir,
 'atcor.middle_left_frame_width'       : 1000,
 #----------- interp -----------
-'interp.cflag_thr'                    : [0.06,0.1,0.06,0.1],
+'interp.cflag_thr'                    : 3.0,
 'interp.p_smooth'                     : 2.0e-3,
-'interp.atcor_flag'                   : False,
+'interp.atcor_flag'                   : True,
 'interp.oflag'                        : [False,True,False,True],
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,

@@ -39,6 +39,7 @@ class Interp(Satellite_Process):
         command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
         command += ' --tstp 1'
         command += ' --smooth="{}"'.format(self.values['p_smooth'])
+        command += ' --ethr {}'.format(self.values['ethr'])
         if self.values['oflag'][2]:
             command += ' --overwrite'
         if self.values['oflag'][3]:
