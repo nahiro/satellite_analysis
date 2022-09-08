@@ -20,8 +20,6 @@ class Interp(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
-        d1 = start_dtim
-        d2 = end_dtim+timedelta(days=120)
         if not os.path.exists(self.s2_data):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):
@@ -30,19 +28,21 @@ class Interp(Satellite_Process):
         # Interpolate data
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
+        if self.values['atcor_flag']:
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'atcor'))
+            command += ' --atcor'
+        else:
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
         command += ' --dstdir "{}"'.format(os.path.join(self.s2_data,'interp'))
         command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
-        command += ' --tmin {:%Y%m%d}'.format(d1)
-        command += ' --tmax {:%Y%m%d}'.format(d2)
         command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
         command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
         command += ' --tstp 1'
         command += ' --smooth="{}"'.format(self.values['p_smooth'])
-        command += ' --ethr {}'.format(self.values['ethr'])
-        if self.values['oflag'][2]:
+        command += ' --ethr {}'.format(self.values['cflag_thr'])
+        if self.values['oflag'][0]:
             command += ' --overwrite'
-        if self.values['oflag'][3]:
+        if self.values['oflag'][1]:
             command += ' --tentative_overwrite'
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(first_dtim,last_dtim))
 

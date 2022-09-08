@@ -177,7 +177,7 @@ config_defaults.update({
 'interp.cflag_thr'                    : 3.0,
 'interp.p_smooth'                     : 2.0e-3,
 'interp.atcor_flag'                   : True,
-'interp.oflag'                        : [False,True,False,True],
+'interp.oflag'                        : [False,True],
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
 'interp.middle_left_frame_width'      : 1000,
