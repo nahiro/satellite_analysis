@@ -193,7 +193,7 @@ for iobj,object_id in enumerate(object_ids):
                 fig.clear()
                 ax1 = plt.subplot(111)
                 ax1.plot(xc,yc,'b-')
-                ax1.plot(xc[cnd],yc[cnd],'g-')
+                ax1.plot(xc[~cnd],yc[~cnd],'kx')
                 ax1.plot(out_dtim,ys,'r-')
                 xmin = xc.min()
                 xmax = xc.max()
@@ -215,6 +215,7 @@ for iobj,object_id in enumerate(object_ids):
                     ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
                 else:
                     ax1.set_title('OBJECTID={}'.format(object_id))
+                ax1.yaxis.set_label_coords(-0.12,0.5)
                 fig.autofmt_xdate()
                 plt.savefig(pdf,format='pdf')
                 if not args.batch:
