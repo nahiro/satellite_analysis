@@ -8,6 +8,7 @@ import pandas as pd
 from matplotlib.dates import date2num
 from csaps import csaps
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
@@ -21,6 +22,7 @@ TMAX = '20190615'
 TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.002
+NFIG = 1000
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -38,9 +40,15 @@ parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CS
 parser.add_argument('--out_csv',default=False,action='store_true',help='Output CSV (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 parser.add_argument('--tentative_overwrite',default=False,action='store_true',help='Overwrite tentative data (%(default)s)')
+parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
+parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
 tmin = datetime.strptime(args.tmin,'%Y%m%d')
 tmax = datetime.strptime(args.tmax,'%Y%m%d')
+if args.fignam is None:
+    args.fignam = 'test.pdf'
 if args.data_tmin is None:
     d1 = tmin-timedelta(days=args.tmgn)
 else:
@@ -146,17 +154,47 @@ if len(out_idats) < 1:
     sys.exit()
 
 # Interpolate data
+if args.debug:
+    if not args.batch:
+        plt.interactive(True)
+    fig = plt.figure(1,facecolor='w',figsize=(6,6))
+    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+    pdf = PdfPages(args.fignam)
+    fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 out_ndat = len(out_dtim)
 out_nb = len(params)
 out_data = np.full((out_ndat,nobject,out_nb),np.nan)
 for iobj,object_id in enumerate(object_ids):
+    if args.debug and (iobj%fig_interval == 0):
+        fig_flag = True
+    else:
+        fig_flag = False
     for iband,param in enumerate(params):
         cnd = ~np.isnan(inp_data[:,iobj,iband])
         xc = inp_ntim[cnd]
         yc = inp_data[cnd,iobj,iband]
         if xc.size > 4:
-            ys = csaps(xc,yc,out_ntim,smooth=args.smooth)
+            x1 = np.gradient(xc)
+            y1 = np.gradient(yc)/x1
+            y2 = np.gradient(y1)/x1
+            ye = np.std(y2)
+            cnd = np.abs(y2) < 1.5*ye
+            ys = csaps(xc[cnd],yc[cnd],out_ntim,smooth=args.smooth)
             out_data[:,iobj,iband] = ys
+            if fig_flag:
+                fig.clear()
+                ax1 = plt.subplot(111)
+                ax1.minorticks_on()
+                ax1.plot(xc,yc,'b-')
+                ax1.plot(xc[cnd],yc[cnd],'g-')
+                ax1.plot(out_ntim,ys,'r-')
+                ax1.set_ylim(yc.min(),yc.max())
+                ax1.set_ylabel(param)
+                ax1.set_title('OBJECTID={}'.format(object_id))
+                plt.savefig(pdf,format='pdf')
+                if not args.batch:
+                    plt.draw()
+                    plt.pause(0.1)
 
 # Output CSV
 for idat,fnam in zip(out_idats,out_fnams):
