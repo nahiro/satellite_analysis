@@ -5,7 +5,7 @@ import re
 from datetime import datetime,timedelta
 import numpy as np
 import pandas as pd
-from matplotlib.dates import date2num
+from matplotlib.dates import date2num,num2date,YearLocator,MonthLocator,DayLocator
 from csaps import csaps
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -23,6 +23,7 @@ TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.002
 NFIG = 1000
+ETHR = 3.0
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -36,12 +37,15 @@ parser.add_argument('--data_tmax',default=None,help='Max date of input data in t
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
+parser.add_argument('-E','--ethr',default=ETHR,type=float,help='Max error in sigma for cloud removal (%(default)s)')
 parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
 parser.add_argument('--out_csv',default=False,action='store_true',help='Output CSV (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 parser.add_argument('--tentative_overwrite',default=False,action='store_true',help='Overwrite tentative data (%(default)s)')
+parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
+parser.add_argument('--atcor',default=False,action='store_true',help='Atcor mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -69,13 +73,17 @@ if args.inp_csv:
     ext = '\.csv$'
 else:
     ext = '\.npz$'
+if args.atcor:
+    tnam = '_atcor'
+else:
+    tnam = '_parcel'
 for year in data_years:
     ystr = '{}'.format(year)
     dnam = os.path.join(args.inpdir,ystr)
     if not os.path.isdir(dnam):
         continue
     for f in sorted(os.listdir(dnam)):
-        m = re.search('^('+'\d'*8+')_\S+'+ext,f)
+        m = re.search('^('+'\d'*8+')'+tnam+ext,f)
         if not m:
             continue
         dstr = m.group(1)
@@ -157,8 +165,8 @@ if len(out_idats) < 1:
 if args.debug:
     if not args.batch:
         plt.interactive(True)
-    fig = plt.figure(1,facecolor='w',figsize=(6,6))
-    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+    fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
+    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.70)
     pdf = PdfPages(args.fignam)
     fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 out_ndat = len(out_dtim)
@@ -178,7 +186,7 @@ for iobj,object_id in enumerate(object_ids):
             y1 = np.gradient(yc)/x1
             y2 = np.gradient(y1)/x1
             ye = np.std(y2)
-            cnd = np.abs(y2) < 1.5*ye
+            cnd = np.abs(y2) < ye*args.ethr
             ys = csaps(xc[cnd],yc[cnd],out_ntim,smooth=args.smooth)
             out_data[:,iobj,iband] = ys
             if fig_flag:
@@ -187,10 +195,16 @@ for iobj,object_id in enumerate(object_ids):
                 ax1.minorticks_on()
                 ax1.plot(xc,yc,'b-')
                 ax1.plot(xc[cnd],yc[cnd],'g-')
-                ax1.plot(out_ntim,ys,'r-')
+                ax1.plot(out_dtim,ys,'r-')
+                ax1.xaxis.set_major_locator(YearLocator())
+                ax1.xaxis.set_minor_locator(MonthLocator())
                 ax1.set_ylim(yc.min(),yc.max())
                 ax1.set_ylabel(param)
-                ax1.set_title('OBJECTID={}'.format(object_id))
+                if args.ax1_title is not None:
+                    ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
+                else:
+                    ax1.set_title('OBJECTID={}'.format(object_id))
+                fig.autofmt_xdate()
                 plt.savefig(pdf,format='pdf')
                 if not args.batch:
                     plt.draw()
