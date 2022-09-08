@@ -34,6 +34,8 @@ parser.add_argument('--data_tmax',default=None,help='Max date of input data in t
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
+parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
+parser.add_argument('--out_csv',default=False,action='store_true',help='Output CSV (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 parser.add_argument('--tentative_overwrite',default=False,action='store_true',help='Overwrite tentative data (%(default)s)')
 args = parser.parse_args()
@@ -50,17 +52,22 @@ else:
 
 # Read data
 data_years = np.arange(d1.year,d2.year+1,1)
-columns = None
+params = None
 object_ids = None
 inp_dtim = []
 inp_data = []
+if args.inp_csv:
+    columns = None
+    ext = '\.csv$'
+else:
+    ext = '\.npz$'
 for year in data_years:
     ystr = '{}'.format(year)
     dnam = os.path.join(args.inpdir,ystr)
     if not os.path.isdir(dnam):
         continue
     for f in sorted(os.listdir(dnam)):
-        m = re.search('^('+'\d'*8+')_parcel\.csv$',f)
+        m = re.search('^('+'\d'*8+')_\S+'+ext,f)
         if not m:
             continue
         dstr = m.group(1)
@@ -68,26 +75,37 @@ for year in data_years:
         if d < d1 or d > d2:
             continue
         fnam = os.path.join(dnam,f)
-        df = pd.read_csv(fnam,comment='#')
-        df.columns = df.columns.str.strip()
-        if columns is None:
-            columns = df.columns
-            if columns[0].upper() != 'OBJECTID':
-                raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-        elif not np.array_equal(df.columns,columns):
-            raise ValueError('Error, different columns >>> {}'.format(fnam))
-        if object_ids is None:
-            object_ids = df.iloc[:,0].astype(int)
-        elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+        if args.inp_csv:
+            df = pd.read_csv(fnam,comment='#')
+            df.columns = df.columns.str.strip()
+            if columns is None:
+                columns = df.columns
+                if columns[0].upper() != 'OBJECTID':
+                    raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+                params = columns[1:]
+            elif not np.array_equal(df.columns,columns):
+                raise ValueError('Error, different columns >>> {}'.format(fnam))
+            if object_ids is None:
+                object_ids = df.iloc[:,0].astype(int)
+            elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+                raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+            inp_data.append(df.iloc[:,1:].astype(float))
+        else:
+            data = np.load(fnam)
+            if object_ids is None:
+                object_ids = data['object_ids']
+                params = data['params']
+            elif not np.array_equal(data['object_ids'],object_ids):
+                raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+            elif not np.array_equal(data['params'],params):
+                raise ValueError('Error, different parameter >>> {}'.format(fnam))
+            inp_data.append(data['data'])
         inp_dtim.append(d)
-        inp_data.append(df.iloc[:,1:].astype(float))
 inp_dtim = np.array(inp_dtim)
 inp_ntim = date2num(inp_dtim)
 inp_data = np.array(inp_data) # (NDAT,NOBJECT,NBAND)
 inp_ndat = len(inp_dtim)
 nobject = len(object_ids)
-params = columns[1:]
 if inp_ndat < 5 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
 
