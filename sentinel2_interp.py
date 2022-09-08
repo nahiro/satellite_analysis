@@ -195,6 +195,8 @@ for iobj,object_id in enumerate(object_ids):
                 if not args.batch:
                     plt.draw()
                     plt.pause(0.1)
+if args.debug:
+    pdf.close()
 
 # Output CSV
 for idat,fnam in zip(out_idats,out_fnams):
