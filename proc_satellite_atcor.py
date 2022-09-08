@@ -157,6 +157,7 @@ proc_atcor.input_types['rel_thr'] = 'box'
 proc_atcor.input_types['fit_thr'] = 'box'
 proc_atcor.input_types['oflag'] = 'boolean_list'
 proc_atcor.flag_check['mask_studyarea'] = False
+proc_atcor.flag_check['mask_parcel'] = False
 proc_atcor.flag_check['stat_fnam'] = False
 proc_atcor.flag_check['inds_fnam'] = False
 proc_atcor.expected['gis_fnam'] = '*.shp'

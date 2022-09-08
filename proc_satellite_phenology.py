@@ -126,6 +126,7 @@ proc_phenology.input_types['atc_params'] = 'float_list'
 proc_phenology.input_types['assess_dthrs'] = 'int_list'
 proc_phenology.input_types['y1_smooth'] = 'box'
 proc_phenology.input_types['y1_thr'] = 'box'
+proc_phenology.flag_check['mask_parcel'] = False
 proc_phenology.flag_check['trans_fnam'] = False
 proc_phenology.flag_check['head_fnam'] = False
 proc_phenology.flag_check['harvest_fnam'] = False

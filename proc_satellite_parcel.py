@@ -117,6 +117,7 @@ proc_parcel.input_types['cloud_band'] = 'string_select'
 proc_parcel.input_types['cloud_thr'] = 'box'
 proc_parcel.input_types['buffer'] = 'box'
 proc_parcel.input_types['oflag'] = 'boolean_list'
+proc_parcel.flag_check['mask_parcel'] = False
 proc_parcel.expected['gis_fnam'] = '*.shp'
 proc_parcel.expected['mask_parcel'] = '*.tif'
 for pnam in proc_parcel.pnams:
