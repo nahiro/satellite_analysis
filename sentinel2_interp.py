@@ -5,7 +5,7 @@ import re
 from datetime import datetime,timedelta
 import numpy as np
 import pandas as pd
-from matplotlib.dates import date2num,num2date,YearLocator,MonthLocator,DayLocator
+from matplotlib.dates import date2num,num2date,YearLocator,MonthLocator,DayLocator,DateFormatter
 from csaps import csaps
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -166,7 +166,7 @@ if args.debug:
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
-    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.70)
+    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
     pdf = PdfPages(args.fignam)
     fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 out_ndat = len(out_dtim)
@@ -192,13 +192,24 @@ for iobj,object_id in enumerate(object_ids):
             if fig_flag:
                 fig.clear()
                 ax1 = plt.subplot(111)
-                ax1.minorticks_on()
                 ax1.plot(xc,yc,'b-')
                 ax1.plot(xc[cnd],yc[cnd],'g-')
                 ax1.plot(out_dtim,ys,'r-')
-                ax1.xaxis.set_major_locator(YearLocator())
-                ax1.xaxis.set_minor_locator(MonthLocator())
-                ax1.set_ylim(yc.min(),yc.max())
+                xmin = xc.min()
+                xmax = xc.max()
+                xdif = xmax-xmin
+                ymin = yc.min()
+                ymax = yc.max()
+                ydif = ymax-ymin
+                if xdif < 365.0:
+                    ax1.xaxis.set_major_locator(MonthLocator())
+                    ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
+                else:
+                    ax1.xaxis.set_major_locator(MonthLocator(bymonth=[1,7]))
+                    ax1.xaxis.set_minor_locator(MonthLocator())
+                    ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
+                ax1.set_xlim(xmin,xmax)
+                ax1.set_ylim(ymin-0.1*ydif,ymax+0.1*ydif)
                 ax1.set_ylabel(param)
                 if args.ax1_title is not None:
                     ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
