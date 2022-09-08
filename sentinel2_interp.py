@@ -137,15 +137,19 @@ out_ntim = date2num(out_dtim)
 # Make output file list
 out_idats = []
 out_fnams = []
+if args.out_csv:
+    ext = '.csv'
+else:
+    ext = '.npz'
 for idat,dtim in enumerate(out_dtim):
     if dtim < tmin or dtim > tmax:
         dnam = os.path.join(args.tendir,'{}'.format(dtim.year))
-        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp{}'.format(dtim,ext))
         if os.path.exists(fnam) and args.tentative_overwrite:
             os.remove(fnam)
     else:
         dnam = os.path.join(args.dstdir,'{}'.format(dtim.year))
-        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp{}'.format(dtim,ext))
         if os.path.exists(fnam) and args.overwrite:
             os.remove(fnam)
     if os.path.exists(fnam):
@@ -224,15 +228,22 @@ for iobj,object_id in enumerate(object_ids):
 if args.debug:
     pdf.close()
 
-# Output CSV
-for idat,fnam in zip(out_idats,out_fnams):
-    with open(fnam,'w') as fp:
-        fp.write('{:>8s}'.format('OBJECTID'))
-        for param in params:
-            fp.write(', {:>13s}'.format(param))
-        fp.write('\n')
-        for iobj,object_id in enumerate(object_ids):
-            fp.write('{:8d}'.format(object_id))
-            for iband,param in enumerate(params):
-                fp.write(', {:>13.6e}'.format(out_data[idat,iobj,iband]))
+# Output data
+if args.out_csv:
+    for idat,fnam in zip(out_idats,out_fnams):
+        with open(fnam,'w') as fp:
+            fp.write('{:>8s}'.format('OBJECTID'))
+            for param in params:
+                fp.write(', {:>13s}'.format(param))
             fp.write('\n')
+            for iobj,object_id in enumerate(object_ids):
+                fp.write('{:8d}'.format(object_id))
+                for iband,param in enumerate(params):
+                    fp.write(', {:>13.6e}'.format(out_data[idat,iobj,iband]))
+                fp.write('\n')
+else:
+    for idat,fnam in zip(out_idats,out_fnams):
+        np.savez(fnam,
+        params=params,
+        object_ids=object_ids,
+        data=out_data[idat])
