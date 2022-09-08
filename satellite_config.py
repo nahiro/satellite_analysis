@@ -140,7 +140,7 @@ config_defaults.update({
 'parcel.cr_ref_inds'                  : [True,True,True,True],
 'parcel.cloud_band'                   : 'r',
 'parcel.cloud_thr'                    : 0.35,
-'parcel.buffer'                       : 1.0,
+'parcel.buffer'                       : 0.0,
 'parcel.oflag'                        : [False,False],
 'parcel.python_path'                  : python_path,
 'parcel.scr_dir'                      : scr_dir,
