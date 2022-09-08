@@ -174,13 +174,7 @@ config_defaults.update({
 'atcor.scr_dir'                       : scr_dir,
 'atcor.middle_left_frame_width'       : 1000,
 #----------- interp -----------
-'interp.smooth1_flag'                 : [False,False,False],
-'interp.smooth2_flag'                 : [False,False,False],
-'interp.cflag_ref'                    : 'b',
-'interp.cflag_ind'                    : 'NDVI',
 'interp.cflag_thr'                    : [0.06,0.1,0.06,0.1],
-'interp.cflag_period'                 : ['',''],
-'interp.cflag_smooth'                 : 5.0e-3,
 'interp.p_smooth'                     : 2.0e-3,
 'interp.atcor_flag'                   : False,
 'interp.oflag'                        : [False,True,False,True],

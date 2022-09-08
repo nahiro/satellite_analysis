@@ -73,19 +73,6 @@ def set_title(pnam):
         proc_pnam = 'stat_period'
         proc_atcor.center_var[proc_pnam][0].set(data_tmin)
         proc_atcor.center_var[proc_pnam][1].set(data_tmax)
-    # interp
-    proc_pnam = 'cflag_period'
-    data_tmin = first_dtim+relativedelta(months=-6)
-    data_tmax = last_dtim+relativedelta(months=6)
-    if data_tmax > now_dtim:
-        data_tmax = now_dtim
-    data_tmin = data_tmin.strftime(date_fmt)
-    data_tmax = data_tmax.strftime(date_fmt)
-    proc_interp.values[proc_pnam][0] = data_tmin
-    proc_interp.values[proc_pnam][1] = data_tmax
-    if proc_interp.center_var is not None:
-        proc_interp.center_var[proc_pnam][0].set(data_tmin)
-        proc_interp.center_var[proc_pnam][1].set(data_tmax)
     # phenology
     proc_pnam = 'trans_fnam'
     proc_phenology.values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
