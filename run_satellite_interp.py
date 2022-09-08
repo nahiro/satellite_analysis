@@ -20,12 +20,19 @@ class Interp(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        trg_bnam = '{:%Y%m%d}_{:%Y%m%d}'.format(first_dtim,last_dtim)
         if not os.path.exists(self.s2_data):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Interpolate data
+        ystr = '{:%Y}'.format(first_dtim)
+        dnam = os.path.join(self.s2_data,'interp',ystr)
+        if not os.path.exists(dnam):
+            os.makedirs(dnam)
+        if not os.path.isdir(dnam):
+            raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
         if self.values['atcor_flag']:
@@ -44,6 +51,9 @@ class Interp(Satellite_Process):
             command += ' --overwrite'
         if self.values['oflag'][1]:
             command += ' --tentative_overwrite'
+        command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_interp.pdf'.format(trg_bnam)))
+        command += ' --debug'
+        command += ' --batch'
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(first_dtim,last_dtim))
 
         # Finish process
