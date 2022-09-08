@@ -17,8 +17,8 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'NDVI','GNDVI','RGI','NRGI']
 
 # Default values
-TMIN = '20190315'
-TMAX = '20190615'
+DATA_TMIN = '20190315'
+DATA_TMAX = '20190615'
 TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.002
@@ -30,10 +30,8 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(default)s)')
 parser.add_argument('-D','--dstdir',default=None,help='Destination directory (%(default)s)')
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
-parser.add_argument('-s','--tmin',default=TMIN,help='Min date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('-e','--tmax',default=TMAX,help='Max date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--data_tmin',default=DATA_TMIN,help='Min date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--data_tmax',default=DATA_TMAX,help='Max date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
@@ -49,18 +47,10 @@ parser.add_argument('--atcor',default=False,action='store_true',help='Atcor mode
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-tmin = datetime.strptime(args.tmin,'%Y%m%d')
-tmax = datetime.strptime(args.tmax,'%Y%m%d')
 if args.fignam is None:
     args.fignam = 'test.pdf'
-if args.data_tmin is None:
-    d1 = tmin-timedelta(days=args.tmgn)
-else:
-    d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
-if args.data_tmax is None:
-    d2 = tmax+timedelta(days=args.tmgn)
-else:
-    d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
+d1 = datetime.strptime(args.data_tmin,'%Y%m%d')
+d2 = datetime.strptime(args.data_tmax,'%Y%m%d')
 
 # Read data
 data_years = np.arange(d1.year,d2.year+1,1)
@@ -124,6 +114,8 @@ inp_ndat = len(inp_dtim)
 nobject = len(object_ids)
 if inp_ndat < 5 or nobject < 1:
     raise ValueError('Error, inp_ndat={}, nobject={}'.format(inp_ndat,nobject))
+tmin = inp_dtim.min()+timedelta(days=args.tmgn)
+tmax = inp_dtim.max()-timedelta(days=args.tmgn)
 
 # Make output time list
 out_dtim = []
@@ -135,21 +127,17 @@ out_dtim = np.array(out_dtim)
 out_ntim = date2num(out_dtim)
 
 # Make output file list
-out_idats = []
-out_fnams = []
-if args.out_csv:
-    ext = '.csv'
-else:
-    ext = '.npz'
+out_indx_npz = []
+out_fnam_npz = []
 for idat,dtim in enumerate(out_dtim):
     if dtim < tmin or dtim > tmax:
         dnam = os.path.join(args.tendir,'{}'.format(dtim.year))
-        fnam = os.path.join(dnam,'{:%Y%m%d}_interp{}'.format(dtim,ext))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.npz'.format(dtim))
         if os.path.exists(fnam) and args.tentative_overwrite:
             os.remove(fnam)
     else:
         dnam = os.path.join(args.dstdir,'{}'.format(dtim.year))
-        fnam = os.path.join(dnam,'{:%Y%m%d}_interp{}'.format(dtim,ext))
+        fnam = os.path.join(dnam,'{:%Y%m%d}_interp.npz'.format(dtim))
         if os.path.exists(fnam) and args.overwrite:
             os.remove(fnam)
     if os.path.exists(fnam):
@@ -158,12 +146,39 @@ for idat,dtim in enumerate(out_dtim):
         os.makedirs(dnam)
     if not os.path.isdir(dnam):
         raise IOError('No such folder >>> {}'.format(dnam))
-    out_idats.append(idat)
-    out_fnams.append(fnam)
-if len(out_idats) < 1:
-    sys.stderr.write('No need to interpolate data.\n')
-    sys.stderr.flush()
-    sys.exit()
+    out_indx_npz.append(idat)
+    out_fnam_npz.append(fnam)
+if args.out_csv:
+    out_indx_csv = []
+    out_fnam_csv = []
+    for idat,dtim in enumerate(out_dtim):
+        if dtim < tmin or dtim > tmax:
+            dnam = os.path.join(args.tendir,'{}'.format(dtim.year))
+            fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+            if os.path.exists(fnam) and args.tentative_overwrite:
+                os.remove(fnam)
+        else:
+            dnam = os.path.join(args.dstdir,'{}'.format(dtim.year))
+            fnam = os.path.join(dnam,'{:%Y%m%d}_interp.csv'.format(dtim))
+            if os.path.exists(fnam) and args.overwrite:
+                os.remove(fnam)
+        if os.path.exists(fnam):
+            continue
+        if not os.path.exists(dnam):
+            os.makedirs(dnam)
+        if not os.path.isdir(dnam):
+            raise IOError('No such folder >>> {}'.format(dnam))
+        out_indx_csv.append(idat)
+        out_fnam_csv.append(fnam)
+    if len(out_indx_npz) < 1 and len(out_indx_csv) < 1:
+        sys.stderr.write('No need to interpolate data.\n')
+        sys.stderr.flush()
+        sys.exit()
+else:
+    if len(out_indx_npz) < 1:
+        sys.stderr.write('No need to interpolate data.\n')
+        sys.stderr.flush()
+        sys.exit()
 
 # Interpolate data
 if args.debug:
@@ -229,8 +244,15 @@ if args.debug:
     pdf.close()
 
 # Output data
+for idat,fnam in zip(out_indx_npz,out_fnam_npz):
+    np.savez(fnam,
+    params=params,
+    object_ids=object_ids,
+    data=out_data[idat])
+
+# Output CSV
 if args.out_csv:
-    for idat,fnam in zip(out_idats,out_fnams):
+    for idat,fnam in zip(out_indx_csv,out_fnam_csv):
         with open(fnam,'w') as fp:
             fp.write('{:>8s}'.format('OBJECTID'))
             for param in params:
@@ -241,9 +263,3 @@ if args.out_csv:
                 for iband,param in enumerate(params):
                     fp.write(', {:>13.6e}'.format(out_data[idat,iobj,iband]))
                 fp.write('\n')
-else:
-    for idat,fnam in zip(out_idats,out_fnams):
-        np.savez(fnam,
-        params=params,
-        object_ids=object_ids,
-        data=out_data[idat])
