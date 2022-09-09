@@ -64,6 +64,7 @@ parser.add_argument('--dthr2',default=DTHR2,type=float,help='Min number of days 
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -90,39 +91,58 @@ if args.out_csv is None or args.out_shp is None or args.fignam is None:
 
 # Read NDVI data
 data_years = np.arange(d1.year,d2.year+1,1)
-columns = None
 object_ids = None
 iband = None
 inp_ndvi = []
 inp_dtim = []
+if args.inp_csv:
+    columns = None
+    ext = '.csv'
+else:
+    params = None
+    ext = '.npz'
 d = d1
 while d <= d2:
     ystr = '{}'.format(d.year)
     dstr = '{:%Y%m%d}'.format(d)
-    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
+    fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(dstr,ext))
     if not os.path.exists(fnam):
-        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
+        gnam = os.path.join(args.tendir,ystr,'{}_interp{}'.format(dstr,ext))
         if not os.path.exists(gnam):
             raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
         else:
             fnam = gnam
+    if args.inp_csv:
+        df = pd.read_csv(fnam,comment='#')
+        df.columns = df.columns.str.strip()
+        if columns is None:
+            columns = df.columns
+            if columns[0].upper() != 'OBJECTID':
+                raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+            if not 'NDVI' in columns:
+                raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
+            iband = columns.to_list().index('NDVI')
+        elif not np.array_equal(df.columns,columns):
+            raise ValueError('Error, different columns >>> {}'.format(fnam))
+        if object_ids is None:
+            object_ids = df.iloc[:,0].astype(int)
+        elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+        inp_ndvi.append(df.iloc[:,iband].astype(float))
+    else:
+        data = np.load(fnam)
+        if object_ids is None:
+            object_ids = data['object_ids']
+            params = data['params']
+            if not 'NDVI' in params:
+                raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
+            iband = params.tolist().index('NDVI')
+        elif not np.array_equal(data['object_ids'],object_ids):
+            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+        elif not np.array_equal(data['params'],params):
+            raise ValueError('Error, different parameter >>> {}'.format(fnam))
+        inp_ndvi.append(data['data'][:,iband])
     inp_dtim.append(d)
-    df = pd.read_csv(fnam,comment='#')
-    df.columns = df.columns.str.strip()
-    if columns is None:
-        columns = df.columns
-        if columns[0].upper() != 'OBJECTID':
-            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-        if not 'NDVI' in columns:
-            raise ValueError('Error in finding NDVI >>> {}'.format(fnam))
-        iband = columns.to_list().index('NDVI')
-    elif not np.array_equal(df.columns,columns):
-        raise ValueError('Error, different columns >>> {}'.format(fnam))
-    if object_ids is None:
-        object_ids = df.iloc[:,0].astype(int)
-    elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-    inp_ndvi.append(df.iloc[:,iband].astype(float))
     d += timedelta(days=args.tstp)
 inp_ndvi = np.array(inp_ndvi) # (NDAT,NOBJECT)
 inp_dtim = np.array(inp_dtim)
