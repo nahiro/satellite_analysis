@@ -50,6 +50,7 @@ parser.add_argument('-F','--fignam',default=None,help='Output figure name for de
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--use_major_plot',default=False,action='store_true',help='Use major plot (%(default)s)')
+parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -164,24 +165,35 @@ for param in PARAMS:
     event_d[param] = df.iloc[:,iband].astype(float).values
 
 # Read indices
+if args.inp_csv:
+    ext = '.csv'
+else:
+    ext = '.npz'
 dtim = datetime.strptime(args.tobs,'%Y%m%d')
 ystr = '{}'.format(dtim.year)
-fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(args.tobs))
+fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(args.tobs,ext))
 if not os.path.exists(fnam):
-    gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(args.tobs))
+    gnam = os.path.join(args.tendir,ystr,'{}_interp{}'.format(args.tobs,ext))
     if not os.path.exists(gnam):
         raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
     else:
         fnam = gnam
-df = pd.read_csv(fnam,comment='#')
-df.columns = df.columns.str.strip()
-columns = df.columns
-if columns[0].upper() != 'OBJECTID':
-    raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
-params = columns[1:]
+if args.inp_csv:
+    df = pd.read_csv(fnam,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns
+    if columns[0].upper() != 'OBJECTID':
+        raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+    if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
+    params = columns[1:]
+else:
+    data = np.load(fnam)
+    if not np.array_equal(data['object_ids'],object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    inp_data = data['data'] # (NOBJECT,NBAND)
+    params = data['params']
 
 # Extract data
 out_plot = {}
