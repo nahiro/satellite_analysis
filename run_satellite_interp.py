@@ -52,6 +52,7 @@ class Interp(Satellite_Process):
         if self.values['oflag'][1]:
             command += ' --tentative_overwrite'
         command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_interp.pdf'.format(trg_bnam)))
+        command += ' --nfig 10'
         command += ' --debug'
         command += ' --batch'
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(first_dtim,last_dtim))
