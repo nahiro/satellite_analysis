@@ -106,7 +106,6 @@ if args.inp_csv:
     columns = None
     ext = '.csv'
 else:
-    params = None
     ext = '.npz'
 for d in inp_dtim:
     ystr = '{}'.format(d.year)
