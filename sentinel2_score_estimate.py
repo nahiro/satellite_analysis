@@ -130,7 +130,7 @@ out_data = np.full((nobject,out_nb),0.0)
 for iband,y_param in enumerate(args.y_param):
     cnd = (form_df['Y'] == y_param)
     if cnd.sum() < y_number[y_param]:
-        raise ValueError('Error in finding formula for {} >>> {}'.format(y_param,args.inp_fnam))
+        raise ValueError('Error in finding formula for {} >>> {}'.format(y_param,args.form_fnam))
     formula = form_df[cnd].iloc[y_number[y_param]-1]
     for n in range(nmax):
         p = 'P{}_param'.format(n)
