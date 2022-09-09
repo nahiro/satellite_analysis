@@ -293,29 +293,25 @@ for iobj,object_id in enumerate(object_ids):
         y1 = y1[grow_cnd]
         y2 = y2[grow_cnd]
         min_peaks,min_properties = find_peaks(-y2)
-        max_peaks,max_properties = find_peaks(y2)
-        if (min_peaks.size < 1) or (max_peaks.size < 1):
+        if min_peaks.size < 1:
             xp_1 = x_peak
             xp_2 = x_peak
         else:
             x_mins = x[min_peaks] 
             cnd = (x_mins < x_peak)
-            x_mins = x_mins[cnd]
-            if x_mins.size < 1:
+            x_ls = x_mins[cnd] # left
+            if x_ls.size < 1:
                 xp_1 = x_peak
                 xp_2 = x_peak
             else:
-                x_min = x_mins[-1]
-                x_maxs = x[max_peaks] 
-                cnd = (x_maxs > x_min)
-                x_maxs = x_maxs[cnd]
-                if x_maxs.size < 1:
+                cnd = (x_mins >= x_peak)
+                x_rs = x_mins[cnd] # right
+                if x_rs.size < 1:
                     xp_1 = x_peak
                     xp_2 = x_peak
                 else:
-                    x_max = x_maxs[0]
-                    xp_1 = x_min
-                    xp_2 = x_max
+                    xp_1 = x_ls[-1]
+                    xp_2 = x_rs[0]
         x_head = (xp_1+xp_2)*0.5
         if np.abs(x_head-x_peak) > args.dthr1:
             xp_1 = x_peak
