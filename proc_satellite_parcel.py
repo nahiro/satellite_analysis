@@ -20,6 +20,7 @@ proc_parcel.pnams.append('cr_ref_inds')
 proc_parcel.pnams.append('cloud_band')
 proc_parcel.pnams.append('cloud_thr')
 proc_parcel.pnams.append('buffer')
+proc_parcel.pnams.append('csv_flag')
 proc_parcel.pnams.append('oflag')
 proc_parcel.params['gis_fnam'] = 'Polygon File'
 proc_parcel.params['mask_parcel'] = 'Mask File for Parcellate'
@@ -37,6 +38,7 @@ proc_parcel.params['cr_ref_inds'] = 'CR-Ref Index'
 proc_parcel.params['cloud_band'] = 'Band for Cloud Removal'
 proc_parcel.params['cloud_thr'] = 'Thres. for Cloud Removal'
 proc_parcel.params['buffer'] = 'Buffer Radius (m)'
+proc_parcel.params['csv_flag'] = 'Output CSV'
 proc_parcel.params['oflag'] = 'Overwrite Flag'
 proc_parcel.param_types['gis_fnam'] = 'string'
 proc_parcel.param_types['mask_parcel'] = 'string'
@@ -54,6 +56,7 @@ proc_parcel.param_types['cr_ref_inds'] = 'boolean_list'
 proc_parcel.param_types['cloud_band'] = 'string_select'
 proc_parcel.param_types['cloud_thr'] = 'float'
 proc_parcel.param_types['buffer'] = 'float'
+proc_parcel.param_types['csv_flag'] = 'boolean'
 proc_parcel.param_types['oflag'] = 'boolean_list'
 proc_parcel.param_range['cloud_thr'] = (0.0,10.0)
 proc_parcel.param_range['buffer'] = (0.0,10.0e3)
@@ -73,6 +76,7 @@ proc_parcel.defaults['cr_ref_inds'] = [True,True,True,True]
 proc_parcel.defaults['cloud_band'] = 'r'
 proc_parcel.defaults['cloud_thr'] = 0.35
 proc_parcel.defaults['buffer'] = 0.0
+proc_parcel.defaults['csv_flag'] = True
 proc_parcel.defaults['oflag'] = [False,False]
 proc_parcel.list_sizes['out_refs'] = 10
 proc_parcel.list_sizes['cr_sc_refs'] = 10
@@ -116,6 +120,7 @@ proc_parcel.input_types['cr_ref_inds'] = 'boolean_list'
 proc_parcel.input_types['cloud_band'] = 'string_select'
 proc_parcel.input_types['cloud_thr'] = 'box'
 proc_parcel.input_types['buffer'] = 'box'
+proc_parcel.input_types['csv_flag'] = 'boolean'
 proc_parcel.input_types['oflag'] = 'boolean_list'
 proc_parcel.flag_check['mask_parcel'] = False
 proc_parcel.expected['gis_fnam'] = '*.shp'
