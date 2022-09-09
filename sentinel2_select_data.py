@@ -43,6 +43,7 @@ parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',he
 parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -99,31 +100,47 @@ if args.shp_fnam is not None:
         raise ValueError('Error, different OBJECTID >>> {}'.format(args.shp_fnam))
 
 # Read indices
-columns = None
+params = None
 inp_data = []
+if args.inp_csv:
+    columns = None
+    ext = '.csv'
+else:
+    params = None
+    ext = '.npz'
 for d in inp_dtim:
     ystr = '{}'.format(d.year)
     dstr = '{:%Y%m%d}'.format(d)
-    fnam = os.path.join(args.inpdir,ystr,'{}_interp.csv'.format(dstr))
+    fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(dstr,ext))
     if not os.path.exists(fnam):
-        gnam = os.path.join(args.tendir,ystr,'{}_interp.csv'.format(dstr))
+        gnam = os.path.join(args.tendir,ystr,'{}_interp{}'.format(dstr,ext))
         if not os.path.exists(gnam):
             raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
         else:
             fnam = gnam
-    df = pd.read_csv(fnam,comment='#')
-    df.columns = df.columns.str.strip()
-    if columns is None:
-        columns = df.columns
-        if columns[0].upper() != 'OBJECTID':
-            raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
-    elif not np.array_equal(df.columns,columns):
-        raise ValueError('Error, different columns >>> {}'.format(fnam))
-    if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-        raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
-    inp_data.append(df.iloc[:,1:].astype(float))
-params = columns[1:]
-inp_data = np.array(inp_data) # (NDAT,NOBJECT)
+    if args.inp_csv:
+        df = pd.read_csv(fnam,comment='#')
+        df.columns = df.columns.str.strip()
+        if columns is None:
+            columns = df.columns
+            if columns[0].upper() != 'OBJECTID':
+                raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
+            params = columns[1:]
+        elif not np.array_equal(df.columns,columns):
+            raise ValueError('Error, different columns >>> {}'.format(fnam))
+        if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
+            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+        inp_data.append(df.iloc[:,1:].astype(float))
+    else:
+        data = np.load(fnam)
+        if params is None:
+            params = data['params']
+        elif not np.array_equal(data['params'],params):
+            raise ValueError('Error, different parameter >>> {}'.format(fnam))
+        if not np.array_equal(data['object_ids'],object_ids):
+            raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+        inp_data.append(data['data'])
+inp_data = np.array(inp_data) # (NDAT,NOBJECT,NBAND)
 
 out_nb = len(params)
 out_data = np.full((nobject,out_nb),np.nan)
