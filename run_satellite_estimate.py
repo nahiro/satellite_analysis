@@ -21,6 +21,7 @@ class Estimate(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
+        obs_dtim = datetime.strptime(self.obs_date,self.date_fmt)
         if not os.path.exists(self.values['gis_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['gis_fnam']))
         if not os.path.exists(self.values['event_fnam']):
