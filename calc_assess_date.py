@@ -379,8 +379,8 @@ for iobj,object_id in enumerate(object_ids):
         ax3.set_ylabel(r'NDVI$^{\prime\prime}$ $\times$ 10$^{3}$')
         ax1.set_title('OBJECTID: {}'.format(object_id))
         fig.autofmt_xdate()
+        plt.savefig(pdf,format='pdf')
         if not args.batch:
-            plt.savefig(pdf,format='pdf')
             plt.draw()
             plt.pause(0.1)
     #break # for debug
