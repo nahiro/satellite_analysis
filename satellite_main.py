@@ -109,11 +109,13 @@ def set_title(pnam):
         except Exception:
             pass
         proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
-    # extract
+    # estimate
     proc_pnam = 'event_fnam'
     proc_estimate.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+    proc_pnam = 'spec_date'
+    proc_estimate.values[proc_pnam] = dstr
     if proc_estimate.center_var is not None:
-        for proc_pnam in ['event_fnam']:
+        for proc_pnam in ['event_fnam','spec_date']:
             proc_estimate.center_var[proc_pnam].set(proc_estimate.values[proc_pnam])
     if pnam is None:
         return
