@@ -99,7 +99,7 @@ if args.inp_csv is not None:
         if param in PARAMS:
             src_df[param] = src_df[param].astype(float)
 else:
-    data = np.load(fnam)
+    data = np.load(args.inp_fnam)
     object_ids = data['object_ids']
     nobject = len(object_ids)
     params = data['params'].tolist()
