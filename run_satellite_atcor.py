@@ -188,6 +188,13 @@ class Atcor(Satellite_Process):
             atcor_pdf = os.path.join(dnam,'{}_atcor.pdf'.format(dstr))
             if os.path.exists(atcor_npz) and self.values['oflag'][4]:
                 os.remove(atcor_npz)
+            if self['csv_flag']:
+                atcor_csv = os.path.join(dnam,'{}_atcor.csv'.format(dstr))
+                if os.path.exists(atcor_csv):
+                    if self.values['oflag'][4]:
+                        os.remove(atcor_csv)
+                elif os.path.exists(atcor_npz):
+                    os.remove(atcor_npz)
             if not os.path.exists(atcor_npz):
                 if not os.path.exists(dnam):
                     os.makedirs(dnam)
