@@ -153,6 +153,8 @@ class Parcel(Satellite_Process):
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                 command += ' --out_fnam "{}"'.format(npz_fnam)
                 command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
+                if self.values['csv_flag']:
+                    command += ' --out_csv "{}"'.format(csv_fnam)
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
                         command += ' --param S{}'.format(param.strip())
