@@ -178,9 +178,9 @@ class Atcor(Satellite_Process):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_data,'parcel',ystr)
-            gnam = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
-            if not os.path.exists(gnam):
-                raise ValueError('Error, no such file >>> {}'.format(gnam))
+            data_npz = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
+            if not os.path.exists(data_npz):
+                raise ValueError('Error, no such file >>> {}'.format(data_npz))
             dnam = os.path.join(self.s2_data,'atcor',ystr)
             fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
             atcor_npz = os.path.join(dnam,'{}_atcor.npz'.format(dstr))
@@ -198,7 +198,7 @@ class Atcor(Satellite_Process):
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                 command += ' --mask_geotiff "{}"'.format(mask_parcel)
                 command += ' --src_geotiff "{}"'.format(fnam)
-                command += ' --parcel_fnam "{}"'.format(gnam)
+                command += ' --parcel_fnam "{}"'.format(data_npz)
                 command += ' --atcor_fnam "{}"'.format(fact_npz)
                 command += ' --out_fnam "{}"'.format(atcor_npz)
                 command += ' --out_shp "{}"'.format(atcor_shp)

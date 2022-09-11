@@ -114,17 +114,17 @@ class Parcel(Satellite_Process):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_data,'parcel',ystr)
-            npz_fnam = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
-            if os.path.exists(npz_fnam) and self.values['oflag'][1]:
-                os.remove(npz_fnam)
+            data_npz = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
+            if os.path.exists(data_npz) and self.values['oflag'][1]:
+                os.remove(data_npz)
             if self['csv_flag']:
-                csv_fnam = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
-                if os.path.exists(csv_fnam):
+                data_csv = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
+                if os.path.exists(data_csv):
                     if self.values['oflag'][1]:
-                        os.remove(csv_fnam)
-                elif os.path.exists(npz_fnam):
-                    os.remove(npz_fnam)
-            if not os.path.exists(npz_fnam):
+                        os.remove(data_csv)
+                elif os.path.exists(data_npz):
+                    os.remove(data_npz)
+            if not os.path.exists(data_npz):
                 if not os.path.exists(dnam):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
@@ -151,10 +151,10 @@ class Parcel(Satellite_Process):
                 command += ' --res_geotiff "{}"'.format(rnam)
                 command += ' --mask_geotiff "{}"'.format(mask_fnam)
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                command += ' --out_fnam "{}"'.format(npz_fnam)
+                command += ' --out_fnam "{}"'.format(data_npz)
                 command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
                 if self.values['csv_flag']:
-                    command += ' --out_csv "{}"'.format(csv_fnam)
+                    command += ' --out_csv "{}"'.format(data_csv)
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
                         command += ' --param S{}'.format(param.strip())
