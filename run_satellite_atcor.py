@@ -209,6 +209,8 @@ class Atcor(Satellite_Process):
                 command += ' --atcor_fnam "{}"'.format(fact_npz)
                 command += ' --out_fnam "{}"'.format(atcor_npz)
                 command += ' --out_shp "{}"'.format(atcor_shp)
+                if self.values['csv_flag']:
+                    command += ' --out_csv "{}"'.format(atcor_csv)
                 for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
                     if flag:
                         command += ' --param S{}'.format(param.strip())
