@@ -47,6 +47,8 @@ class Interp(Satellite_Process):
         command += ' --tstp 1'
         command += ' --smooth="{}"'.format(self.values['p_smooth'])
         command += ' --ethr {}'.format(self.values['cflag_thr'])
+        if self.values['csv_flag']:
+            command += ' --out_csv'
         if self.values['oflag'][0]:
             command += ' --overwrite'
         if self.values['oflag'][1]:
