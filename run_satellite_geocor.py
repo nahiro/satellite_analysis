@@ -78,6 +78,7 @@ class Geocor(Satellite_Process):
                 l2a_dstrs.append(dstr)
                 l2a_sizes.append(os.path.getsize(fnam))
         if len(l2a_dstrs) < 1:
+            self.print_message('No L2A data for process.',print_time=False)
             return
         inds = np.argsort(l2a_dstrs)#[::-1]
         l2a_fnams = [l2a_fnams[i] for i in inds]
