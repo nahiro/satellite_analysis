@@ -50,6 +50,7 @@ proc_extract.input_types['major_flag'] = 'boolean'
 proc_extract.input_types['event_fnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
 proc_extract.flag_check['event_fnam'] = False
+proc_extract.flag_check['obs_fnam'] = False
 proc_extract.depend_proc['event_fnam'] = ['phenology']
 proc_extract.expected['gis_fnam'] = '*.shp'
 proc_extract.expected['obs_fnam'] = '*.xls'
