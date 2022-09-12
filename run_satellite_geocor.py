@@ -77,6 +77,23 @@ class Geocor(Satellite_Process):
                 l2a_fnams.append(fnam)
                 l2a_dstrs.append(dstr)
                 l2a_sizes.append(os.path.getsize(fnam))
+        if not self.values['oflag'][0]:
+            for year in data_years:
+                ystr = '{}'.format(year)
+                dnam = os.path.join(self.s2_data,'subset',ystr)
+                if not os.path.isdir(dnam):
+                    continue
+                for f in sorted(os.listdir(dnam)):
+                    m = re.search('^('+'\d'*8+')_subset\.tif$',f)
+                    if not m:
+                        continue
+                    dstr = m.group(1)
+                    d = datetime.strptime(dstr,'%Y%m%d')
+                    if d < first_dtim or d > last_dtim:
+                        continue
+                    l2a_fnams.append(None)
+                    l2a_dstrs.append(dstr)
+                    l2a_sizes.append(0)
         if len(l2a_dstrs) < 1:
             self.print_message('No L2A data for process.',print_time=False)
             return
