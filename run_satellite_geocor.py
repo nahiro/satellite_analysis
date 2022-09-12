@@ -91,9 +91,10 @@ class Geocor(Satellite_Process):
                     d = datetime.strptime(dstr,'%Y%m%d')
                     if d < first_dtim or d > last_dtim:
                         continue
-                    l2a_fnams.append(None)
-                    l2a_dstrs.append(dstr)
-                    l2a_sizes.append(0)
+                    if not dstr in l2a_dstrs:
+                        l2a_fnams.append(None)
+                        l2a_dstrs.append(dstr)
+                        l2a_sizes.append(0)
         if len(l2a_dstrs) < 1:
             self.print_message('No L2A data for process.',print_time=False)
             return
