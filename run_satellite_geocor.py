@@ -53,7 +53,6 @@ class Geocor(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
         if not os.path.exists(self.values['ref_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
-        ref_bnam,ref_enam = os.path.splitext(os.path.basename(self.values['ref_fnam']))
 
         # Check Sentinel-2 L2A
         l2a_fnams = []
