@@ -77,6 +77,8 @@ class Geocor(Satellite_Process):
                 l2a_fnams.append(fnam)
                 l2a_dstrs.append(dstr)
                 l2a_sizes.append(os.path.getsize(fnam))
+        if len(l2a_dstrs) < 1:
+            self.print_message('No L2A data for process.',print_time=False)
         if not self.values['oflag'][0]:
             for year in data_years:
                 ystr = '{}'.format(year)
@@ -95,9 +97,6 @@ class Geocor(Satellite_Process):
                         l2a_fnams.append(None)
                         l2a_dstrs.append(dstr)
                         l2a_sizes.append(0)
-        if len(l2a_dstrs) < 1:
-            self.print_message('No L2A data for process.',print_time=False)
-            return
         inds = np.argsort(l2a_dstrs)#[::-1]
         l2a_fnams = [l2a_fnams[i] for i in inds]
         l2a_dstrs = [l2a_dstrs[i] for i in inds]
@@ -166,6 +165,28 @@ class Geocor(Satellite_Process):
             if os.path.exists(gnam):
                 subset_fnams.append(gnam)
                 subset_dstrs.append(dstr)
+        if len(subset_dstrs) < 1:
+            self.print_message('No subset data for process.',print_time=False)
+        if not self.values['oflag'][1]:
+            for year in data_years:
+                ystr = '{}'.format(year)
+                dnam = os.path.join(self.s2_data,'geocor',ystr)
+                if not os.path.isdir(dnam):
+                    continue
+                for f in sorted(os.listdir(dnam)):
+                    m = re.search('^('+'\d'*8+')_geocor\.tif$',f)
+                    if not m:
+                        continue
+                    dstr = m.group(1)
+                    d = datetime.strptime(dstr,'%Y%m%d')
+                    if d < first_dtim or d > last_dtim:
+                        continue
+                    if not dstr in subset_dstrs:
+                        subset_fnams.append(None)
+                        subset_dstrs.append(dstr)
+        inds = np.argsort(subset_dstrs)#[::-1]
+        subset_fnams = [subset_fnams[i] for i in inds]
+        subset_dstrs = [subset_dstrs[i] for i in inds]
 
         # Geometric correction
         geocor_fnams = []
