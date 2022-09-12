@@ -117,7 +117,7 @@ class Parcel(Satellite_Process):
             data_npz = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
             if os.path.exists(data_npz) and self.values['oflag'][1]:
                 os.remove(data_npz)
-            if self['csv_flag']:
+            if self.values['csv_flag']:
                 data_csv = os.path.join(dnam,'{}_parcel.csv'.format(dstr))
                 if os.path.exists(data_csv):
                     if self.values['oflag'][1]:
