@@ -235,7 +235,7 @@ config_defaults.update({
 'formula.y_params'                    : [True,False,False,False,False,False],
 'formula.score_max'                   : [9,9,1,1,1,9],
 'formula.score_step'                  : [2.0,2.0,0.2,0.2,0.2,2.0],
-'formula.ythr'                        : [0.2,0.2,0.2,0.2,0.2,0.2],
+'formula.ythr'                        : [0.2,1.0,1.0,1.0,1.0,1.0],
 'formula.yfac1'                       : [1.0,np.nan,np.nan,np.nan,np.nan,np.nan],
 'formula.yfac2'                       : [np.nan,1.0,np.nan,np.nan,np.nan,np.nan],
 'formula.yfac3'                       : [np.nan,np.nan,1.0,np.nan,np.nan,np.nan],
