@@ -88,6 +88,7 @@ config_defaults.update({
 'download.parcel_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/parcel',
 'download.atcor_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/atcor',
 'download.interp_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/interp',
+'download.tentative_path'             : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/tentative_interp',
 'download.search_key'                 : '',
 'download.dflag'                      : [True,True,True,True,True,True],
 'download.oflag'                      : [False,False,False,False,False,False],
