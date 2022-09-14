@@ -167,8 +167,8 @@ class Download(Satellite_Process):
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
 
-        # Download Sentinel-2 resample/parcel/atcor/interp
-        for i,(targ,enam) in enumerate(zip(['resample','parcel','atcor','interp'],['.tif','.csv','.csv','.csv'])):
+        # Download Sentinel-2 resample/parcel/atcor/interp/tentative_interp
+        for i,(targ,enam) in enumerate(zip(['resample','parcel','atcor','interp','tentative_interp'],['.tif','.npz','.npz','.npz','npz'])):
             itarg = i+2
             if self.values['dflag'][itarg]:
                 data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
