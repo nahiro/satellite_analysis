@@ -94,10 +94,10 @@ def set_title(pnam):
     proc = 'extract'
     proc_pnam = 'obs_fnam'
     if not modules[proc].flag_fix[proc_pnam]:
-        if 'Field' in modules[proc].values['obs_src']:
-            modules[proc].values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
-        else:
+        if 'Drone' in modules[proc].values['obs_src']:
             modules[proc].values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
+        else:
+            modules[proc].values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'event_fnam'
