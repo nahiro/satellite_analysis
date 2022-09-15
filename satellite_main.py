@@ -124,12 +124,14 @@ def set_title(pnam):
     # estimate
     proc = 'estimate'
     proc_pnam = 'event_fnam'
-    modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+    if not modules[proc].flag_fix[proc_pnam]:
+        modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'spec_date'
     modules[proc].values[proc_pnam] = dstr
     if modules[proc].center_var is not None:
-        for proc_pnam in ['event_fnam','spec_date']:
-            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     if pnam is None:
         return
     # change color
