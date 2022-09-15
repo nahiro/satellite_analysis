@@ -57,10 +57,11 @@ def set_title(pnam):
     last_dtim = datetime.strptime(last_date,date_fmt)
     # geocor
     proc_pnam = 'l2a_dir'
-    proc_geocor.values[proc_pnam] = os.path.join(s2_data,'L2A')
-    if proc_geocor.center_var is not None:
-        for proc_pnam in ['l2a_dir']:
-            proc_geocor.center_var[proc_pnam].set(proc_geocor.values[proc_pnam])
+    if not proc_pnam in proc_geocor.flag_fix or not proc_geocor.flag_fix[proc_pnam]:
+        proc_geocor.values[proc_pnam] = os.path.join(s2_data,'L2A')
+        if proc_geocor.center_var is not None:
+            for proc_pnam in ['l2a_dir']:
+                proc_geocor.center_var[proc_pnam].set(proc_geocor.values[proc_pnam])
     # atcor
     proc_pnam = 'mask_studyarea'
     proc_atcor.values[proc_pnam] = os.path.join(s2_data,'studyarea_mask.tif')

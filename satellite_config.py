@@ -347,6 +347,9 @@ for proc in pnams:
             if len(fnam) < 1:
                 modules[proc].values[pnam] = fnam
             else:
+                if fnam[0] == '!':
+                    modules[proc].flag_fix[pnam] = True
+                    fnam = fnam[1:]
                 modules[proc].values[pnam] = os.path.normpath(fnam)
         elif modules[proc].input_types[pnam] in ['ask_files','ask_folders']:
             lines = config[proc].get('{}.{}'.format(proc,pnam)).strip()
