@@ -96,6 +96,8 @@ config_defaults.update({
 'download.scr_dir'                    : scr_dir,
 'download.middle_left_frame_width'    : 1000,
 #----------- geocor -----------
+'geocor.l2a_dir'                      : os.path.join(main_s2_data,'L2A'),
+'geocor.search_key'                   : '',
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [5,-1,-1],
 'geocor.ref_factors'                  : [np.nan,np.nan,np.nan],
