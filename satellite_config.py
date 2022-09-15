@@ -343,6 +343,7 @@ for proc in pnams:
         config[proc] = {}
     for pnam in modules[proc].pnams:
         if modules[proc].input_types[pnam] in ['ask_file','ask_folder']:
+            modules[proc].flag_fix[pnam] = False
             fnam = config[proc].get('{}.{}'.format(proc,pnam)).strip()
             if len(fnam) < 1:
                 modules[proc].values[pnam] = fnam

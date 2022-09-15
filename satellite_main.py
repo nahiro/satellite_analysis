@@ -56,74 +56,80 @@ def set_title(pnam):
     first_dtim = datetime.strptime(first_date,date_fmt)
     last_dtim = datetime.strptime(last_date,date_fmt)
     # geocor
+    proc = 'geocor'
     proc_pnam = 'l2a_dir'
-    if not proc_pnam in proc_geocor.flag_fix or not proc_geocor.flag_fix[proc_pnam]:
-        proc_geocor.values[proc_pnam] = os.path.join(s2_data,'L2A')
-        if proc_geocor.center_var is not None:
+    if not modules[proc].flag_fix[proc_pnam]:
+        modules[proc].values[proc_pnam] = os.path.join(s2_data,'L2A')
+        if modules[proc].center_var is not None:
             for proc_pnam in ['l2a_dir']:
-                proc_geocor.center_var[proc_pnam].set(proc_geocor.values[proc_pnam])
+                modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # atcor
+    proc = 'atcor'
     proc_pnam = 'mask_studyarea'
-    proc_atcor.values[proc_pnam] = os.path.join(s2_data,'studyarea_mask.tif')
+    modules[proc].values[proc_pnam] = os.path.join(s2_data,'studyarea_mask.tif')
     proc_pnam = 'stat_fnam'
-    proc_atcor.values[proc_pnam] = os.path.join(s2_data,'atcor_stat.tif')
+    modules[proc].values[proc_pnam] = os.path.join(s2_data,'atcor_stat.tif')
     proc_pnam = 'inds_fnam'
-    proc_atcor.values[proc_pnam] = os.path.join(s2_data,'nearest_inds.npz')
+    modules[proc].values[proc_pnam] = os.path.join(s2_data,'nearest_inds.npz')
     proc_pnam = 'stat_period'
     data_tmin = (first_dtim+relativedelta(years=-2)).strftime(date_fmt)
     data_tmax = last_dtim.strftime(date_fmt)
-    proc_atcor.values[proc_pnam][0] = data_tmin
-    proc_atcor.values[proc_pnam][1] = data_tmax
-    if proc_atcor.center_var is not None:
+    modules[proc].values[proc_pnam][0] = data_tmin
+    modules[proc].values[proc_pnam][1] = data_tmax
+    if modules[proc].center_var is not None:
         for proc_pnam in ['mask_studyarea','stat_fnam','inds_fnam']:
-            proc_atcor.center_var[proc_pnam].set(proc_atcor.values[proc_pnam])
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
         proc_pnam = 'stat_period'
-        proc_atcor.center_var[proc_pnam][0].set(data_tmin)
-        proc_atcor.center_var[proc_pnam][1].set(data_tmax)
+        modules[proc].center_var[proc_pnam][0].set(data_tmin)
+        modules[proc].center_var[proc_pnam][1].set(data_tmax)
     # phenology
+    proc = 'phenology'
     proc_pnam = 'trans_fnam'
-    proc_phenology.values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
+    modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
     dt = (end_dtim-start_dtim).total_seconds()
     trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
     proc_pnam = 'trans_pref'
-    proc_phenology.values[proc_pnam] = trans_pref
-    if proc_phenology.center_var is not None:
+    modules[proc].values[proc_pnam] = trans_pref
+    if modules[proc].center_var is not None:
         for proc_pnam in ['trans_fnam','trans_pref']:
-            proc_phenology.center_var[proc_pnam].set(proc_phenology.values[proc_pnam])
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # extract
+    proc = 'extract'
     proc_pnam = 'obs_fnam'
-    if 'Field' in proc_extract.values['obs_src']:
-        proc_extract.values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
+    if 'Field' in modules[proc].values['obs_src']:
+        modules[proc].values[proc_pnam] = os.path.join(field_data,block,'Excel_File','{}_{}.xls'.format(block,dstr))
     else:
-        proc_extract.values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
+        modules[proc].values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
     proc_pnam = 'event_fnam'
-    proc_extract.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
-    if proc_extract.center_var is not None:
+    modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+    if modules[proc].center_var is not None:
         for proc_pnam in ['obs_fnam','event_fnam']:
-            proc_extract.center_var[proc_pnam].set(proc_extract.values[proc_pnam])
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # formula
+    proc = 'formula'
     proc_pnam = 'inp_fnams'
     dnam = os.path.join(s2_analysis,'extract')
     fnams = glob(os.path.join(dnam,'*_extract.csv'))
     if len(fnams) > 0:
-        proc_formula.values[proc_pnam] = '\n'.join(sorted(fnams))
+        modules[proc].values[proc_pnam] = '\n'.join(sorted(fnams))
     else:
-        proc_formula.values[proc_pnam] = os.path.join(dnam,'{}_{}_extract.csv'.format(block,dstr))
-    if proc_formula.center_var is not None:
+        modules[proc].values[proc_pnam] = os.path.join(dnam,'{}_{}_extract.csv'.format(block,dstr))
+    if modules[proc].center_var is not None:
         try:
-            proc_formula.center_inp[proc_pnam].delete('1.0',tk.END)
-            proc_formula.center_inp[proc_pnam].insert('1.0',proc_formula.values[proc_pnam])
+            modules[proc].center_inp[proc_pnam].delete('1.0',tk.END)
+            modules[proc].center_inp[proc_pnam].insert('1.0',modules[proc].values[proc_pnam])
         except Exception:
             pass
-        proc_formula.center_var[proc_pnam].set(proc_formula.values[proc_pnam])
+        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # estimate
+    proc = 'estimate'
     proc_pnam = 'event_fnam'
-    proc_estimate.values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
+    modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
     proc_pnam = 'spec_date'
-    proc_estimate.values[proc_pnam] = dstr
-    if proc_estimate.center_var is not None:
+    modules[proc].values[proc_pnam] = dstr
+    if modules[proc].center_var is not None:
         for proc_pnam in ['event_fnam','spec_date']:
-            proc_estimate.center_var[proc_pnam].set(proc_estimate.values[proc_pnam])
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     if pnam is None:
         return
     # change color
