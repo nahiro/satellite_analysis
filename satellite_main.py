@@ -61,8 +61,7 @@ def set_title(pnam):
     if not modules[proc].flag_fix[proc_pnam]:
         modules[proc].values[proc_pnam] = os.path.join(s2_data,'L2A')
         if modules[proc].center_var is not None:
-            for proc_pnam in ['l2a_dir']:
-                modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # atcor
     proc = 'atcor'
     for proc_pnam,fnam in zip(['mask_studyarea','stat_fnam','inds_fnam'],['studyarea_mask.tif','atcor_stat.tif','nearest_inds.npz']):
@@ -81,14 +80,16 @@ def set_title(pnam):
     # phenology
     proc = 'phenology'
     proc_pnam = 'trans_fnam'
-    modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
+    if not modules[proc].flag_fix[proc_pnam]:
+        modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     dt = (end_dtim-start_dtim).total_seconds()
     trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
     proc_pnam = 'trans_pref'
     modules[proc].values[proc_pnam] = trans_pref
     if modules[proc].center_var is not None:
-        for proc_pnam in ['trans_fnam','trans_pref']:
-            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # extract
     proc = 'extract'
     proc_pnam = 'obs_fnam'
