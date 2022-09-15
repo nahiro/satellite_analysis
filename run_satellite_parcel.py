@@ -35,7 +35,7 @@ class Parcel(Satellite_Process):
         resample_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_data,'resample',ystr)
+            dnam = os.path.join(self.values['resample_dir'],ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):
