@@ -32,7 +32,7 @@ proc_geocor.pnams.append('emaxs')
 proc_geocor.pnams.append('smooth_fact')
 proc_geocor.pnams.append('smooth_dmax')
 proc_geocor.pnams.append('oflag')
-proc_geocor.params['l2a_dir'] = 'Sentinel-2 L2A folder'
+proc_geocor.params['l2a_dir'] = 'Sentinel-2 L2A Folder'
 proc_geocor.params['search_key'] = 'Search Keyword for L2A'
 proc_geocor.params['ref_fnam'] = 'Reference Image'
 proc_geocor.params['ref_bands'] = 'Reference Band'

@@ -128,6 +128,7 @@ config_defaults.update({
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
 #----------- parcel -----------
+'parcel.resample_dir'                 : os.path.join(main_s2_data,'resample'),
 'parcel.gis_fnam'                     : gis_fnam,
 'parcel.mask_parcel'                  : mask_parcel,
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],

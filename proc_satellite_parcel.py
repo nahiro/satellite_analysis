@@ -4,6 +4,7 @@ from run_satellite_parcel import Parcel
 proc_parcel = Parcel()
 proc_parcel.proc_name = 'parcel'
 proc_parcel.proc_title = 'Parcellate Data'
+proc_parcel.pnams.append('resample_dir')
 proc_parcel.pnams.append('gis_fnam')
 proc_parcel.pnams.append('mask_parcel')
 proc_parcel.pnams.append('out_refs')
@@ -22,6 +23,7 @@ proc_parcel.pnams.append('cloud_thr')
 proc_parcel.pnams.append('buffer')
 proc_parcel.pnams.append('csv_flag')
 proc_parcel.pnams.append('oflag')
+proc_parcel.params['resample_dir'] = 'Resample Folder'
 proc_parcel.params['gis_fnam'] = 'Polygon File'
 proc_parcel.params['mask_parcel'] = 'Mask File for Parcellate'
 proc_parcel.params['out_refs'] = 'Output Reflectance'
@@ -40,6 +42,7 @@ proc_parcel.params['cloud_thr'] = 'Thres. for Cloud Removal'
 proc_parcel.params['buffer'] = 'Buffer Radius (m)'
 proc_parcel.params['csv_flag'] = 'Output CSV'
 proc_parcel.params['oflag'] = 'Overwrite Flag'
+proc_parcel.param_types['resample_dir'] = 'string'
 proc_parcel.param_types['gis_fnam'] = 'string'
 proc_parcel.param_types['mask_parcel'] = 'string'
 proc_parcel.param_types['out_refs'] = 'boolean_list'
@@ -60,6 +63,7 @@ proc_parcel.param_types['csv_flag'] = 'boolean'
 proc_parcel.param_types['oflag'] = 'boolean_list'
 proc_parcel.param_range['cloud_thr'] = (0.0,10.0)
 proc_parcel.param_range['buffer'] = (0.0,10.0e3)
+proc_parcel.defaults['resample_dir'] = 'resample'
 proc_parcel.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_parcel.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_parcel.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
@@ -104,6 +108,7 @@ proc_parcel.list_labels['cr_sc_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_parcel.list_labels['cr_ref_inds'] = ['NDVI  ','GNDVI  ','RGI  ','NRGI  ']
 proc_parcel.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_parcel.list_labels['oflag'] = ['indices','parcel']
+proc_parcel.input_types['resample_dir'] = 'ask_folder'
 proc_parcel.input_types['gis_fnam'] = 'ask_file'
 proc_parcel.input_types['mask_parcel'] = 'ask_file'
 proc_parcel.input_types['out_refs'] = 'boolean_list'
