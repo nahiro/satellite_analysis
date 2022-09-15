@@ -58,6 +58,12 @@ class Geocor(Satellite_Process):
         l2a_fnams = []
         l2a_dstrs = []
         l2a_sizes = []
+        keys = []
+        for key in [s.strip() for s in self.values['search_key'].split(',')]:
+            if key:
+                keys.append(key)
+        if len(keys) < 1:
+            keys = None
         for year in data_years:
             ystr = '{}'.format(year)
             dnam = os.path.join(self.values['l2a_dir'],ystr)
@@ -73,6 +79,14 @@ class Geocor(Satellite_Process):
                 d = datetime.strptime(dstr,'%Y%m%d')
                 if d < first_dtim or d > last_dtim:
                     continue
+                if keys is not None:
+                    flag = False
+                    for key in keys:
+                        if not key in f:
+                            flag = True
+                            break
+                    if flag:
+                        continue
                 fnam = os.path.join(dnam,f)
                 l2a_fnams.append(fnam)
                 l2a_dstrs.append(dstr)
