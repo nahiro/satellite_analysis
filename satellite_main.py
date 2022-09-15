@@ -65,21 +65,17 @@ def set_title(pnam):
                 modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # atcor
     proc = 'atcor'
-    proc_pnam = 'mask_studyarea'
-    modules[proc].values[proc_pnam] = os.path.join(s2_data,'studyarea_mask.tif')
-    proc_pnam = 'stat_fnam'
-    modules[proc].values[proc_pnam] = os.path.join(s2_data,'atcor_stat.tif')
-    proc_pnam = 'inds_fnam'
-    modules[proc].values[proc_pnam] = os.path.join(s2_data,'nearest_inds.npz')
+    for proc_pnam,fnam in zip(['mask_studyarea','stat_fnam','inds_fnam'],['studyarea_mask.tif','atcor_stat.tif','nearest_inds.npz']):
+        if not modules[proc].flag_fix[proc_pnam]:
+            modules[proc].values[proc_pnam] = os.path.join(s2_data,fnam)
+            if modules[proc].center_var is not None:
+                modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'stat_period'
     data_tmin = (first_dtim+relativedelta(years=-2)).strftime(date_fmt)
     data_tmax = last_dtim.strftime(date_fmt)
     modules[proc].values[proc_pnam][0] = data_tmin
     modules[proc].values[proc_pnam][1] = data_tmax
     if modules[proc].center_var is not None:
-        for proc_pnam in ['mask_studyarea','stat_fnam','inds_fnam']:
-            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
-        proc_pnam = 'stat_period'
         modules[proc].center_var[proc_pnam][0].set(data_tmin)
         modules[proc].center_var[proc_pnam][1].set(data_tmax)
     # phenology
