@@ -129,7 +129,8 @@ else:
                 band_name.append('band_{}'.format(i+1))
 nband = len(band_name)
 if nband != src_nb:
-    raise ValueError('Error, nband={}, src_nb={}'.format(nband,src_nb))
+    sys.stderr.write('Warning, nband={}, src_nb={} >>> {}\n'.format(nband,src_nb,args.inp_fnam))
+    sys.stderr.flush()
 if args.read_comments:
     comments = {}
     tif_tags = {}
@@ -159,11 +160,11 @@ if args.output_bmin is not None:
     if args.output_bmax is not None:
         indxs = list(range(args.output_bmin,args.output_bmax+1))
     else:
-        indxs = list(range(args.output_bmin,src_nb))
+        indxs = list(range(args.output_bmin,nband))
 elif args.output_bmax is not None:
     indxs = list(range(0,args.output_bmax+1))
 elif args.output_band is None:
-    indxs = list(range(0,src_nb))
+    indxs = list(range(0,nband))
 else:
     indxs = []
 if args.output_band is not None:
