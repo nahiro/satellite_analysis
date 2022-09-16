@@ -101,6 +101,22 @@ if not args.no_check_grid:
 else:
     flag_grid = False
 # Get band name
+src_band = None
+tif_tags = {}
+with tifffile.TiffFile(args.inp_fnam) as tif:
+    for tag in tif.pages[0].tags.values():
+        name,value = tag.name,tag.value
+        tif_tags[name] = value
+if '65000' in tif_tags:
+    root = ET.fromstring(tif_tags['65000'])
+    src_band = []
+    for value in root.iter('BAND_NAME'):
+        src_band.append(value.text)
+if src_band is None and ds.GetRasterBand(1).GetDescription() != '':
+    src_band = []
+    for i in range(src_nb):
+        band = ds.GetRasterBand(i+1)
+        src_band.append(band.GetDescription())
 band_name = []
 if args.band_fnam is not None:
     with open(args.band_fnam,'r') as fp:
@@ -122,8 +138,10 @@ else:
                 tif_tags[name] = value
         if '65000' in tif_tags:
             root = ET.fromstring(tif_tags['65000'])
+            src_band = []
             for value in root.iter('BAND_NAME'):
                 band_name.append(value.text)
+                src_band.append(value.text)
         else:
             for i in range(src_nb):
                 band_name.append('band_{}'.format(i+1))
@@ -164,12 +182,18 @@ if args.output_bmin is not None:
 elif args.output_bmax is not None:
     indxs = list(range(0,args.output_bmax+1))
 elif args.output_band is None:
-    indxs = list(range(0,nband))
+    if src_band is not None:
+        indxs = [src_band.index(band) for band in band_name]
+    else:
+        indxs = list(range(0,nband))
 else:
     indxs = []
 if args.output_band is not None:
     for band in args.output_band:
-        indxs.append(band_name.index(band))
+        if src_band is not None:
+            indxs.append(src_band.index(band))
+        else:
+            indxs.append(band_name.index(band))
 dst_nb = len(indxs)
 if args.verbose:
     for i in indxs:
