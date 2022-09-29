@@ -48,10 +48,14 @@ class Parcel(Satellite_Process):
                 if d < first_dtim or d > last_dtim:
                     continue
                 fnam = os.path.join(dnam,f)
-                indices_fnams.append(fnam)
-                indices_dstrs.append(dstr)
+                rnam = os.path.join(self.values['geocor_dir'],ystr,'{}_geocor.tif'.format(dstr))
+                if os.path.exists(rnam):
+                    indices_fnams.append(fnam)
+                    indices_rnams.append(rnam)
+                    indices_dstrs.append(dstr)
         inds = np.argsort(indices_dstrs)#[::-1]
         indices_fnams = [indices_fnams[i] for i in inds]
+        indices_rnams = [indices_rnams[i] for i in inds]
         indices_dstrs = [indices_dstrs[i] for i in inds]
         if len(indices_fnams) < 1:
             self.print_message('No indices data for process.',print_time=False)
