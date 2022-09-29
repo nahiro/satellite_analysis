@@ -30,6 +30,7 @@ parser.add_argument('-D','--datdir',default=DATDIR,help='Output data directory (
 parser.add_argument('--site',default=SITE,help='Site name for preset coordinates (%(default)s)')
 parser.add_argument('--polygon',default=None,help='Polygon of ROI in WKT format (%(default)s)')
 parser.add_argument('-r','--resolution',default=RESOLUTION,type=int,help='Spatial resolution in m (%(default)s)')
+parser.add_argument('-G','--geotiff',default=False,action='store_true',help='GeoTiff mode (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 args = parser.parse_args()
 safe_flag = False
@@ -41,7 +42,10 @@ if not m:
     safe_flag = True
 dstr = m.group(1)[:8]
 if args.out_fnam is None:
-    args.out_fnam = os.path.join(args.datdir,'{}.tif'.format(dstr))
+    if args.geotiff:
+        args.out_fnam = os.path.join(args.datdir,'{}.tif'.format(dstr))
+    else:
+        args.out_fnam = os.path.join(args.datdir,'{}.dim'.format(dstr))
 if os.path.exists(args.out_fnam) and not args.overwrite:
     sys.stderr.write('input: {}, output: {} ... exists, skip!\n'.format(args.inp_fnam,args.out_fnam))
     sys.exit()
@@ -60,7 +64,6 @@ if safe_flag:
     data = ProductIO.readProduct(os.path.join(args.inp_fnam,'MTD_MSIL2A.xml'))
 else:
     data = ProductIO.readProduct(args.inp_fnam)
-band_list = list(data.getBandNames())
 # Resample (ResamplingOp.java)
 params = HashMap()
 params.put('sourceProduct',data)
@@ -77,41 +80,7 @@ params.put('copyMetadata',True)
 params.put('geoRegion',geom)
 data_tmp = GPF.createProduct('Subset',params,data)
 data = data_tmp
-# Write temporary GeoTIFF
-bnam,enam = os.path.splitext(args.out_fnam)
-tmp_fnam = bnam+'_tmp.tif'
-ProductIO.writeProduct(data,tmp_fnam,'GeoTiff')
-try:
-    import gdal
-except Exception:
-    from osgeo import gdal
-ds = gdal.Open(tmp_fnam)
-src_nx = ds.RasterXSize
-src_ny = ds.RasterYSize
-src_nb = ds.RasterCount
-if src_nb != len(band_list):
-    raise ValueError('Error, src_nb={}, len(band_list)={} >>> {}'.format(src_nb,len(band_list),args.inp_fnam))
-src_prj = ds.GetProjection()
-src_trans = ds.GetGeoTransform()
-src_meta = ds.GetMetadata()
-src_data = ds.ReadAsArray().reshape((src_nb,src_ny,src_nx))
-src_band = band_list
-band = ds.GetRasterBand(1)
-src_dtype = band.DataType
-src_nodata = band.GetNoDataValue()
-ds = None
-# Write final GeoTIFF
-drv = gdal.GetDriverByName('GTiff')
-ds = drv.Create(args.out_fnam,src_nx,src_ny,src_nb,src_dtype)
-ds.SetProjection(src_prj)
-ds.SetGeoTransform(src_trans)
-ds.SetMetadata(src_meta)
-for iband in range(src_nb):
-    band = ds.GetRasterBand(iband+1)
-    band.WriteArray(src_data[iband])
-    band.SetDescription(src_band[iband])
-band.SetNoDataValue(src_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
-ds.FlushCache()
-ds = None # close dataset
-if os.path.exists(tmp_fnam):
-    os.remove(tmp_fnam)
+if args.geotiff:
+    ProductIO.writeProduct(data,args.out_fnam,'GeoTiff')
+else:
+    ProductIO.writeProduct(data,args.out_fnam,'BEAM-DIMAP')
