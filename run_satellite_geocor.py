@@ -204,18 +204,19 @@ class Geocor(Satellite_Process):
         subset_dstrs = [subset_dstrs[i] for i in inds]
 
         # Geometric correction
-        geocor_fnams = []
-        geocor_dstrs = []
         orders = {'1st':1,'2nd':2,'3rd':3}
         for fnam,dstr in zip(subset_fnams,subset_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
+            tmp_gnam = os.path.join(dnam,'{}_geocor_tmp.tif'.format(dstr))
             dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
             if self.values['oflag'][1]:
                 if os.path.exists(gnam):
                     os.remove(gnam)
+                if os.path.exists(tmp_gnam):
+                    os.remove(tmp_gnam)
                 if os.path.exists(dat_fnam):
                     os.remove(dat_fnam)
             if not os.path.exists(dat_fnam):
@@ -343,7 +344,7 @@ class Geocor(Satellite_Process):
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'auto_geocor_cc.py'))
                 command += ' "{}"'.format(fnam)
                 command += ' "{}"'.format(self.values['ref_fnam'])
-                command += ' --out_fnam "{}"'.format(gnam)
+                command += ' --out_fnam "{}"'.format(tmp_gnam)
                 command += ' --scrdir "{}"'.format(self.scr_dir)
                 command += ' --use_gcps "{}"'.format(se2_fnam) # use
                 command += ' --tr {}'.format(self.values['trg_pixel'])
@@ -358,55 +359,21 @@ class Geocor(Satellite_Process):
                     self.run_command(command,message='<<< Geometric Correction for {} >>>'.format(dstr))
                 except Exception:
                     continue
-            #if os.path.exists(se2_fnam):
-            #    os.rename(se2_fnam,dat_fnam)
-            if os.path.exists(gnam):
-                geocor_fnams.append(gnam)
-                geocor_dstrs.append(dstr)
-
-        # Resample
-        if not os.path.exists(self.values['band_fnam']):
-            if len(l2a_fnams) < 1:
-                raise ValueError('Error, no L2A data to read band names.')
-            dnam = os.path.dirname(self.values['band_fnam'])
-            if not os.path.exists(dnam):
-                os.makedirs(dnam)
-            if not os.path.isdir(dnam):
-                raise IOError('Error, no such folder >>> {}'.format(dnam))
-            command = self.python_path
-            command += ' "{}"'.format(os.path.join(self.scr_dir,'snap_bandname.py'))
-            command += ' --inp_fnam "{}"'.format(l2a_fnams[0])
-            command += ' --out_fnam "{}"'.format(self.values['band_fnam'])
-            self.run_command(command,message='<<< Read band names >>>')
-        resample_fnams = []
-        resample_dstrs = []
-        for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
-            d = datetime.strptime(dstr,'%Y%m%d')
-            ystr = '{}'.format(d.year)
-            dnam = os.path.join(wrk_dir,ystr)
-            gnam = os.path.join(dnam,'{}_resample.tif'.format(dstr))
-            if self.values['oflag'][2]:
-                if os.path.exists(gnam):
-                    os.remove(gnam)
-            if not os.path.exists(gnam):
-                if not os.path.exists(dnam):
-                    os.makedirs(dnam)
-                if not os.path.isdir(dnam):
-                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                # Resample
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel_resample.py'))
-                command += ' --inp_fnam "{}"'.format(fnam)
+                command += ' --inp_fnam "{}"'.format(tmp_gnam)
                 command += ' --out_fnam "{}"'.format(gnam)
                 command += ' --xmin {}'.format(self.values['trg_resample'][0])
                 command += ' --xmax {}'.format(self.values['trg_resample'][1])
                 command += ' --ymin {}'.format(self.values['trg_resample'][2])
                 command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
-                command += ' --band_fnam "{}"'.format(self.values['band_fnam'])
                 self.run_command(command,message='<<< Resampling for {} >>>'.format(dstr))
-            if os.path.exists(gnam):
-                resample_fnams.append(gnam)
-                resample_dstrs.append(dstr)
+            #if os.path.exists(se2_fnam):
+            #    os.rename(se2_fnam,dat_fnam)
+            if os.path.exists(tmp_gnam):
+                os.remove(tmp_gnam)
 
         # Finish process
         sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))

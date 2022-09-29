@@ -13,7 +13,6 @@ proc_geocor.pnams.append('ref_range')
 proc_geocor.pnams.append('trg_subset')
 proc_geocor.pnams.append('trg_resample')
 proc_geocor.pnams.append('trg_pixel')
-proc_geocor.pnams.append('band_fnam')
 proc_geocor.pnams.append('trg_bands')
 proc_geocor.pnams.append('trg_factors')
 proc_geocor.pnams.append('trg_flags')
@@ -41,7 +40,6 @@ proc_geocor.params['ref_range'] = 'Reference DN Range'
 proc_geocor.params['trg_subset'] = 'Target Subset Region (\u00B0)'
 proc_geocor.params['trg_resample'] = 'Target Resample Region (m)'
 proc_geocor.params['trg_pixel'] = 'Target Pixel Size (m)'
-proc_geocor.params['band_fnam'] = 'Sentinel-2 Band File'
 proc_geocor.params['trg_bands'] = 'Target Band'
 proc_geocor.params['trg_factors'] = 'Target Factor'
 proc_geocor.params['trg_flags'] = 'Target Flag Band'
@@ -69,7 +67,6 @@ proc_geocor.param_types['ref_range'] = 'float_list'
 proc_geocor.param_types['trg_subset'] = 'float_list'
 proc_geocor.param_types['trg_resample'] = 'float_list'
 proc_geocor.param_types['trg_pixel'] = 'float'
-proc_geocor.param_types['band_fnam'] = 'string'
 proc_geocor.param_types['trg_bands'] = 'int_list'
 proc_geocor.param_types['trg_factors'] = 'float_list'
 proc_geocor.param_types['trg_flags'] = 'int_list'
@@ -119,7 +116,6 @@ proc_geocor.defaults['ref_range'] = [np.nan,np.nan]
 proc_geocor.defaults['trg_subset'] = [107.201,107.367,-6.910,-6.750]
 proc_geocor.defaults['trg_resample'] = [743805.0,757295.0,9235815.0,9251805.0]
 proc_geocor.defaults['trg_pixel'] = 10.0
-proc_geocor.defaults['band_fnam'] = 'band_names.txt'
 proc_geocor.defaults['trg_bands'] = [4,-1,-1]
 proc_geocor.defaults['trg_factors'] = [np.nan,np.nan,np.nan]
 proc_geocor.defaults['trg_flags'] = [17,-1,-1,-1,-1]
@@ -187,7 +183,6 @@ proc_geocor.input_types['ref_range'] = 'float_list'
 proc_geocor.input_types['trg_subset'] = 'float_list'
 proc_geocor.input_types['trg_resample'] = 'float_list'
 proc_geocor.input_types['trg_pixel'] = 'box'
-proc_geocor.input_types['band_fnam'] = 'ask_file'
 proc_geocor.input_types['trg_bands'] = 'int_list'
 proc_geocor.input_types['trg_factors'] = 'float_list'
 proc_geocor.input_types['trg_flags'] = 'int_list'
@@ -206,7 +201,6 @@ proc_geocor.input_types['emaxs'] = 'float_list'
 proc_geocor.input_types['smooth_fact'] = 'float_list'
 proc_geocor.input_types['smooth_dmax'] = 'float_list'
 proc_geocor.input_types['oflag'] = 'boolean_list'
-proc_geocor.flag_check['band_fnam'] = False
 proc_geocor.expected['ref_fnam'] = '*.tif'
 for pnam in proc_geocor.pnams:
     proc_geocor.values[pnam] = proc_geocor.defaults[pnam]
