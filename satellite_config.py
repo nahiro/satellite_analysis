@@ -5,6 +5,7 @@ from datetime import datetime,timedelta
 import configparser
 from proc_satellite_download import proc_download
 from proc_satellite_geocor import proc_geocor
+from proc_satellite_indices import proc_indices
 from proc_satellite_parcel import proc_parcel
 from proc_satellite_atcor import proc_atcor
 from proc_satellite_interp import proc_interp
@@ -63,6 +64,7 @@ config_defaults.update({
 'main.browse_image'                   : main_browse_image,
 'main.download'                       : True,
 'main.geocor'                         : True,
+'main.indices'                        : True,
 'main.parcel'                         : True,
 'main.atcor'                          : False,
 'main.interp'                         : True,
@@ -85,6 +87,7 @@ config_defaults.update({
 'download.trans_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Transplanting_date/Cihea/final/v1.4',
 'download.l2a_path'                   : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/L2A',
 'download.resample_path'              : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/resample',
+'download.indices_path'               : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/indices',
 'download.parcel_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/parcel',
 'download.atcor_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/atcor',
 'download.interp_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/interp',
@@ -127,18 +130,27 @@ config_defaults.update({
 'geocor.python_path'                  : python_path,
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
+#----------- indices -----------
+'indices.resample_dir'                : os.path.join(main_s2_data,'resample'),
+'indices.out_refs'                    : [True,True,True,True,True,True,True,True,True,True],
+'indices.norm_bands'                  : [True,True,True,True,True,True,True,False,False,False],
+'indices.out_nrefs'                   : [True,True,True,True,True,True,True,True,True,True],
+'indices.rgi_red_band'                : 'e1',
+'indices.out_inds'                    : [True,True,True,True],
+'indices.oflag'                       : False,
+'indices.python_path'                 : python_path,
+'indices.scr_dir'                     : scr_dir,
+'indices.middle_left_frame_width'     : 1000,
 #----------- parcel -----------
-'parcel.resample_dir'                 : os.path.join(main_s2_data,'resample'),
+'parcel.indices_dir'                 : os.path.join(main_s2_data,'indices'),
 'parcel.gis_fnam'                     : gis_fnam,
 'parcel.mask_parcel'                  : mask_parcel,
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_refs'                   : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_refs'                  : [True,True,True,True,True,True,True,True,True,True],
-'parcel.norm_bands'                   : [True,True,True,True,True,True,True,False,False,False],
 'parcel.out_nrefs'                    : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_nrefs'                  : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_nrefs'                 : [True,True,True,True,True,True,True,True,True,True],
-'parcel.rgi_red_band'                 : 'e1',
 'parcel.out_inds'                     : [True,True,True,True],
 'parcel.cr_sc_inds'                   : [True,True,True,True],
 'parcel.cr_ref_inds'                  : [True,True,True,True],
@@ -146,7 +158,7 @@ config_defaults.update({
 'parcel.cloud_thr'                    : 0.35,
 'parcel.buffer'                       : 0.0,
 'parcel.csv_flag'                     : True,
-'parcel.oflag'                        : [False,False],
+'parcel.oflag'                        : False,
 'parcel.python_path'                  : python_path,
 'parcel.scr_dir'                      : scr_dir,
 'parcel.middle_left_frame_width'      : 1000,
@@ -326,6 +338,7 @@ center_btn_width = config['main'].getint('main.center_btn_width')
 pnams = []
 pnams.append('download')
 pnams.append('geocor')
+pnams.append('indices')
 pnams.append('parcel')
 pnams.append('atcor')
 pnams.append('interp')
@@ -376,7 +389,9 @@ for proc in pnams:
             modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan'))
         else:
             v = config[proc].get('{}.{}'.format(proc,pnam))
-            if len(v) < 1:
+            if v is None:
+                raise ValueError('Errror, no such parameter >>> {}.{}'.format(proc,pnam))
+            elif len(v) < 1:
                 modules[proc].values[pnam] = v
             else:
                 modules[proc].values[pnam] = eval(v)

@@ -62,11 +62,18 @@ def set_title(pnam):
         modules[proc].values[proc_pnam] = os.path.join(s2_data,'L2A')
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
-    # parcel
-    proc = 'parcel'
+    # indices
+    proc = 'indices'
     proc_pnam = 'resample_dir'
     if not modules[proc].flag_fix[proc_pnam]:
         modules[proc].values[proc_pnam] = os.path.join(s2_data,'resample')
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    # parcel
+    proc = 'parcel'
+    proc_pnam = 'indices_dir'
+    if not modules[proc].flag_fix[proc_pnam]:
+        modules[proc].values[proc_pnam] = os.path.join(s2_data,'indices')
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # atcor

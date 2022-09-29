@@ -31,15 +31,15 @@ class Parcel(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Check Resample
-        resample_fnams = []
-        resample_dstrs = []
+        indices_fnams = []
+        indices_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.values['resample_dir'],ystr)
+            dnam = os.path.join(self.values['indices_dir'],ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):
-                m = re.search('^('+'\d'*8+')_resample\.tif$',f)
+                m = re.search('^('+'\d'*8+')_indices\.tif$',f)
                 if not m:
                     continue
                 dstr = m.group(1)
@@ -47,67 +47,13 @@ class Parcel(Satellite_Process):
                 if d < first_dtim or d > last_dtim:
                     continue
                 fnam = os.path.join(dnam,f)
-                resample_fnams.append(fnam)
-                resample_dstrs.append(dstr)
-        inds = np.argsort(resample_dstrs)#[::-1]
-        resample_fnams = [resample_fnams[i] for i in inds]
-        resample_dstrs = [resample_dstrs[i] for i in inds]
-        if len(resample_fnams) < 1:
-            self.print_message('No resample data for process.',print_time=False)
-
-        # Calculate indices
-        indices_fnams = []
-        indices_rnams = []
-        indices_dstrs = []
-        for fnam,dstr in zip(resample_fnams,resample_dstrs):
-            d = datetime.strptime(dstr,'%Y%m%d')
-            ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_data,'indices',ystr)
-            gnam = os.path.join(dnam,'{}_indices.tif'.format(dstr))
-            if os.path.exists(gnam) and self.values['oflag'][0]:
-                os.remove(gnam)
-            if not os.path.exists(gnam):
-                if not os.path.exists(dnam):
-                    os.makedirs(dnam)
-                if not os.path.isdir(dnam):
-                    raise IOError('Error, no such folder >>> {}'.format(dnam))
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_calc_indices.py'))
-                command += ' --src_geotiff "{}"'.format(fnam)
-                command += ' --dst_geotiff "{}"'.format(gnam)
-                command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_indices.pdf'.format(dstr)))
-                for param,flag in zip(self.list_labels['out_refs'],self.values['out_refs']):
-                    if flag:
-                        command += ' --param S{}'.format(param.strip())
-                for param,flag in zip(self.list_labels['out_nrefs'],self.values['out_nrefs']):
-                    if flag:
-                        command += ' --param {}'.format(param.strip())
-                for param,flag in zip(self.list_labels['out_inds'],self.values['out_inds']):
-                    if flag:
-                        command += ' --param {}'.format(param.strip())
-                for band,flag in zip(self.list_labels['norm_bands'],self.values['norm_bands']):
-                    if flag:
-                        command += ' --norm_band {}'.format(band.strip())
-                command += ' --rgi_red_band {}'.format(self.values['rgi_red_band'])
-                #for value,flag in zip(self.ax1_zmin,self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zmin="{}"'.format(value)
-                #for value,flag in zip(self.ax1_zmax,self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zmax="{}"'.format(value)
-                #for value,flag in zip(self.ax1_zstp,self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zstp="{}"'.format(value)
-                command += ' --ax1_title "{}"'.format(dstr)
-                #command += ' --fig_dpi {}'.format(self.fig_dpi)
-                command += ' --remove_nan'
-                command += ' --debug'
-                command += ' --batch'
-                self.run_command(command,message='<<< Calculate indices for {} >>>'.format(dstr))
-            if os.path.exists(gnam):
-                indices_fnams.append(gnam)
-                indices_rnams.append(fnam)
+                indices_fnams.append(fnam)
                 indices_dstrs.append(dstr)
+        inds = np.argsort(indices_dstrs)#[::-1]
+        indices_fnams = [indices_fnams[i] for i in inds]
+        indices_dstrs = [indices_dstrs[i] for i in inds]
+        if len(indices_fnams) < 1:
+            self.print_message('No indices data for process.',print_time=False)
 
         # Parcellate data
         for fnam,rnam,dstr in zip(indices_fnams,indices_rnams,indices_dstrs):
