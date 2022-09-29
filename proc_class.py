@@ -415,7 +415,7 @@ class Process:
         elif '_select_list' in self.input_types[pnam]:
             return True
         else:
-            raise ValueError('Error, unsupported input type ({}) >>> {}'.format(pnam,self.input_types[pnam]))
+            raise ValueError('{}: Error, unsupported input type ({}) >>> {}'.format(self.proc_name,pnam,self.input_types[pnam]))
 
     def check_err(self,pnam,t):
         ret = self.check_par(pnam,t)
@@ -462,7 +462,7 @@ class Process:
         elif source == 'value':
             get = self.get_value
         else:
-            raise ValueError('Error, source={}'.format(source))
+            raise ValueError('{}: Error, source={}'.format(self.proc_name,source))
         check_values = {}
         check_errors = {}
         for pnam in self.pnams:
@@ -700,9 +700,11 @@ class Process:
                 for j in range(self.list_sizes[pnam]):
                     self.center_var[pnam].append(tk.IntVar())
             else:
-                raise ValueError('Error, unsupported parameter type ({}) >>> {}'.format(pnam,self.param_types[pnam]))
+                raise ValueError('{}: Error, unsupported parameter type ({}) >>> {}'.format(self.proc_name,pnam,self.param_types[pnam]))
             if '_list' in self.input_types[pnam]:
                 for j in range(self.list_sizes[pnam]):
+                    if j >= len(self.values[pnam]):
+                        raise ValueError('{}: Error, j={}, len(self.values[{}])={}'.format(self.proc_name,j,pnam,len(self.values[pnam])))
                     if self.values[pnam][j] is not None:
                         self.center_var[pnam][j].set(self.values[pnam][j])
             else:
@@ -814,7 +816,7 @@ class Process:
                     self.center_inp[pnam].current(self.list_labels[pnam].index(self.values[pnam]))
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             else:
-                raise ValueError('Error, unsupported input type ({}) >>> {}'.format(pnam,self.input_types[pnam]))
+                raise ValueError('{}: Error, unsupported input type ({}) >>> {}'.format(self.proc_name,pnam,self.input_types[pnam]))
             if self.input_types[pnam] in ['ask_files','ask_folders']:
                 self.left_cnv[pnam] = tk.Canvas(self.left_frame,width=self.left_frame_width,height=self.left_cnv_height*self.text_height,background=bgs[i%2],highlightthickness=0)
             else:
