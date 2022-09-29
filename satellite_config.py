@@ -86,7 +86,7 @@ config_defaults.update({
 'download.netrc_dir'                  : netrc_dir,
 'download.trans_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Transplanting_date/Cihea/final/v1.4',
 'download.l2a_path'                   : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/L2A',
-'download.resample_path'              : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/resample',
+'download.geocor_path'              : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/geocor',
 'download.indices_path'               : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/indices',
 'download.parcel_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/parcel',
 'download.atcor_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/atcor',
@@ -130,7 +130,7 @@ config_defaults.update({
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
 #----------- indices -----------
-'indices.resample_dir'                : os.path.join(main_s2_data,'resample'),
+'indices.geocor_dir'                : os.path.join(main_s2_data,'geocor'),
 'indices.out_refs'                    : [True,True,True,True,True,True,True,True,True,True],
 'indices.norm_bands'                  : [True,True,True,True,True,True,True,False,False,False],
 'indices.out_nrefs'                   : [True,True,True,True,True,True,True,True,True,True],

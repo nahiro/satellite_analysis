@@ -30,16 +30,16 @@ class Indices(Satellite_Process):
         if not os.path.isdir(self.s2_data):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
-        # Check Resample
-        resample_fnams = []
-        resample_dstrs = []
+        # Check Geocor
+        geocor_fnams = []
+        geocor_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.values['resample_dir'],ystr)
+            dnam = os.path.join(self.values['geocor_dir'],ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):
-                m = re.search('^('+'\d'*8+')_resample\.tif$',f)
+                m = re.search('^('+'\d'*8+')_geocor\.tif$',f)
                 if not m:
                     continue
                 dstr = m.group(1)
@@ -47,19 +47,19 @@ class Indices(Satellite_Process):
                 if d < first_dtim or d > last_dtim:
                     continue
                 fnam = os.path.join(dnam,f)
-                resample_fnams.append(fnam)
-                resample_dstrs.append(dstr)
-        inds = np.argsort(resample_dstrs)#[::-1]
-        resample_fnams = [resample_fnams[i] for i in inds]
-        resample_dstrs = [resample_dstrs[i] for i in inds]
-        if len(resample_fnams) < 1:
-            self.print_message('No resample data for process.',print_time=False)
+                geocor_fnams.append(fnam)
+                geocor_dstrs.append(dstr)
+        inds = np.argsort(geocor_dstrs)#[::-1]
+        geocor_fnams = [geocor_fnams[i] for i in inds]
+        geocor_dstrs = [geocor_dstrs[i] for i in inds]
+        if len(geocor_fnams) < 1:
+            self.print_message('No geocor data for process.',print_time=False)
 
         # Calculate indices
         indices_fnams = []
         indices_rnams = []
         indices_dstrs = []
-        for fnam,dstr in zip(resample_fnams,resample_dstrs):
+        for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(self.s2_data,'indices',ystr)

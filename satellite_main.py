@@ -64,9 +64,9 @@ def set_title(pnam):
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # indices
     proc = 'indices'
-    proc_pnam = 'resample_dir'
+    proc_pnam = 'geocor_dir'
     if not modules[proc].flag_fix[proc_pnam]:
-        modules[proc].values[proc_pnam] = os.path.join(s2_data,'resample')
+        modules[proc].values[proc_pnam] = os.path.join(s2_data,'geocor')
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # parcel

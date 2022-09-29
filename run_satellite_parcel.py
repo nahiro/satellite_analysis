@@ -30,7 +30,7 @@ class Parcel(Satellite_Process):
         if not os.path.isdir(self.s2_data):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
-        # Check Resample
+        # Check Indices
         indices_fnams = []
         indices_dstrs = []
         for year in data_years:
