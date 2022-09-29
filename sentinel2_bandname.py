@@ -23,7 +23,6 @@ with tifffile.TiffFile(args.inp_fnam) as tif:
 if '65000' in tif_tags:
     root = ET.fromstring(tif_tags['65000'])
     for value in root.iter('BAND_NAME'):
-        band_name.append(value.text)
         src_band.append(value.text)
 else:
     raise ValueError('Error in finding 65000 >>> {}'.format(args.inp_fnam))
@@ -54,6 +53,7 @@ for iband in range(src_nb):
     band = ds.GetRasterBand(iband+1)
     band.WriteArray(src_data[iband])
     band.SetDescription(src_band[iband])
-band.SetNoDataValue(src_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
+if src_nodata is not None:
+    band.SetNoDataValue(src_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
 ds.FlushCache()
 ds = None # close dataset
