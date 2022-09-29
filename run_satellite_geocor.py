@@ -47,10 +47,11 @@ class Geocor(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
-        if not os.path.exists(self.s2_data):
-            os.makedirs(self.s2_data)
-        if not os.path.isdir(self.s2_data):
-            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
+        wrk_dir = os.path.join(self.s2_data,self.proc_name)
+        if not os.path.exists(wrk_dir):
+            os.makedirs(wrk_dir)
+        if not os.path.isdir(wrk_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
         if not os.path.exists(self.values['ref_fnam']):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,self.values['ref_fnam']))
 
@@ -96,7 +97,7 @@ class Geocor(Satellite_Process):
         if not self.values['oflag'][0]:
             for year in data_years:
                 ystr = '{}'.format(year)
-                dnam = os.path.join(self.s2_data,'subset',ystr)
+                dnam = os.path.join(wrk_dir,ystr)
                 if not os.path.isdir(dnam):
                     continue
                 for f in sorted(os.listdir(dnam)):
@@ -132,7 +133,7 @@ class Geocor(Satellite_Process):
         for fnam,dstr in zip(l2a_fnams,l2a_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_data,'subset',ystr)
+            dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
             if os.path.exists(gnam) and self.values['oflag'][0]:
                 os.remove(gnam)
@@ -184,7 +185,7 @@ class Geocor(Satellite_Process):
         if not self.values['oflag'][1]:
             for year in data_years:
                 ystr = '{}'.format(year)
-                dnam = os.path.join(self.s2_data,'geocor',ystr)
+                dnam = os.path.join(wrk_dir,ystr)
                 if not os.path.isdir(dnam):
                     continue
                 for f in sorted(os.listdir(dnam)):
@@ -209,7 +210,7 @@ class Geocor(Satellite_Process):
         for fnam,dstr in zip(subset_fnams,subset_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_data,'geocor',ystr)
+            dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
             dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
             if self.values['oflag'][1]:
@@ -382,7 +383,7 @@ class Geocor(Satellite_Process):
         for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_data,'resample',ystr)
+            dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_resample.tif'.format(dstr))
             if self.values['oflag'][2]:
                 if os.path.exists(gnam):
