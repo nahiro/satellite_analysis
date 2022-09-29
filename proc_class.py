@@ -34,6 +34,7 @@ class Process:
         self.values = {}
         self.input_types = {}
         self.flag_check = {}
+        self.flag_fix = {}
         self.flag_fill = {}
         self.depend_proc = {}
         self.expected = {}

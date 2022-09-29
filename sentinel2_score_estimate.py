@@ -28,7 +28,8 @@ AX1_VMAX = 1.0
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-f','--form_fnam',default=None,help='Input formula file name (%(default)s)')
 parser.add_argument('-i','--inp_shp',default=None,help='Input Shapefile name (%(default)s)')
-parser.add_argument('-I','--inp_csv',default=None,help='Input CSV name (%(default)s)')
+parser.add_argument('-I','--inp_fnam',default=None,help='Input NPZ name (%(default)s)')
+parser.add_argument('--inp_csv',default=None,help='Input CSV name (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
@@ -75,7 +76,10 @@ if args.ax1_zstp is not None:
     for i,param in enumerate(args.y_param):
         ax1_zstp[param] = args.ax1_zstp[i]
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
-    bnam,enam = os.path.splitext(args.inp_csv)
+    if args.inp_csv is not None:
+        bnam,enam = os.path.splitext(args.inp_csv)
+    else:
+        bnam,enam = os.path.splitext(args.inp_fnam)
     if args.out_csv is None:
         args.out_csv = bnam+'_estimate.csv'
     if args.out_shp is None:
@@ -84,15 +88,22 @@ if args.out_csv is None or args.out_shp is None or args.fignam is None:
         args.fignam = bnam+'_estimate.pdf'
 
 # Read indices
-src_df = pd.read_csv(args.inp_csv,comment='#')
-src_df.columns = src_df.columns.str.strip()
-if not 'OBJECTID' in src_df.columns:
-    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
-object_ids = src_df['OBJECTID'].astype(int)
-nobject = len(object_ids)
-for param in src_df.columns:
-    if param in PARAMS:
-        src_df[param] = src_df[param].astype(float)
+if args.inp_csv is not None:
+    src_df = pd.read_csv(args.inp_csv,comment='#')
+    src_df.columns = src_df.columns.str.strip()
+    if not 'OBJECTID' in src_df.columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
+    object_ids = src_df['OBJECTID'].astype(int)
+    nobject = len(object_ids)
+    for param in src_df.columns:
+        if param in PARAMS:
+            src_df[param] = src_df[param].astype(float)
+else:
+    data = np.load(args.inp_fnam)
+    object_ids = data['object_ids']
+    nobject = len(object_ids)
+    params = data['params'].tolist()
+    inp_data = data['data']
 
 # Read Shapefile
 if args.inp_shp is not None:
@@ -130,7 +141,7 @@ out_data = np.full((nobject,out_nb),0.0)
 for iband,y_param in enumerate(args.y_param):
     cnd = (form_df['Y'] == y_param)
     if cnd.sum() < y_number[y_param]:
-        raise ValueError('Error in finding formula for {} >>> {}'.format(y_param,args.inp_fnam))
+        raise ValueError('Error in finding formula for {} >>> {}'.format(y_param,args.form_fnam))
     formula = form_df[cnd].iloc[y_number[y_param]-1]
     for n in range(nmax):
         p = 'P{}_param'.format(n)
@@ -142,10 +153,15 @@ for iband,y_param in enumerate(args.y_param):
             continue
         elif param_low == 'const':
             out_data[:,iband] += coef
-        else:
+        elif args.inp_csv is not None:
             if not param in src_df.columns:
                 raise ValueError('Error in finding {} in {}'.format(param,args.inp_csv))
             out_data[:,iband] += coef*src_df[param]
+        else:
+            if not param in params:
+                raise ValueError('Error in finding {} in {}'.format(param,args.inp_fnam))
+            indx = params.index(param)
+            out_data[:,iband] += coef*inp_data[:,indx]
 
 # Output CSV
 with open(args.out_csv,'w') as fp:

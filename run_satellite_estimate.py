@@ -35,41 +35,54 @@ class Estimate(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
 
         # Select data
-        select_csv = os.path.join(wrk_dir,'{}_select.csv'.format(trg_bnam))
-        select_shp = os.path.join(wrk_dir,'{}_select.shp'.format(trg_bnam))
-        select_pdf = os.path.join(wrk_dir,'{}_select.pdf'.format(trg_bnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_select_data.py'))
-        command += ' --phenology "{}"'.format(self.values['event_fnam'])
-        if 'Age' in self.values['data_select']:
-            command += ' --param Age'
-            command += ' --offset {}'.format(self.values['age_value'])
-        elif 'Harvesting' in self.values['data_select']:
-            command += ' --param harvest_d'
-            command += ' --offset {}'.format(self.values['harvest_value'])
-        elif 'Assessment' in self.values['data_select']:
-            command += ' --param assess_d'
-            command += ' --offset {}'.format(self.values['assess_value'])
-        elif 'Heading' in self.values['data_select']:
-            command += ' --param head_d'
-            command += ' --offset {}'.format(self.values['head_value'])
-        elif 'Peak' in self.values['data_select']:
-            command += ' --param peak_d'
-            command += ' --offset {}'.format(self.values['peak_value'])
-        elif 'Planting' in self.values['data_select']:
-            command += ' --param plant_d'
-            command += ' --offset {}'.format(self.values['plant_value'])
+        if 'Specific' in self.values['data_select']:
+            spec_dtim = datetime.strptime(self.values['spec_date'],self.date_fmt)
+            ystr = '{:%Y}'.format(spec_dtim)
+            if 'Non-interpolated' in self.values['data_select']:
+                if self.values['atcor_flag']:
+                    spec_fnam = os.path.join(self.s2_data,'atcor',ystr,'{:%Y%m%d}_atcor.npz'.format(spec_dtim))
+                else:
+                    spec_fnam = os.path.join(self.s2_data,'parcel',ystr,'{:%Y%m%d}_parcel.npz'.format(spec_dtim))
+            else:
+                spec_fnam = os.path.join(self.s2_data,'interp',ystr,'{:%Y%m%d}_interp.npz'.format(spec_dtim))
+            if not os.path.exists(spec_fnam):
+                raise IOError('Error, no such file >>> {}'.format(spec_fnam))
         else:
-            raise ValueError('{}: error, unknown data selection >>> {}'.format(self.proc_name,self.values['data_select']))
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
-        command += ' --out_csv "{}"'.format(select_csv)
-        command += ' --out_shp "{}"'.format(select_shp)
-        command += ' --fignam "{}"'.format(select_pdf)
-        command += ' --use_index'
-        command += ' --debug'
-        command += ' --batch'
-        self.run_command(command,message='<<< Select data >>>')
+            select_csv = os.path.join(wrk_dir,'{}_select.csv'.format(trg_bnam))
+            select_shp = os.path.join(wrk_dir,'{}_select.shp'.format(trg_bnam))
+            select_pdf = os.path.join(wrk_dir,'{}_select.pdf'.format(trg_bnam))
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_select_data.py'))
+            command += ' --phenology "{}"'.format(self.values['event_fnam'])
+            if 'Age' in self.values['data_select']:
+                command += ' --param Age'
+                command += ' --offset {}'.format(self.values['age_value'])
+            elif 'Harvesting' in self.values['data_select']:
+                command += ' --param harvest_d'
+                command += ' --offset {}'.format(self.values['harvest_value'])
+            elif 'Assessment' in self.values['data_select']:
+                command += ' --param assess_d'
+                command += ' --offset {}'.format(self.values['assess_value'])
+            elif 'Heading' in self.values['data_select']:
+                command += ' --param head_d'
+                command += ' --offset {}'.format(self.values['head_value'])
+            elif 'Peak' in self.values['data_select']:
+                command += ' --param peak_d'
+                command += ' --offset {}'.format(self.values['peak_value'])
+            elif 'Planting' in self.values['data_select']:
+                command += ' --param plant_d'
+                command += ' --offset {}'.format(self.values['plant_value'])
+            else:
+                raise ValueError('{}: error, unknown data selection >>> {}'.format(self.proc_name,self.values['data_select']))
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+            command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
+            command += ' --out_csv "{}"'.format(select_csv)
+            command += ' --out_shp "{}"'.format(select_shp)
+            command += ' --fignam "{}"'.format(select_pdf)
+            command += ' --use_index'
+            command += ' --debug'
+            command += ' --batch'
+            self.run_command(command,message='<<< Select data >>>')
 
         # Estimate plot-mean
         estimate_csv = os.path.join(wrk_dir,'{}_estimate.csv'.format(trg_bnam))
@@ -79,7 +92,10 @@ class Estimate(Satellite_Process):
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_score_estimate.py'))
         command += ' --form_fnam "{}"'.format(self.values['pm_fnam'])
         command += ' --inp_shp "{}"'.format(self.values['gis_fnam'])
-        command += ' --inp_csv "{}"'.format(select_csv)
+        if 'Specific' in self.values['data_select']:
+            command += ' --inp_fnam "{}"'.format(spec_fnam)
+        else:
+            command += ' --inp_csv "{}"'.format(select_csv)
         command += ' --out_shp "{}"'.format(estimate_shp)
         command += ' --out_csv "{}"'.format(estimate_csv)
         for param,flag in zip(self.list_labels['y_params'],self.values['y_params']):

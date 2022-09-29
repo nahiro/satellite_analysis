@@ -27,6 +27,7 @@ proc_atcor.pnams.append('cloud_thr')
 proc_atcor.pnams.append('nstp')
 proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('fit_thr')
+proc_atcor.pnams.append('csv_flag')
 proc_atcor.pnams.append('oflag')
 proc_atcor.params['gis_fnam'] = 'Polygon File'
 proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
@@ -51,6 +52,7 @@ proc_atcor.params['cloud_thr'] = 'Thres. for Cloud Removal'
 proc_atcor.params['nstp'] = 'Step Number for Fit'
 proc_atcor.params['rel_thr'] = 'Max Deviation for Fit'
 proc_atcor.params['fit_thr'] = 'Min Correction for Fit'
+proc_atcor.params['csv_flag'] = 'Output CSV'
 proc_atcor.params['oflag'] = 'Overwrite Flag'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
@@ -75,6 +77,7 @@ proc_atcor.param_types['cloud_thr'] = 'float'
 proc_atcor.param_types['nstp'] = 'int'
 proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['fit_thr'] = 'float'
+proc_atcor.param_types['csv_flag'] = 'boolean'
 proc_atcor.param_types['oflag'] = 'boolean_list'
 proc_atcor.param_range['n_ref'] = (10,1000000)
 proc_atcor.param_range['ref_thr'] = (0.0,10.0)
@@ -90,11 +93,11 @@ proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_atcor.defaults['stat_fnam'] = 'atcor_stat.tif'
 proc_atcor.defaults['inds_fnam'] = 'nearest_inds.npz'
 proc_atcor.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
-proc_atcor.defaults['atcor_refs'] = [False,False,False,False,False,False,False,False,False,False]
+proc_atcor.defaults['atcor_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True,True,True]
-proc_atcor.defaults['atcor_nrefs'] = [True,True,True,True,True,True,True,False,False,False]
+proc_atcor.defaults['atcor_nrefs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['out_inds'] = [True,True,True,True]
-proc_atcor.defaults['atcor_inds'] = [True,True,False,True]
+proc_atcor.defaults['atcor_inds'] = [True,True,True,True]
 proc_atcor.defaults['stat_period'] = ['','']
 proc_atcor.defaults['n_ref'] = 1000
 proc_atcor.defaults['ref_band'] = [True,True,True,False,False,False,True,False,False,False]
@@ -107,6 +110,7 @@ proc_atcor.defaults['cloud_thr'] = 0.35
 proc_atcor.defaults['nstp'] = 10
 proc_atcor.defaults['rel_thr'] = 2.0
 proc_atcor.defaults['fit_thr'] = 0.3
+proc_atcor.defaults['csv_flag'] = True
 proc_atcor.defaults['oflag'] = [False,False,False,False,False]
 proc_atcor.list_sizes['out_refs'] = 10
 proc_atcor.list_sizes['atcor_refs'] = 10
@@ -155,6 +159,7 @@ proc_atcor.input_types['cloud_thr'] = 'box'
 proc_atcor.input_types['nstp'] = 'box'
 proc_atcor.input_types['rel_thr'] = 'box'
 proc_atcor.input_types['fit_thr'] = 'box'
+proc_atcor.input_types['csv_flag'] = 'boolean'
 proc_atcor.input_types['oflag'] = 'boolean_list'
 proc_atcor.flag_check['mask_studyarea'] = False
 proc_atcor.flag_check['mask_parcel'] = False

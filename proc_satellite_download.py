@@ -13,6 +13,7 @@ proc_download.pnams.append('resample_path')
 proc_download.pnams.append('parcel_path')
 proc_download.pnams.append('atcor_path')
 proc_download.pnams.append('interp_path')
+proc_download.pnams.append('tentative_path')
 proc_download.pnams.append('search_key')
 proc_download.pnams.append('dflag')
 proc_download.pnams.append('oflag')
@@ -25,6 +26,7 @@ proc_download.params['resample_path'] = 'Sentinel-2 resample on NAS'
 proc_download.params['parcel_path'] = 'Sentinel-2 parcel on NAS'
 proc_download.params['atcor_path'] = 'Sentinel-2 atcor on NAS'
 proc_download.params['interp_path'] = 'Sentinel-2 interp on NAS'
+proc_download.params['tentative_path'] = 'Sentinel-2 tentative on NAS'
 proc_download.params['search_key'] = 'Search Keyword for L2A'
 proc_download.params['dflag'] = 'Download Flag'
 proc_download.params['oflag'] = 'Overwrite Flag'
@@ -37,6 +39,7 @@ proc_download.param_types['resample_path'] = 'string'
 proc_download.param_types['parcel_path'] = 'string'
 proc_download.param_types['atcor_path'] = 'string'
 proc_download.param_types['interp_path'] = 'string'
+proc_download.param_types['tentative_path'] = 'string'
 proc_download.param_types['search_key'] = 'string'
 proc_download.param_types['dflag'] = 'boolean_list'
 proc_download.param_types['oflag'] = 'boolean_list'
@@ -50,13 +53,14 @@ proc_download.defaults['resample_path'] = '/SATREPS/ipb/User/1_Spatial-informati
 proc_download.defaults['parcel_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/parcel'
 proc_download.defaults['atcor_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/atcor'
 proc_download.defaults['interp_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/interp'
+proc_download.defaults['tentative_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/tentative_interp'
 proc_download.defaults['search_key'] = ''
-proc_download.defaults['dflag'] = [True,True,True,True,True,True]
-proc_download.defaults['oflag'] = [False,False,False,False,False,False]
-proc_download.list_sizes['dflag'] = 6
-proc_download.list_sizes['oflag'] = 6
-proc_download.list_labels['dflag'] = ['Planting','L2A','resample','parcel','atcor','interp']
-proc_download.list_labels['oflag'] = ['Planting','L2A','resample','parcel','atcor','interp']
+proc_download.defaults['dflag'] = [True,True,True,True,True,True,True]
+proc_download.defaults['oflag'] = [False,False,False,False,False,False,False]
+proc_download.list_sizes['dflag'] = 7
+proc_download.list_sizes['oflag'] = 7
+proc_download.list_labels['dflag'] = ['Planting','L2A','resample','parcel','atcor','interp','tentative_interp']
+proc_download.list_labels['oflag'] = ['Planting','L2A','resample','parcel','atcor','interp','tentative_interp']
 proc_download.input_types['server'] = 'box'
 proc_download.input_types['port'] = 'box'
 proc_download.input_types['netrc_dir'] = 'ask_folder'
@@ -66,6 +70,7 @@ proc_download.input_types['resample_path'] = 'box'
 proc_download.input_types['parcel_path'] = 'box'
 proc_download.input_types['atcor_path'] = 'box'
 proc_download.input_types['interp_path'] = 'box'
+proc_download.input_types['tentative_path'] = 'box'
 proc_download.input_types['search_key'] = 'box'
 proc_download.input_types['dflag'] = 'boolean_list'
 proc_download.input_types['oflag'] = 'boolean_list'

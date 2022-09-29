@@ -4,6 +4,8 @@ from run_satellite_geocor import Geocor
 proc_geocor = Geocor()
 proc_geocor.proc_name = 'geocor'
 proc_geocor.proc_title = 'Geometric Correction'
+proc_geocor.pnams.append('l2a_dir')
+proc_geocor.pnams.append('search_key')
 proc_geocor.pnams.append('ref_fnam')
 proc_geocor.pnams.append('ref_bands')
 proc_geocor.pnams.append('ref_factors')
@@ -30,6 +32,8 @@ proc_geocor.pnams.append('emaxs')
 proc_geocor.pnams.append('smooth_fact')
 proc_geocor.pnams.append('smooth_dmax')
 proc_geocor.pnams.append('oflag')
+proc_geocor.params['l2a_dir'] = 'Sentinel-2 L2A Folder'
+proc_geocor.params['search_key'] = 'Search Keyword for L2A'
 proc_geocor.params['ref_fnam'] = 'Reference Image'
 proc_geocor.params['ref_bands'] = 'Reference Band'
 proc_geocor.params['ref_factors'] = 'Reference Factor'
@@ -56,6 +60,8 @@ proc_geocor.params['emaxs'] = 'Max GCP Error (\u03C3)'
 proc_geocor.params['smooth_fact'] = 'Smoothing Factor'
 proc_geocor.params['smooth_dmax'] = 'Max Diff. from Smooth (m)'
 proc_geocor.params['oflag'] = 'Overwrite Flag'
+proc_geocor.param_types['l2a_dir'] = 'string'
+proc_geocor.param_types['search_key'] = 'string'
 proc_geocor.param_types['ref_fnam'] = 'string'
 proc_geocor.param_types['ref_bands'] = 'int_list'
 proc_geocor.param_types['ref_factors'] = 'float_list'
@@ -104,6 +110,8 @@ proc_geocor.param_range['rmax'] = (1.0e-6,1.0e6)
 proc_geocor.param_range['emaxs'] = (1.0e-6,1.0e6)
 proc_geocor.param_range['smooth_fact'] = (0.0,1.0e50)
 proc_geocor.param_range['smooth_dmax'] = (0.0,1.0e50)
+proc_geocor.defaults['l2a_dir'] = 'L2A'
+proc_geocor.defaults['search_key'] = ''
 proc_geocor.defaults['ref_fnam'] = 'wv2_180629_pan.tif'
 proc_geocor.defaults['ref_bands'] = [5,-1,-1]
 proc_geocor.defaults['ref_factors'] = [np.nan,np.nan,np.nan]
@@ -170,6 +178,8 @@ proc_geocor.list_labels['emaxs'] = ['','','']
 proc_geocor.list_labels['smooth_fact'] = ['X :',' Y :']
 proc_geocor.list_labels['smooth_dmax'] = ['X :',' Y :']
 proc_geocor.list_labels['oflag'] = ['subset','geocor','resample']
+proc_geocor.input_types['l2a_dir'] = 'ask_folder'
+proc_geocor.input_types['search_key'] = 'box'
 proc_geocor.input_types['ref_fnam'] = 'ask_file'
 proc_geocor.input_types['ref_bands'] = 'int_list'
 proc_geocor.input_types['ref_factors'] = 'float_list'

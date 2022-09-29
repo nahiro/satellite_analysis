@@ -5,6 +5,7 @@ from datetime import datetime,timedelta
 import configparser
 from proc_satellite_download import proc_download
 from proc_satellite_geocor import proc_geocor
+from proc_satellite_indices import proc_indices
 from proc_satellite_parcel import proc_parcel
 from proc_satellite_atcor import proc_atcor
 from proc_satellite_interp import proc_interp
@@ -63,6 +64,7 @@ config_defaults.update({
 'main.browse_image'                   : main_browse_image,
 'main.download'                       : True,
 'main.geocor'                         : True,
+'main.indices'                        : True,
 'main.parcel'                         : True,
 'main.atcor'                          : False,
 'main.interp'                         : True,
@@ -85,16 +87,20 @@ config_defaults.update({
 'download.trans_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Transplanting_date/Cihea/final/v1.4',
 'download.l2a_path'                   : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/L2A',
 'download.resample_path'              : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/resample',
+'download.indices_path'               : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/indices',
 'download.parcel_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/parcel',
 'download.atcor_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/atcor',
 'download.interp_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/interp',
+'download.tentative_path'             : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/tentative_interp',
 'download.search_key'                 : '',
-'download.dflag'                      : [True,True,True,True,True,True],
-'download.oflag'                      : [False,False,False,False,False,False],
+'download.dflag'                      : [True,True,True,True,True,True,True],
+'download.oflag'                      : [False,False,False,False,False,False,False],
 'download.python_path'                : python_path,
 'download.scr_dir'                    : scr_dir,
 'download.middle_left_frame_width'    : 1000,
 #----------- geocor -----------
+'geocor.l2a_dir'                      : os.path.join(main_s2_data,'L2A'),
+'geocor.search_key'                   : '',
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [5,-1,-1],
 'geocor.ref_factors'                  : [np.nan,np.nan,np.nan],
@@ -124,24 +130,35 @@ config_defaults.update({
 'geocor.python_path'                  : python_path,
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
+#----------- indices -----------
+'indices.resample_dir'                : os.path.join(main_s2_data,'resample'),
+'indices.out_refs'                    : [True,True,True,True,True,True,True,True,True,True],
+'indices.norm_bands'                  : [True,True,True,True,True,True,True,False,False,False],
+'indices.out_nrefs'                   : [True,True,True,True,True,True,True,True,True,True],
+'indices.rgi_red_band'                : 'e1',
+'indices.out_inds'                    : [True,True,True,True],
+'indices.oflag'                       : False,
+'indices.python_path'                 : python_path,
+'indices.scr_dir'                     : scr_dir,
+'indices.middle_left_frame_width'     : 1000,
 #----------- parcel -----------
+'parcel.indices_dir'                 : os.path.join(main_s2_data,'indices'),
 'parcel.gis_fnam'                     : gis_fnam,
 'parcel.mask_parcel'                  : mask_parcel,
 'parcel.out_refs'                     : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_refs'                   : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_refs'                  : [True,True,True,True,True,True,True,True,True,True],
-'parcel.norm_bands'                   : [True,True,True,True,True,True,True,False,False,False],
 'parcel.out_nrefs'                    : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_sc_nrefs'                  : [True,True,True,True,True,True,True,True,True,True],
 'parcel.cr_ref_nrefs'                 : [True,True,True,True,True,True,True,True,True,True],
-'parcel.rgi_red_band'                 : 'e1',
 'parcel.out_inds'                     : [True,True,True,True],
 'parcel.cr_sc_inds'                   : [True,True,True,True],
 'parcel.cr_ref_inds'                  : [True,True,True,True],
 'parcel.cloud_band'                   : 'r',
 'parcel.cloud_thr'                    : 0.35,
-'parcel.buffer'                       : 1.0,
-'parcel.oflag'                        : [False,False],
+'parcel.buffer'                       : 0.0,
+'parcel.csv_flag'                     : True,
+'parcel.oflag'                        : False,
 'parcel.python_path'                  : python_path,
 'parcel.scr_dir'                      : scr_dir,
 'parcel.middle_left_frame_width'      : 1000,
@@ -152,11 +169,11 @@ config_defaults.update({
 'atcor.stat_fnam'                     : '',
 'atcor.inds_fnam'                     : '',
 'atcor.out_refs'                      : [True,True,True,True,True,True,True,True,True,True],
-'atcor.atcor_refs'                    : [False,False,False,False,False,False,False,False,False,False],
+'atcor.atcor_refs'                    : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_nrefs'                     : [True,True,True,True,True,True,True,True,True,True],
-'atcor.atcor_nrefs'                   : [True,True,True,True,True,True,True,False,False,False],
+'atcor.atcor_nrefs'                   : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_inds'                      : [True,True,True,True],
-'atcor.atcor_inds'                    : [True,True,False,True],
+'atcor.atcor_inds'                    : [True,True,True,True],
 'atcor.stat_period'                   : ['',''],
 'atcor.n_ref'                         : 1000,
 'atcor.ref_band'                      : [True,True,True,False,False,False,True,False,False,False],
@@ -169,6 +186,7 @@ config_defaults.update({
 'atcor.nstp'                          : 10,
 'atcor.rel_thr'                       : 2.0,
 'atcor.fit_thr'                       : 0.3,
+'atcor.csv_flag'                      : True,
 'atcor.oflag'                         : [False,False,False,False,False],
 'atcor.python_path'                   : python_path,
 'atcor.scr_dir'                       : scr_dir,
@@ -177,6 +195,7 @@ config_defaults.update({
 'interp.cflag_thr'                    : 3.0,
 'interp.p_smooth'                     : 2.0e-3,
 'interp.atcor_flag'                   : True,
+'interp.csv_flag'                     : True,
 'interp.oflag'                        : [False,True],
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
@@ -197,7 +216,7 @@ config_defaults.update({
 'phenology.trans_thr3'                : [4.0,30.0],
 'phenology.trans_thr4'                : [np.nan,np.nan],
 'phenology.trans_thr5'                : [2.0,30.0],
-'phenology.atc_params'                : [90.0,10.0],
+'phenology.atc_params'                : [100.0,10.0],
 'phenology.assess_dthrs'              : [120,10,10],
 'phenology.y1_smooth'                 : 0.02,
 'phenology.y1_thr'                    : 0.0,
@@ -206,8 +225,8 @@ config_defaults.update({
 'phenology.middle_left_frame_width'   : 1000,
 #----------- extract -----------
 'extract.gis_fnam'                    : gis_fnam,
-'extract.obs_src'                     : 'Drone Analysis',
-'extract.obs_fnam'                    : os.path.join(main_drone_analysis,'extract','observation.csv'),
+'extract.obs_src'                     : 'Field Data',
+'extract.obs_fnam'                    : os.path.join(main_field_data,'observation.csv'),
 'extract.i_sheet'                     : 1,
 'extract.epsg'                        : 32748,
 'extract.major_flag'                  : True,
@@ -219,28 +238,28 @@ config_defaults.update({
 #----------- formula -----------
 'formula.inp_fnams'                   : os.path.join(main_s2_analysis,'extract','extract.csv'),
 'formula.data_select'                 : 'Days from Assessment',
-'formula.harvest_range'               : [-25.0,5.0],
+'formula.harvest_range'               : [-100.0,100.0],
 'formula.assess_range'                : [-15.0,15.0],
 'formula.head_range'                  : [20.0,50.0],
 'formula.peak_range'                  : [20.0,50.0],
 'formula.plant_range'                 : [80.0,110.0],
 'formula.age_range'                   : [80.0,110.0],
 'formula.n_x'                         : [1,2],
-'formula.x1_params'                   : [True,True,True,True,True,True,True,True,True,True],
-'formula.x2_params'                   : [True,True,True,True,True,True,True,True,True,True],
-'formula.x3_params'                   : [True,True,True,True],
+'formula.x1_params'                   : [False,False,False,False,False,False,False,False,False,False],
+'formula.x2_params'                   : [False,False,True,False,False,False,True,False,False,False],
+'formula.x3_params'                   : [True,True,False,True],
 'formula.y_params'                    : [True,False,False,False,False,False],
 'formula.score_max'                   : [9,9,1,1,1,9],
 'formula.score_step'                  : [2.0,2.0,0.2,0.2,0.2,2.0],
-'formula.ythr'                        : [0.2,0.2,0.2,0.2,0.2,0.2],
+'formula.ythr'                        : [0.2,1.0,1.0,1.0,1.0,1.0],
 'formula.yfac1'                       : [1.0,np.nan,np.nan,np.nan,np.nan,np.nan],
 'formula.yfac2'                       : [np.nan,1.0,np.nan,np.nan,np.nan,np.nan],
 'formula.yfac3'                       : [np.nan,np.nan,1.0,np.nan,np.nan,np.nan],
 'formula.yfac4'                       : [np.nan,np.nan,np.nan,1.0,np.nan,np.nan],
 'formula.yfac5'                       : [np.nan,np.nan,np.nan,np.nan,1.0,np.nan],
 'formula.yfac6'                       : [np.nan,np.nan,np.nan,np.nan,np.nan,1.0],
-'formula.mean_fitting'                : False,
-'formula.criteria'                    : 'RMSE_test',
+'formula.mean_fitting'                : True,
+'formula.criteria'                    : 'RMSE_train',
 'formula.n_multi'                     : 1,
 'formula.vif_max'                     : 5.0,
 'formula.n_cros'                      : 5,
@@ -258,6 +277,8 @@ config_defaults.update({
 'estimate.peak_value'                 : 35.0,
 'estimate.plant_value'                : 95.0,
 'estimate.age_value'                  : 95.0,
+'estimate.spec_date'                  : '',
+'estimate.atcor_flag'                 : True,
 'estimate.pm_fnam'                    : os.path.join(main_s2_analysis,'formula','pm_formula_age_90_110.csv'),
 'estimate.pm_number'                  : 1,
 'estimate.y_params'                   : [True,False,False,False,False,False],
@@ -317,6 +338,7 @@ center_btn_width = config['main'].getint('main.center_btn_width')
 pnams = []
 pnams.append('download')
 pnams.append('geocor')
+pnams.append('indices')
 pnams.append('parcel')
 pnams.append('atcor')
 pnams.append('interp')
@@ -335,10 +357,14 @@ for proc in pnams:
         config[proc] = {}
     for pnam in modules[proc].pnams:
         if modules[proc].input_types[pnam] in ['ask_file','ask_folder']:
+            modules[proc].flag_fix[pnam] = False
             fnam = config[proc].get('{}.{}'.format(proc,pnam)).strip()
             if len(fnam) < 1:
                 modules[proc].values[pnam] = fnam
             else:
+                if fnam[0] == '!':
+                    modules[proc].flag_fix[pnam] = True
+                    fnam = fnam[1:]
                 modules[proc].values[pnam] = os.path.normpath(fnam)
         elif modules[proc].input_types[pnam] in ['ask_files','ask_folders']:
             lines = config[proc].get('{}.{}'.format(proc,pnam)).strip()
@@ -363,7 +389,9 @@ for proc in pnams:
             modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan'))
         else:
             v = config[proc].get('{}.{}'.format(proc,pnam))
-            if len(v) < 1:
+            if v is None:
+                raise ValueError('Errror, no such parameter >>> {}.{}'.format(proc,pnam))
+            elif len(v) < 1:
                 modules[proc].values[pnam] = v
             else:
                 modules[proc].values[pnam] = eval(v)
