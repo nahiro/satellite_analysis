@@ -135,8 +135,12 @@ class Geocor(Satellite_Process):
             ystr = '{}'.format(d.year)
             dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
-            if os.path.exists(gnam) and self.values['oflag'][0]:
-                os.remove(gnam)
+            tmp_gnam = os.path.join(dnam,'{}_subset_tmp.tif'.format(dstr))
+            if self.values['oflag'][0]:
+                if os.path.exists(gnam):
+                    os.remove(gnam)
+                if os.path.exists(tmp_gnam):
+                    os.remove(tmp_gnam)
             if not os.path.exists(gnam):
                 if not os.path.exists(dnam):
                     os.makedirs(dnam)
@@ -162,7 +166,7 @@ class Geocor(Satellite_Process):
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_subset.py'))
                 command += ' --inp_fnam "{}"'.format(rnam)
-                command += ' --out_fnam "{}"'.format(gnam)
+                command += ' --out_fnam "{}"'.format(tmp_gnam)
                 command += ' --polygon "POLYGON(({} {},{} {},{} {},{} {},{} {}))"'.format(self.values['trg_subset'][0],self.values['trg_subset'][2],
                                                                                           self.values['trg_subset'][1],self.values['trg_subset'][2],
                                                                                           self.values['trg_subset'][1],self.values['trg_subset'][3],
@@ -177,6 +181,14 @@ class Geocor(Satellite_Process):
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
                 self.run_command(command,print_command=False,print_time=False)
+                # Append bandname
+                command = self.python_path
+                command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_bandname.py'))
+                command += ' --inp_fnam "{}"'.format(tmp_gnam)
+                command += ' --out_fnam "{}"'.format(gnam)
+                self.run_command(command,print_command=False,print_time=False)
+            if os.path.exists(tmp_gnam):
+                os.remove(tmp_gnam)
             if os.path.exists(gnam):
                 subset_fnams.append(gnam)
                 subset_dstrs.append(dstr)
