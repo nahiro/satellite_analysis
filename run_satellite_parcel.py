@@ -32,6 +32,7 @@ class Parcel(Satellite_Process):
 
         # Check Indices
         indices_fnams = []
+        indices_rnams = []
         indices_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)

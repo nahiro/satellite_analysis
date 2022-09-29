@@ -141,6 +141,7 @@ config_defaults.update({
 'indices.scr_dir'                     : scr_dir,
 'indices.middle_left_frame_width'     : 1000,
 #----------- parcel -----------
+'parcel.geocor_dir'                   : os.path.join(main_s2_data,'geocor'),
 'parcel.indices_dir'                  : os.path.join(main_s2_data,'indices'),
 'parcel.gis_fnam'                     : gis_fnam,
 'parcel.mask_parcel'                  : mask_parcel,
