@@ -125,7 +125,7 @@ config_defaults.update({
 'geocor.emaxs'                        : [3.0,2.0,2.0],
 'geocor.smooth_fact'                  : [1.0e4,1.0e4],
 'geocor.smooth_dmax'                  : [4.0,4.0],
-'geocor.oflag'                        : [False,False,False],
+'geocor.oflag'                        : [False,False],
 'geocor.python_path'                  : python_path,
 'geocor.scr_dir'                      : scr_dir,
 'geocor.middle_left_frame_width'      : 1000,
