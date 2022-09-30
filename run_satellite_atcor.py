@@ -41,27 +41,6 @@ class Atcor(Satellite_Process):
         if not os.path.exists(mask_parcel):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
-        # Select nearest pixels
-        inds_npz = self.values['inds_fnam']
-        iflag = self.list_labels['oflag'].index('index')
-        if os.path.exists(inds_npz) and self.values['oflag'][iflag]:
-            os.remove(inds_npz)
-        if not os.path.exists(inds_npz):
-            command = self.python_path
-            command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
-            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'resample'))
-            command += ' --out_fnam "{}"'.format(inds_npz)
-            for band,flag in zip(self.list_labels['ref_band'],self.values['ref_band']):
-                if flag:
-                    command += ' --ref_band {}'.format(band.strip())
-            command += ' --data_tmin {:%Y%m%d}'.format(d1)
-            command += ' --data_tmax {:%Y%m%d}'.format(d2)
-            command += ' --rthr {}'.format(self.values['ref_thr'])
-            command += ' --n_nearest {}'.format(self.values['n_ref'])
-            command += ' --use_index'
-            self.run_command(command,message='<<< Select nearest pixels >>>')
-
         # Check Indices
         indices_fnams = []
         indices_dstrs = []
@@ -85,7 +64,28 @@ class Atcor(Satellite_Process):
         indices_fnams = [indices_fnams[i] for i in inds]
         indices_dstrs = [indices_dstrs[i] for i in inds]
         if len(indices_fnams) < 1:
-            self.print_message('No indices data for process.',print_time=False)
+            raise IOError('No indices data for process.')
+
+        # Select nearest pixels
+        inds_npz = self.values['inds_fnam']
+        iflag = self.list_labels['oflag'].index('index')
+        if os.path.exists(inds_npz) and self.values['oflag'][iflag]:
+            os.remove(inds_npz)
+        if not os.path.exists(inds_npz):
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
+            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'resample'))
+            command += ' --out_fnam "{}"'.format(inds_npz)
+            for band,flag in zip(self.list_labels['ref_band'],self.values['ref_band']):
+                if flag:
+                    command += ' --ref_band {}'.format(band.strip())
+            command += ' --data_tmin {:%Y%m%d}'.format(d1)
+            command += ' --data_tmax {:%Y%m%d}'.format(d2)
+            command += ' --rthr {}'.format(self.values['ref_thr'])
+            command += ' --n_nearest {}'.format(self.values['n_ref'])
+            command += ' --use_index'
+            self.run_command(command,message='<<< Select nearest pixels >>>')
 
         # Calculate stats
         stat_tif = self.values['stat_fnam']
@@ -125,7 +125,7 @@ class Atcor(Satellite_Process):
             command += ' --batch'
             if atcor_flag:
                 if len(indices_fnams) < 1:
-                    raise IOError('No indices data')
+                    raise IOError('No indices data to calculate stats')
                 else:
                     self.run_command(command,message='<<< Calculate stats >>>')
             else:
