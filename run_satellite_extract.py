@@ -90,6 +90,5 @@ class Extract(Satellite_Process):
         self.run_command(command,message='<<< Extract indices >>>')
 
         # Finish process
-        sys.stderr.write('\nFinished process {}.\n\n'.format(self.proc_name))
-        sys.stderr.flush()
+        super().finish()
         return

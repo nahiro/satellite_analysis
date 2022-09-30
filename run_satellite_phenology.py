@@ -154,6 +154,5 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Calculate assessment date >>>')
 
         # Finish process
-        sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
-        sys.stderr.flush()
+        super().finish()
         return

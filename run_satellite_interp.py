@@ -60,6 +60,5 @@ class Interp(Satellite_Process):
         self.run_command(command,message='<<< Interpolate data between {:%Y-%m-%d} - {:%Y-%m-%d} >>>'.format(first_dtim,last_dtim))
 
         # Finish process
-        sys.stderr.write('Finished process {}.\n\n'.format(self.proc_name))
-        sys.stderr.flush()
+        super().finish()
         return

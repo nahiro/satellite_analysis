@@ -119,6 +119,5 @@ class Estimate(Satellite_Process):
         self.run_command(command,message='<<< Estimate plot-mean >>>')
 
         # Finish process
-        sys.stderr.write('\nFinished process {}.\n\n'.format(self.proc_name))
-        sys.stderr.flush()
+        super().finish()
         return

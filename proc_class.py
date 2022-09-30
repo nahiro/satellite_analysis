@@ -88,6 +88,8 @@ class Process:
         self.right_frame = None
         self.right_lbl = None
         self.right_cnv = None
+        self.run_t1 = None
+        self.run_t2 = None
 
     def __setattr__(self,key,value):
         if self.__isfrozen and not hasattr(self,key):
@@ -298,7 +300,8 @@ class Process:
         return
 
     def run(self):
-        sys.stderr.write('Running process {}.\n'.format(self.proc_name))
+        self.run_t1 = datetime.now()
+        sys.stderr.write('\nRunning process {} at {}\n'.format(self.proc_name,self.run_t1))
         sys.stderr.flush()
         return
 
@@ -319,11 +322,16 @@ class Process:
             sys.stderr.write('\nEnd: {} ({})\n'.format(t2,t2-t1))
             sys.stderr.flush()
         if ret != 0:
-            sys.stderr.write('\nTerminated command in process {}.\n'.format(self.proc_name))
-            sys.stderr.write('\n')
+            sys.stderr.write('\nTerminated command in process {}.\n\n'.format(self.proc_name))
             sys.stderr.flush()
             raise ValueError('ERROR')
         return ret
+
+    def finish(self):
+        self.run_t2 = datetime.now()
+        sys.stderr.write('\nFinished process {} at {} ({})\n\n'.format(self.proc_name,self.run_t2,self.run_t2-self.run_t1))
+        sys.stderr.flush()
+        return
 
     def print_message(self,message,print_time=True):
         if message is not None:
