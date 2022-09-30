@@ -84,14 +84,6 @@ def set_title(pnam):
             modules[proc].values[proc_pnam] = os.path.join(s2_data,fnam)
             if modules[proc].center_var is not None:
                 modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
-    proc_pnam = 'stat_period'
-    data_tmin = (first_dtim+relativedelta(years=-2)).strftime(date_fmt)
-    data_tmax = last_dtim.strftime(date_fmt)
-    modules[proc].values[proc_pnam][0] = data_tmin
-    modules[proc].values[proc_pnam][1] = data_tmax
-    if modules[proc].center_var is not None:
-        modules[proc].center_var[proc_pnam][0].set(data_tmin)
-        modules[proc].center_var[proc_pnam][1].set(data_tmax)
     # phenology
     proc = 'phenology'
     proc_pnam = 'trans_fnam'

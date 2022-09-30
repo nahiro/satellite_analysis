@@ -176,7 +176,7 @@ config_defaults.update({
 'atcor.atcor_nrefs'                   : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_inds'                      : [True,True,True,True],
 'atcor.atcor_inds'                    : [True,True,True,True],
-'atcor.stat_period'                   : ['',''],
+'atcor.stat_period'                   : 730,
 'atcor.n_ref'                         : 1000,
 'atcor.ref_band'                      : [True,True,True,False,False,False,True,False,False,False],
 'atcor.ref_thr'                       : 0.035,

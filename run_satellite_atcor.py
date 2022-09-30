@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-from datetime import datetime
+from datetime import datetime,timedelta
 try:
     import gdal
 except Exception:
@@ -26,8 +26,6 @@ class Atcor(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
-        d1 = datetime.strptime(self.values['stat_period'][0],self.date_fmt)
-        d2 = datetime.strptime(self.values['stat_period'][1],self.date_fmt)
         data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
         wrk_dir = os.path.join(self.s2_data,self.proc_name)
         if not os.path.exists(wrk_dir):
@@ -67,25 +65,34 @@ class Atcor(Satellite_Process):
             raise IOError('No indices data for process.')
 
         # Select nearest pixels
-        inds_npz = self.values['inds_fnam']
-        iflag = self.list_labels['oflag'].index('index')
-        if os.path.exists(inds_npz) and self.values['oflag'][iflag]:
-            os.remove(inds_npz)
-        if not os.path.exists(inds_npz):
-            command = self.python_path
-            command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
-            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-            command += ' --inpdir "{}"'.format(self.values['geocor_dir'])
-            command += ' --out_fnam "{}"'.format(inds_npz)
-            for band,flag in zip(self.list_labels['ref_band'],self.values['ref_band']):
-                if flag:
-                    command += ' --ref_band {}'.format(band.strip())
-            command += ' --data_tmin {:%Y%m%d}'.format(d1)
-            command += ' --data_tmax {:%Y%m%d}'.format(d2)
-            command += ' --rthr {}'.format(self.values['ref_thr'])
-            command += ' --n_nearest {}'.format(self.values['n_ref'])
-            command += ' --use_index'
-            self.run_command(command,message='<<< Select nearest pixels >>>')
+        for year in data_years:
+            ystr = '{}'.format(year)
+            dnam = os.path.join(wrk_dir,ystr)
+            inds_npz = os.path.join(dnam,'nearest_inds.npz')
+            iflag = self.list_labels['oflag'].index('index')
+            if os.path.exists(inds_npz) and self.values['oflag'][iflag]:
+                os.remove(inds_npz)
+            if not os.path.exists(inds_npz):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                d2 = datetime(year,1,1)-timedelta(days=1)
+                d1 = d2-timedelta(days=self.values['stat_period'])
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
+                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                command += ' --inpdir "{}"'.format(self.values['geocor_dir'])
+                command += ' --out_fnam "{}"'.format(inds_npz)
+                for band,flag in zip(self.list_labels['ref_band'],self.values['ref_band']):
+                    if flag:
+                        command += ' --ref_band {}'.format(band.strip())
+                command += ' --data_tmin {:%Y%m%d}'.format(d1)
+                command += ' --data_tmax {:%Y%m%d}'.format(d2)
+                command += ' --rthr {}'.format(self.values['ref_thr'])
+                command += ' --n_nearest {}'.format(self.values['n_ref'])
+                command += ' --use_index'
+                self.run_command(command,message='<<< Select nearest pixels for {} >>>'.format(ystr))
 
         # Calculate stats
         stat_tif = self.values['stat_fnam']
