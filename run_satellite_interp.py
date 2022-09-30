@@ -49,9 +49,11 @@ class Interp(Satellite_Process):
         command += ' --ethr {}'.format(self.values['cflag_thr'])
         if self.values['csv_flag']:
             command += ' --out_csv'
-        if self.values['oflag'][0]:
+        iflag = self.list_labels['oflag'].index('interp')
+        if self.values['oflag'][iflag]:
             command += ' --overwrite'
-        if self.values['oflag'][1]:
+        iflag = self.list_labels['oflag'].index('tentative interp')
+        if self.values['oflag'][iflag]:
             command += ' --tentative_overwrite'
         command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_interp.pdf'.format(trg_bnam)))
         command += ' --nfig 10'
