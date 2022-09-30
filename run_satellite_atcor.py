@@ -43,7 +43,8 @@ class Atcor(Satellite_Process):
 
         # Select nearest pixels
         inds_npz = self.values['inds_fnam']
-        if os.path.exists(inds_npz) and self.values['oflag'][2]:
+        iflag = self.list_labels['oflag'].index('index')
+        if os.path.exists(inds_npz) and self.values['oflag'][iflag]:
             os.remove(inds_npz)
         if not os.path.exists(inds_npz):
             command = self.python_path
@@ -90,7 +91,8 @@ class Atcor(Satellite_Process):
         stat_tif = self.values['stat_fnam']
         bnam,enam = os.path.splitext(stat_tif)
         stat_pdf = bnam+'.pdf'
-        if os.path.exists(stat_tif) and self.values['oflag'][1]:
+        iflag = self.list_labels['oflag'].index('stats')
+        if os.path.exists(stat_tif) and self.values['oflag'][iflag]:
             os.remove(stat_tif)
         if not os.path.exists(stat_tif):
             command = self.python_path
@@ -136,7 +138,8 @@ class Atcor(Satellite_Process):
             dnam = os.path.join(self.s2_data,'atcor',ystr)
             fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
             fact_pdf = os.path.join(dnam,'{}_factor.pdf'.format(dstr))
-            if os.path.exists(fact_npz) and self.values['oflag'][3]:
+            iflag = self.list_labels['oflag'].index('factor')
+            if os.path.exists(fact_npz) and self.values['oflag'][iflag]:
                 os.remove(fact_npz)
             if not os.path.exists(fact_npz):
                 if not os.path.exists(dnam):
@@ -186,12 +189,13 @@ class Atcor(Satellite_Process):
             atcor_npz = os.path.join(dnam,'{}_atcor.npz'.format(dstr))
             atcor_shp = os.path.join(dnam,'{}_atcor.shp'.format(dstr))
             atcor_pdf = os.path.join(dnam,'{}_atcor.pdf'.format(dstr))
-            if os.path.exists(atcor_npz) and self.values['oflag'][4]:
+            iflag = self.list_labels['oflag'].index('atcor')
+            if os.path.exists(atcor_npz) and self.values['oflag'][iflag]:
                 os.remove(atcor_npz)
             if self.values['csv_flag']:
                 atcor_csv = os.path.join(dnam,'{}_atcor.csv'.format(dstr))
                 if os.path.exists(atcor_csv):
-                    if self.values['oflag'][4]:
+                    if self.values['oflag'][iflag]:
                         os.remove(atcor_csv)
                 elif os.path.exists(atcor_npz):
                     os.remove(atcor_npz)
