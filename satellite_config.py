@@ -168,8 +168,6 @@ config_defaults.update({
 'atcor.gis_fnam'                      : gis_fnam,
 'atcor.mask_studyarea'                : mask_studyarea,
 'atcor.mask_parcel'                   : mask_parcel,
-'atcor.stat_fnam'                     : '',
-'atcor.inds_fnam'                     : '',
 'atcor.out_refs'                      : [True,True,True,True,True,True,True,True,True,True],
 'atcor.atcor_refs'                    : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_nrefs'                     : [True,True,True,True,True,True,True,True,True,True],

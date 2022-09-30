@@ -95,54 +95,65 @@ class Atcor(Satellite_Process):
                 self.run_command(command,message='<<< Select nearest pixels for {} >>>'.format(ystr))
 
         # Calculate stats
-        stat_tif = self.values['stat_fnam']
-        bnam,enam = os.path.splitext(stat_tif)
-        stat_pdf = bnam+'.pdf'
-        iflag = self.list_labels['oflag'].index('stats')
-        if os.path.exists(stat_tif) and self.values['oflag'][iflag]:
-            os.remove(stat_tif)
-        if not os.path.exists(stat_tif):
-            command = self.python_path
-            command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
-            command += ' --inpdir "{}"'.format(self.values['indices_dir'])
-            command += ' --mask_fnam "{}"'.format(mask_studyarea)
-            command += ' --dst_geotiff "{}"'.format(stat_tif)
-            atcor_flag = False
-            for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
-                if flag:
-                    command += ' --param S{}'.format(param.strip())
-                    atcor_flag = True
-            for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
-                if flag:
-                    command += ' --param {}'.format(param.strip())
-                    atcor_flag = True
-            for param,flag in zip(self.list_labels['atcor_inds'],self.values['atcor_inds']):
-                if flag:
-                    command += ' --param {}'.format(param.strip())
-                    atcor_flag = True
-            command += ' --cln_band {}'.format(self.values['clean_band'])
-            command += ' --data_tmin {:%Y%m%d}'.format(d1)
-            command += ' --data_tmax {:%Y%m%d}'.format(d2)
-            command += ' --cthr_avg {}'.format(self.values['clean_thr'][0])
-            command += ' --cthr_std {}'.format(self.values['clean_thr'][1])
-            command += ' --cthr_dif {}'.format(self.values['clean_thr'][2])
-            command += ' --cln_nmin {}'.format(self.values['clean_nmin'])
-            command += ' --fignam "{}"'.format(stat_pdf)
-            command += ' --debug'
-            command += ' --batch'
-            if atcor_flag:
-                if len(indices_fnams) < 1:
-                    raise IOError('No indices data to calculate stats')
+        for year in data_years:
+            ystr = '{}'.format(year)
+            dnam = os.path.join(wrk_dir,ystr)
+            stat_tif = os.path.join(dnam,'atcor_stat.tif')
+            bnam,enam = os.path.splitext(stat_tif)
+            stat_pdf = bnam+'.pdf'
+            iflag = self.list_labels['oflag'].index('stats')
+            if os.path.exists(stat_tif) and self.values['oflag'][iflag]:
+                os.remove(stat_tif)
+            if not os.path.exists(stat_tif):
+                if not os.path.exists(dnam):
+                    os.makedirs(dnam)
+                if not os.path.isdir(dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(dnam))
+                d2 = datetime(year,1,1)-timedelta(days=1)
+                d1 = d2-timedelta(days=self.values['stat_period'])
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
+                command += ' --inpdir "{}"'.format(self.values['indices_dir'])
+                command += ' --mask_fnam "{}"'.format(mask_studyarea)
+                command += ' --dst_geotiff "{}"'.format(stat_tif)
+                atcor_flag = False
+                for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
+                    if flag:
+                        command += ' --param S{}'.format(param.strip())
+                        atcor_flag = True
+                for param,flag in zip(self.list_labels['atcor_nrefs'],self.values['atcor_nrefs']):
+                    if flag:
+                        command += ' --param {}'.format(param.strip())
+                        atcor_flag = True
+                for param,flag in zip(self.list_labels['atcor_inds'],self.values['atcor_inds']):
+                    if flag:
+                        command += ' --param {}'.format(param.strip())
+                        atcor_flag = True
+                command += ' --cln_band {}'.format(self.values['clean_band'])
+                command += ' --data_tmin {:%Y%m%d}'.format(d1)
+                command += ' --data_tmax {:%Y%m%d}'.format(d2)
+                command += ' --cthr_avg {}'.format(self.values['clean_thr'][0])
+                command += ' --cthr_std {}'.format(self.values['clean_thr'][1])
+                command += ' --cthr_dif {}'.format(self.values['clean_thr'][2])
+                command += ' --cln_nmin {}'.format(self.values['clean_nmin'])
+                command += ' --fignam "{}"'.format(stat_pdf)
+                command += ' --debug'
+                command += ' --batch'
+                if atcor_flag:
+                    if len(indices_fnams) < 1:
+                        raise IOError('No indices data to calculate stats for {}'.format(ystr))
+                    else:
+                        self.run_command(command,message='<<< Calculate stats for {} >>>'.format(ystr))
                 else:
-                    self.run_command(command,message='<<< Calculate stats >>>')
-            else:
-                self.print_message('No parameters to be corrected.',print_time=False)
+                    self.print_message('No parameters to be corrected for {}.'.format(ystr),print_time=False)
 
         # Calculate correction factor
         for fnam,dstr in zip(indices_fnams,indices_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
             dnam = os.path.join(wrk_dir,ystr)
+            inds_npz = os.path.join(dnam,'nearest_inds.npz')
+            stat_tif = os.path.join(dnam,'atcor_stat.tif')
             fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
             fact_pdf = os.path.join(dnam,'{}_factor.pdf'.format(dstr))
             iflag = self.list_labels['oflag'].index('factor')
@@ -156,8 +167,8 @@ class Atcor(Satellite_Process):
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_atcor_fit.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
-                command += ' --stat_fnam "{}"'.format(stat_tif)
                 command += ' --inds_fnam "{}"'.format(inds_npz)
+                command += ' --stat_fnam "{}"'.format(stat_tif)
                 command += ' --out_fnam "{}"'.format(fact_npz)
                 atcor_flag = False
                 for param,flag in zip(self.list_labels['atcor_refs'],self.values['atcor_refs']):
