@@ -75,7 +75,7 @@ class Atcor(Satellite_Process):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
             command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'resample'))
+            command += ' --inpdir "{}"'.format(self.values['geocor_dir'])
             command += ' --out_fnam "{}"'.format(inds_npz)
             for band,flag in zip(self.list_labels['ref_band'],self.values['ref_band']):
                 if flag:

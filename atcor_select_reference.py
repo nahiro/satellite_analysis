@@ -87,7 +87,7 @@ for year in data_years:
     if not os.path.isdir(dnam):
         continue
     for f in sorted(os.listdir(dnam)):
-        m = re.search('^('+'\d'*8+')_resample\.tif$',f)
+        m = re.search('^('+'\d'*8+')_geocor\.tif$',f)
         if not m:
             continue
         dstr = m.group(1)

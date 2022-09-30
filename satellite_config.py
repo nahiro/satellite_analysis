@@ -163,6 +163,7 @@ config_defaults.update({
 'parcel.scr_dir'                      : scr_dir,
 'parcel.middle_left_frame_width'      : 1000,
 #----------- atcor -----------
+'atcor.geocor_dir'                    : os.path.join(main_s2_data,'geocor'),
 'atcor.indices_dir'                   : os.path.join(main_s2_data,'indices'),
 'atcor.gis_fnam'                      : gis_fnam,
 'atcor.mask_studyarea'                : mask_studyarea,

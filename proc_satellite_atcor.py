@@ -4,6 +4,7 @@ from run_satellite_atcor import Atcor
 proc_atcor = Atcor()
 proc_atcor.proc_name = 'atcor'
 proc_atcor.proc_title = 'Atmonspheric Correction'
+proc_atcor.pnams.append('geocor_dir')
 proc_atcor.pnams.append('indices_dir')
 proc_atcor.pnams.append('gis_fnam')
 proc_atcor.pnams.append('mask_studyarea')
@@ -30,6 +31,7 @@ proc_atcor.pnams.append('rel_thr')
 proc_atcor.pnams.append('fit_thr')
 proc_atcor.pnams.append('csv_flag')
 proc_atcor.pnams.append('oflag')
+proc_atcor.params['geocor_dir'] = 'Geocor Folder'
 proc_atcor.params['indices_dir'] = 'Indices Folder'
 proc_atcor.params['gis_fnam'] = 'Polygon File'
 proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
@@ -56,6 +58,7 @@ proc_atcor.params['rel_thr'] = 'Max Deviation for Fit'
 proc_atcor.params['fit_thr'] = 'Min Correction for Fit'
 proc_atcor.params['csv_flag'] = 'Output CSV'
 proc_atcor.params['oflag'] = 'Overwrite Flag'
+proc_atcor.param_types['geocor_dir'] = 'string'
 proc_atcor.param_types['indices_dir'] = 'string'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
@@ -90,6 +93,7 @@ proc_atcor.param_range['cloud_thr'] = (0.0,10.0)
 proc_atcor.param_range['nstp'] = (2,10000)
 proc_atcor.param_range['rel_thr'] = (0.0,10.0)
 proc_atcor.param_range['fit_thr'] = (0.0,10.0)
+proc_atcor.defaults['geocor_dir'] = 'geocor'
 proc_atcor.defaults['indices_dir'] = 'indices'
 proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
@@ -140,6 +144,7 @@ proc_atcor.list_labels['clean_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1
 proc_atcor.list_labels['clean_thr'] = ['Mean :',' Std :',' Deviation :']
 proc_atcor.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 proc_atcor.list_labels['oflag'] = ['mask','stats','index','factor','atcor']
+proc_atcor.input_types['geocor_dir'] = 'ask_folder'
 proc_atcor.input_types['indices_dir'] = 'ask_folder'
 proc_atcor.input_types['gis_fnam'] = 'ask_file'
 proc_atcor.input_types['mask_studyarea'] = 'ask_file'
