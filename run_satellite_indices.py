@@ -56,9 +56,6 @@ class Indices(Satellite_Process):
             self.print_message('No geocor data for process.',print_time=False)
 
         # Calculate indices
-        indices_fnams = []
-        indices_rnams = []
-        indices_dstrs = []
         for fnam,dstr in zip(geocor_fnams,geocor_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
@@ -104,10 +101,6 @@ class Indices(Satellite_Process):
                 command += ' --debug'
                 command += ' --batch'
                 self.run_command(command,message='<<< Calculate indices for {} >>>'.format(dstr))
-            if os.path.exists(gnam):
-                indices_fnams.append(gnam)
-                indices_rnams.append(fnam)
-                indices_dstrs.append(dstr)
 
         # Finish process
         super().finish()
