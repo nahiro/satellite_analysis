@@ -135,7 +135,7 @@ class Atcor(Satellite_Process):
         for fnam,dstr in zip(indices_fnams,indices_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
             ystr = '{}'.format(d.year)
-            dnam = os.path.join(self.s2_data,'atcor',ystr)
+            dnam = os.path.join(wrk_dir,ystr)
             fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
             fact_pdf = os.path.join(dnam,'{}_factor.pdf'.format(dstr))
             iflag = self.list_labels['oflag'].index('factor')
@@ -184,7 +184,7 @@ class Atcor(Satellite_Process):
             data_npz = os.path.join(dnam,'{}_parcel.npz'.format(dstr))
             if not os.path.exists(data_npz):
                 raise ValueError('Error, no such file >>> {}'.format(data_npz))
-            dnam = os.path.join(self.s2_data,'atcor',ystr)
+            dnam = os.path.join(wrk_dir,ystr)
             fact_npz = os.path.join(dnam,'{}_factor.npz'.format(dstr))
             atcor_npz = os.path.join(dnam,'{}_atcor.npz'.format(dstr))
             atcor_shp = os.path.join(dnam,'{}_atcor.shp'.format(dstr))
