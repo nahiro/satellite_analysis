@@ -237,6 +237,7 @@ class Atcor(Satellite_Process):
                 command += ' --cthr {}'.format(self.values['cloud_thr'])
                 command += ' --r_min {}'.format(self.values['fit_thr'])
                 command += ' --fignam "{}"'.format(atcor_pdf)
+                command += ' --ax1_title "{}"'.format(dstr)
                 command += ' --use_index'
                 command += ' --debug'
                 command += ' --batch'
