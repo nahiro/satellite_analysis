@@ -89,6 +89,7 @@ class Atcor(Satellite_Process):
                         command += ' --ref_band {}'.format(band.strip())
                 command += ' --data_tmin {:%Y%m%d}'.format(d1)
                 command += ' --data_tmax {:%Y%m%d}'.format(d2)
+                command += ' --nmin {}'.format(self.values['stat_nmin'])
                 command += ' --rthr {}'.format(self.values['ref_thr'])
                 command += ' --n_nearest {}'.format(self.values['n_ref'])
                 command += ' --use_index'

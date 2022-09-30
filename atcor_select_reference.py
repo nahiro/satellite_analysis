@@ -21,6 +21,7 @@ SC_BAND = 'quality_scene_classification'
 # Default values
 OUT_FNAM = 'nearest_inds.npz'
 REF_BAND = ['b','g','r','n1']
+NMIN = 10
 RTHR = 0.035
 N_NEAREST = 1000
 
@@ -32,8 +33,9 @@ parser.add_argument('-O','--out_fnam',default=OUT_FNAM,help='Output index file n
 parser.add_argument('-B','--ref_band',default=None,action='append',help='Band for reference select ({})'.format(REF_BAND))
 parser.add_argument('--data_tmin',default=None,help='Min date of input data in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--data_tmax',default=None,help='Max date of input data in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-n','--nmin',default=NMIN,type=int,help='Minimum number of input data (%(default)s)')
 parser.add_argument('-r','--rthr',default=RTHR,type=float,help='Threshold for reference select (%(default)s)')
-parser.add_argument('-n','--n_nearest',default=N_NEAREST,type=int,help='Number of nearest indices (%(default)s)')
+parser.add_argument('-N','--n_nearest',default=N_NEAREST,type=int,help='Number of nearest indices (%(default)s)')
 #parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 #parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',help='Axis1 Z min for debug (%(default)s)')
 #parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
@@ -132,6 +134,8 @@ for year in data_years:
         src_data.append(tmp_data[tmp_indx])
         scl_data.append(tmp_data[scl_indx])
         src_dtim.append(d)
+if len(src_data) < args.nmin:
+    raise ValueError('Error, not enough number of data for reference selection (required={}) >>> {}'.format(args.nmin,len(src_data)))
 src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 scl_data = np.array(scl_data) # NTIM,NY,NX
 src_dtim = np.array(src_dtim)

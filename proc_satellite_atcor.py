@@ -16,6 +16,7 @@ proc_atcor.pnams.append('atcor_nrefs')
 proc_atcor.pnams.append('out_inds')
 proc_atcor.pnams.append('atcor_inds')
 proc_atcor.pnams.append('stat_period')
+proc_atcor.pnams.append('stat_nmin')
 proc_atcor.pnams.append('n_ref')
 proc_atcor.pnams.append('ref_band')
 proc_atcor.pnams.append('ref_thr')
@@ -40,7 +41,8 @@ proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
 proc_atcor.params['atcor_nrefs'] = 'Correct Norm. Reflectance'
 proc_atcor.params['out_inds'] = 'Output Index'
 proc_atcor.params['atcor_inds'] = 'Correct Index'
-proc_atcor.params['stat_period'] = 'Stats Calculation Period (day)'
+proc_atcor.params['stat_period'] = 'Stats Period (day)'
+proc_atcor.params['stat_nmin'] = 'Min Stats Number'
 proc_atcor.params['n_ref'] = 'Reference Number'
 proc_atcor.params['ref_band'] = 'Band for Reference Select'
 proc_atcor.params['ref_thr'] = 'Thres. for Reference Select'
@@ -66,6 +68,7 @@ proc_atcor.param_types['atcor_nrefs'] = 'boolean_list'
 proc_atcor.param_types['out_inds'] = 'boolean_list'
 proc_atcor.param_types['atcor_inds'] = 'boolean_list'
 proc_atcor.param_types['stat_period'] = 'int'
+proc_atcor.param_types['stat_nmin'] = 'int'
 proc_atcor.param_types['n_ref'] = 'int'
 proc_atcor.param_types['ref_band'] = 'boolean_list'
 proc_atcor.param_types['ref_thr'] = 'float'
@@ -80,6 +83,7 @@ proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['csv_flag'] = 'boolean'
 proc_atcor.param_types['oflag'] = 'boolean_list'
 proc_atcor.param_range['stat_period'] = (10,1000000)
+proc_atcor.param_range['stat_nmin'] = (1,1000000)
 proc_atcor.param_range['n_ref'] = (10,1000000)
 proc_atcor.param_range['ref_thr'] = (0.0,10.0)
 proc_atcor.param_range['clean_thr'] = (0.0,10.0)
@@ -100,6 +104,7 @@ proc_atcor.defaults['atcor_nrefs'] = [True,True,True,True,True,True,True,True,Tr
 proc_atcor.defaults['out_inds'] = [True,True,True,True]
 proc_atcor.defaults['atcor_inds'] = [True,True,True,True]
 proc_atcor.defaults['stat_period'] = 730
+proc_atcor.defaults['stat_nmin'] = 10
 proc_atcor.defaults['n_ref'] = 1000
 proc_atcor.defaults['ref_band'] = [True,True,True,False,False,False,True,False,False,False]
 proc_atcor.defaults['ref_thr'] = 0.035
@@ -147,6 +152,7 @@ proc_atcor.input_types['atcor_nrefs'] = 'boolean_list'
 proc_atcor.input_types['out_inds'] = 'boolean_list'
 proc_atcor.input_types['atcor_inds'] = 'boolean_list'
 proc_atcor.input_types['stat_period'] = 'box'
+proc_atcor.input_types['stat_nmin'] = 'box'
 proc_atcor.input_types['n_ref'] = 'box'
 proc_atcor.input_types['ref_band'] = 'boolean_list'
 proc_atcor.input_types['ref_thr'] = 'box'
