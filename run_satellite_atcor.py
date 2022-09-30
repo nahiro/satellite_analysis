@@ -66,7 +66,7 @@ class Atcor(Satellite_Process):
         indices_dstrs = []
         for year in data_years:
             ystr = '{}'.format(year)
-            dnam = os.path.join(self.s2_data,'indices',ystr)
+            dnam = os.path.join(self.values['indices_dir'],ystr)
             if not os.path.isdir(dnam):
                 continue
             for f in sorted(os.listdir(dnam)):
@@ -95,7 +95,7 @@ class Atcor(Satellite_Process):
         if not os.path.exists(stat_tif):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
-            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'indices'))
+            command += ' --inpdir "{}"'.format(self.values['indices_dir'])
             command += ' --mask_fnam "{}"'.format(mask_studyarea)
             command += ' --dst_geotiff "{}"'.format(stat_tif)
             atcor_flag = False
