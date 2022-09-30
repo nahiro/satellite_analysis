@@ -169,7 +169,7 @@ class Download(Satellite_Process):
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
 
-        # Download Sentinel-2 resample/parcel/atcor/interp/tentative_interp
+        # Download Sentinel-2 geocor/indices/parcel/atcor/interp/tentative_interp
         for i,(targ,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
                                            ['.tif','.tif','.npz','.npz','.npz','npz'])):
             itarg = self.list_labels['dflag'].index(targ)
