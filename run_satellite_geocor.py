@@ -186,7 +186,7 @@ class Geocor(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_bandname.py'))
                 command += ' --inp_fnam "{}"'.format(tmp_gnam)
                 command += ' --out_fnam "{}"'.format(gnam)
-                self.run_command(command,print_command=False,print_time=False)
+                self.run_command(command,message='<<< Append bandname for {} >>>'.format(dstr))
             if os.path.exists(tmp_gnam):
                 os.remove(tmp_gnam)
             if os.path.exists(gnam):
