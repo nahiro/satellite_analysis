@@ -94,7 +94,8 @@ class Geocor(Satellite_Process):
                 l2a_sizes.append(os.path.getsize(fnam))
         if len(l2a_dstrs) < 1:
             self.print_message('No L2A data for process.',print_time=False)
-        if not self.values['oflag'][0]:
+        iflag = self.list_labels['oflag'].index('subset')
+        if not self.values['oflag'][iflag]:
             for year in data_years:
                 ystr = '{}'.format(year)
                 dnam = os.path.join(wrk_dir,ystr)
@@ -136,7 +137,8 @@ class Geocor(Satellite_Process):
             dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
             tmp_gnam = os.path.join(dnam,'{}_subset_tmp.tif'.format(dstr))
-            if self.values['oflag'][0]:
+            iflag = self.list_labels['oflag'].index('subset')
+            if self.values['oflag'][iflag]:
                 if os.path.exists(gnam):
                     os.remove(gnam)
                 if os.path.exists(tmp_gnam):
@@ -194,7 +196,8 @@ class Geocor(Satellite_Process):
                 subset_dstrs.append(dstr)
         if len(subset_dstrs) < 1:
             self.print_message('No subset data for process.',print_time=False)
-        if not self.values['oflag'][1]:
+        iflag = self.list_labels['oflag'].index('geocor')
+        if not self.values['oflag'][iflag]:
             for year in data_years:
                 ystr = '{}'.format(year)
                 dnam = os.path.join(wrk_dir,ystr)
@@ -224,7 +227,8 @@ class Geocor(Satellite_Process):
             gnam = os.path.join(dnam,'{}_geocor.tif'.format(dstr))
             tmp_gnam = os.path.join(dnam,'{}_geocor_tmp.tif'.format(dstr))
             dat_fnam = os.path.join(dnam,'{}_geocor.dat'.format(dstr))
-            if self.values['oflag'][1]:
+            iflag = self.list_labels['oflag'].index('geocor')
+            if self.values['oflag'][iflag]:
                 if os.path.exists(gnam):
                     os.remove(gnam)
                 if os.path.exists(tmp_gnam):
