@@ -79,6 +79,7 @@ proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['csv_flag'] = 'boolean'
 proc_atcor.param_types['oflag'] = 'boolean_list'
+proc_atcor.param_range['stat_period'] = (10,1000000)
 proc_atcor.param_range['n_ref'] = (10,1000000)
 proc_atcor.param_range['ref_thr'] = (0.0,10.0)
 proc_atcor.param_range['clean_thr'] = (0.0,10.0)

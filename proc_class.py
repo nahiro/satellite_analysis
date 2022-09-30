@@ -519,7 +519,9 @@ class Process:
                         else:
                             check_values[pnam] = self.center_var[pnam].get()
                     else:
+                        sys.stderr.write('{}: Error in parameter {}\n'.format(self.proc_name,pnam))
                         sys.stderr.write(str(e)+'\n')
+                        sys.stderr.flush()
         if source == 'input':
             for pnam in self.pnams:
                 if not pnam in check_errors or not pnam in self.right_lbl:
