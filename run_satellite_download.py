@@ -30,7 +30,8 @@ class Download(Satellite_Process):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
 
         # Download Planting data
-        itarg = 0
+        itarg = self.list_labels['dflag'].index('planting')
+        iflag = self.list_labels['oflag'].index('planting')
         if self.values['dflag'][itarg]:
             data_years = np.arange(d1.year,d2.year+1,1)
             for year in data_years:
@@ -90,14 +91,15 @@ class Download(Satellite_Process):
                 command += ' --inp_list {}'.format(tmp_fnam)
                 command += ' --dstdir {}'.format(os.path.join(self.s1_data,'planting',ystr))
                 command += ' --verbose'
-                if self.values['oflag'][itarg]:
+                if self.values['oflag'][iflag]:
                     command += ' --overwrite'
                 self.run_command(command,message='<<< Download Planting data ({}) >>>'.format(ystr))
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
 
         # Download Sentinel-2 L2A
-        itarg = 1
+        itarg = self.list_labels['dflag'].index('L2A')
+        iflag = self.list_labels['oflag'].index('L2A')
         if self.values['dflag'][itarg]:
             keys = []
             for key in [s.strip() for s in self.values['search_key'].split(',')]:
@@ -161,15 +163,17 @@ class Download(Satellite_Process):
                 command += ' --inp_list {}'.format(tmp_fnam)
                 command += ' --dstdir {}'.format(os.path.join(self.s2_data,'L2A',ystr))
                 command += ' --verbose'
-                if self.values['oflag'][itarg]:
+                if self.values['oflag'][iflag]:
                     command += ' --overwrite'
                 self.run_command(command,message='<<< Download Sentinel-2 L2A ({}) >>>'.format(ystr))
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
 
         # Download Sentinel-2 resample/parcel/atcor/interp/tentative_interp
-        for i,(targ,enam) in enumerate(zip(['resample','parcel','atcor','interp','tentative_interp'],['.tif','.npz','.npz','.npz','npz'])):
-            itarg = i+2
+        for i,(targ,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
+                                           ['.tif','.tif','.npz','.npz','.npz','npz'])):
+            itarg = self.list_labels['dflag'].index(targ)
+            iflag = self.list_labels['oflag'].index(targ)
             if self.values['dflag'][itarg]:
                 data_years = np.arange(first_dtim.year,last_dtim.year+1,1)
                 for year in data_years:
@@ -219,7 +223,7 @@ class Download(Satellite_Process):
                     command += ' --inp_list {}'.format(tmp_fnam)
                     command += ' --dstdir {}'.format(os.path.join(self.s2_data,targ,ystr))
                     command += ' --verbose'
-                    if self.values['oflag'][itarg]:
+                    if self.values['oflag'][iflag]:
                         command += ' --overwrite'
                     self.run_command(command,message='<<< Download Sentinel-2 {} ({}) >>>'.format(targ,ystr))
                     if os.path.exists(tmp_fnam):
