@@ -98,7 +98,7 @@ for ii,shaperec in enumerate(r.iterShapeRecords()):
         path_search = np.array(poly_buffer.exterior.coords.xy).swapaxes(0,1)
         flags = points_in_poly(src_points,path_search).reshape(dst_shape)
     dst_data[flags] = object_id
-dst_meta.update({'NOBJECT':len(r)})
+dst_meta.update({'NOBJECT':'{}'.format(len(r))})
 
 if args.select_inside:
     mask = np.full(dst_shape,fill_value=1,dtype=np.int32)
