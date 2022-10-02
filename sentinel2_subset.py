@@ -17,7 +17,6 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
 DATDIR = os.curdir
-SITE = 'Cihea'
 POLYGON_CIHEA = 'POLYGON((107.201 -6.910,107.367 -6.910,107.367 -6.750,107.201 -6.750,107.201 -6.910))' # Cihea
 POLYGON_BOJONGSOANG = 'POLYGON((107.54 -7.04,107.75 -7.04,107.75 -6.95,107.54 -6.95,107.54 -7.04))' # Bojongsoang
 RESOLUTION = 10 # m
@@ -27,7 +26,7 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inp_fnam',default=None,help='Input file name (%(default)s)')
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Output data directory (%(default)s)')
-parser.add_argument('--site',default=SITE,help='Site name for preset coordinates (%(default)s)')
+parser.add_argument('--site',default=None,help='Site name for preset coordinates (%(default)s)')
 parser.add_argument('--polygon',default=None,help='Polygon of ROI in WKT format (%(default)s)')
 parser.add_argument('-r','--resolution',default=RESOLUTION,type=int,help='Spatial resolution in m (%(default)s)')
 parser.add_argument('-G','--geotiff',default=False,action='store_true',help='GeoTiff mode (%(default)s)')
