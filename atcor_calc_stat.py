@@ -140,6 +140,8 @@ for year in data_years:
         src_data.append(tmp_data[tmp_indx])
         cln_data.append(tmp_data[cln_indx])
         src_dtim.append(d)
+if len(src_data) < 1:
+    raise IOError('No indices data for process.')
 src_data = np.array(src_data) # NTIM,NBAND,NY,NX
 cln_data = np.array(cln_data) # NTIM,NY,NX
 src_dtim = np.array(src_dtim)
