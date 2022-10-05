@@ -292,7 +292,7 @@ for iband,param in enumerate(args.param):
                         ys.append(ym)
             xs = np.array(xs)
             ys = np.array(ys)
-            if xs.size < 2:
+            if (xs.size < 2) or np.all(xs == 0.0):
                 result = [np.nan,np.nan]
                 calc_y = np.array([])
                 r_value = np.nan
