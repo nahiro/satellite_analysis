@@ -300,12 +300,20 @@ for iband,param in enumerate(args.param):
                 cr_error = np.nan
                 rms_value = np.nan
             else:
-                result = np.polyfit(xs,ys,1)
-                calc_y = data_x*result[0]+result[1]
-                r_value = np.corrcoef(data_x,data_y)[0,1]
-                cr_value = np.nanmean(data_b)
-                cr_error = np.nanstd(data_b)
-                rms_value = np.sqrt(np.square(calc_y-data_y).sum()/calc_y.size)
+                try:
+                    result = np.polyfit(xs,ys,1)
+                    calc_y = data_x*result[0]+result[1]
+                    r_value = np.corrcoef(data_x,data_y)[0,1]
+                    cr_value = np.nanmean(data_b)
+                    cr_error = np.nanstd(data_b)
+                    rms_value = np.sqrt(np.square(calc_y-data_y).sum()/calc_y.size)
+                except Exception:
+                    result = [np.nan,np.nan]
+                    calc_y = np.array([])
+                    r_value = np.nan
+                    cr_value = np.nan
+                    cr_error = np.nan
+                    rms_value = np.nan
         number.append(calc_y.size)
         corcoef.append(r_value)
         cr_mean.append(cr_value)
