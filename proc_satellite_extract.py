@@ -13,6 +13,7 @@ proc_extract.pnams.append('event_fnam')
 proc_extract.pnams.append('event_dates')
 proc_extract.pnams.append('data_select')
 proc_extract.pnams.append('spec_date')
+proc_estimate.pnams.append('atcor_flag')
 proc_extract.params['gis_fnam'] = 'Polygon File'
 proc_extract.params['obs_src'] = 'Observation Source'
 proc_extract.params['obs_fnam'] = 'Observation File'
@@ -23,6 +24,7 @@ proc_extract.params['event_fnam'] = 'Event Date File'
 proc_extract.params['event_dates'] = 'Event Dates'
 proc_extract.params['data_select'] = 'Data Selection Criteria'
 proc_extract.params['spec_date'] = 'Specific Date'
+proc_estimate.params['atcor_flag'] = 'Atmospheric Correction'
 proc_extract.param_types['gis_fnam'] = 'string'
 proc_extract.param_types['obs_src'] = 'string_select'
 proc_extract.param_types['obs_fnam'] = 'string'
@@ -33,6 +35,7 @@ proc_extract.param_types['event_fnam'] = 'string'
 proc_extract.param_types['event_dates'] = 'date_list'
 proc_extract.param_types['data_select'] = 'string_select'
 proc_extract.param_types['spec_date'] = 'date'
+proc_estimate.param_types['atcor_flag'] = 'boolean'
 proc_extract.param_range['i_sheet'] = (1,100)
 proc_extract.param_range['epsg'] = (1,100000)
 proc_extract.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
@@ -45,6 +48,7 @@ proc_extract.defaults['event_fnam'] = 'phenology.csv'
 proc_extract.defaults['event_dates'] = ['','','','']
 proc_extract.defaults['data_select'] = 'Specific Interpolated Data'
 proc_extract.defaults['spec_date'] = ''
+proc_estimate.defaults['atcor_flag'] = True
 proc_extract.list_sizes['obs_src'] = 2
 proc_extract.list_sizes['event_dates'] = 4
 proc_extract.list_sizes['data_select'] = 2
@@ -61,6 +65,7 @@ proc_extract.input_types['event_fnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
 proc_extract.input_types['data_select'] = 'string_select'
 proc_extract.input_types['spec_date'] = 'date'
+proc_estimate.input_types['atcor_flag'] = 'boolean'
 proc_extract.flag_check['event_fnam'] = False
 proc_extract.flag_check['obs_fnam'] = False
 proc_extract.depend_proc['event_fnam'] = ['phenology']

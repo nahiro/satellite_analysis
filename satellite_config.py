@@ -235,6 +235,7 @@ config_defaults.update({
 'extract.event_dates'                 : ['','','',''],
 'extract.data_select'                 : 'Specific Interpolated Data',
 'extract.spec_date'                   : '',
+'extract.atcor_flag'                  : True,
 'extract.python_path'                 : python_path,
 'extract.scr_dir'                     : scr_dir,
 'extract.middle_left_frame_width'     : 1000,
