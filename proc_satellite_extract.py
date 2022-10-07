@@ -11,6 +11,7 @@ proc_extract.pnams.append('epsg')
 proc_extract.pnams.append('major_flag')
 proc_extract.pnams.append('event_fnam')
 proc_extract.pnams.append('event_dates')
+proc_extract.pnams.append('event_flag')
 proc_extract.pnams.append('data_select')
 proc_extract.pnams.append('spec_date')
 proc_extract.pnams.append('atcor_flag')
@@ -22,6 +23,7 @@ proc_extract.params['epsg'] = 'EPSG'
 proc_extract.params['major_flag'] = 'Use Major Plot'
 proc_extract.params['event_fnam'] = 'Event Date File'
 proc_extract.params['event_dates'] = 'Event Dates'
+proc_extract.params['event_flag'] = 'Disable Event Date File'
 proc_extract.params['data_select'] = 'Data Selection Criteria'
 proc_extract.params['spec_date'] = 'Specific Date'
 proc_extract.params['atcor_flag'] = 'Atmospheric Correction'
@@ -33,6 +35,7 @@ proc_extract.param_types['epsg'] = 'int'
 proc_extract.param_types['major_flag'] = 'boolean'
 proc_extract.param_types['event_fnam'] = 'string'
 proc_extract.param_types['event_dates'] = 'date_list'
+proc_extract.param_types['event_flag'] = 'boolean'
 proc_extract.param_types['data_select'] = 'string_select'
 proc_extract.param_types['spec_date'] = 'date'
 proc_extract.param_types['atcor_flag'] = 'boolean'
@@ -43,9 +46,10 @@ proc_extract.defaults['obs_src'] = 'Drone Analysis'
 proc_extract.defaults['obs_fnam'] = 'observation.csv'
 proc_extract.defaults['i_sheet'] = 1
 proc_extract.defaults['epsg'] = 32748
-proc_extract.defaults['major_flag'] = False
+proc_extract.defaults['major_flag'] = True
 proc_extract.defaults['event_fnam'] = 'phenology.csv'
 proc_extract.defaults['event_dates'] = ['','','','']
+proc_extract.defaults['event_flag'] = False
 proc_extract.defaults['data_select'] = 'Specific Interpolated Data'
 proc_extract.defaults['spec_date'] = ''
 proc_extract.defaults['atcor_flag'] = True
@@ -63,6 +67,7 @@ proc_extract.input_types['epsg'] = 'box'
 proc_extract.input_types['major_flag'] = 'boolean'
 proc_extract.input_types['event_fnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
+proc_extract.input_types['event_flag'] = 'boolean'
 proc_extract.input_types['data_select'] = 'string_select'
 proc_extract.input_types['spec_date'] = 'date'
 proc_extract.input_types['atcor_flag'] = 'boolean'
