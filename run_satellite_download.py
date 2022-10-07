@@ -28,6 +28,9 @@ class Download(Satellite_Process):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
+        netrc_dir = os.path.dirname(self.values['netrc_fnam'])
+        if not os.path.isdir(netrc_dir):
+            raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,netrc_dir))
 
         # Download Planting data
         itarg = self.list_labels['dflag'].index('planting')
@@ -42,9 +45,9 @@ class Download(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
                 command += ' --server "{}"'.format(self.values['server'])
                 command += ' --port "{}"'.format(self.values['port'])
-                command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                command += ' --srcdir {}'.format('{}/{}'.format(self.values['trans_path'],year))
-                command += ' --out_csv {}'.format(tmp_fnam)
+                command += ' --rcdir "{}"'.format(netrc_dir)
+                command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['trans_path'],year))
+                command += ' --out_csv "{}"'.format(tmp_fnam)
                 command += ' --max_layer 1'
                 try:
                     self.run_command(command,message='<<< Make Planting data list ({}) >>>'.format(ystr))
@@ -87,9 +90,9 @@ class Download(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
                 command += ' --server "{}"'.format(self.values['server'])
                 command += ' --port "{}"'.format(self.values['port'])
-                command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                command += ' --inp_list {}'.format(tmp_fnam)
-                command += ' --dstdir {}'.format(os.path.join(self.s1_data,'planting',ystr))
+                command += ' --rcdir "{}"'.format(netrc_dir)
+                command += ' --inp_list "{}"'.format(tmp_fnam)
+                command += ' --dstdir "{}"'.format(os.path.join(self.s1_data,'planting',ystr))
                 command += ' --verbose'
                 if self.values['oflag'][iflag]:
                     command += ' --overwrite'
@@ -116,9 +119,9 @@ class Download(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
                 command += ' --server "{}"'.format(self.values['server'])
                 command += ' --port "{}"'.format(self.values['port'])
-                command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                command += ' --srcdir {}'.format('{}/{}'.format(self.values['l2a_path'],year))
-                command += ' --out_csv {}'.format(tmp_fnam)
+                command += ' --rcdir "{}"'.format(netrc_dir)
+                command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['l2a_path'],year))
+                command += ' --out_csv "{}"'.format(tmp_fnam)
                 command += ' --max_layer 0'
                 try:
                     self.run_command(command,message='<<< Make Sentinel-2 L2A list ({}) >>>'.format(ystr))
@@ -159,9 +162,9 @@ class Download(Satellite_Process):
                 command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
                 command += ' --server "{}"'.format(self.values['server'])
                 command += ' --port "{}"'.format(self.values['port'])
-                command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                command += ' --inp_list {}'.format(tmp_fnam)
-                command += ' --dstdir {}'.format(os.path.join(self.s2_data,'L2A',ystr))
+                command += ' --rcdir "{}"'.format(netrc_dir)
+                command += ' --inp_list "{}"'.format(tmp_fnam)
+                command += ' --dstdir "{}"'.format(os.path.join(self.s2_data,'L2A',ystr))
                 command += ' --verbose'
                 if self.values['oflag'][iflag]:
                     command += ' --overwrite'
@@ -184,9 +187,9 @@ class Download(Satellite_Process):
                     command += ' {}'.format(os.path.join(self.scr_dir,'file_station_query.py'))
                     command += ' --server "{}"'.format(self.values['server'])
                     command += ' --port "{}"'.format(self.values['port'])
-                    command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                    command += ' --srcdir {}'.format('{}/{}'.format(self.values['{}_path'.format(targ)],year))
-                    command += ' --out_csv {}'.format(tmp_fnam)
+                    command += ' --rcdir "{}"'.format(netrc_dir)
+                    command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['{}_path'.format(targ)],year))
+                    command += ' --out_csv "{}"'.format(tmp_fnam)
                     command += ' --max_layer 0'
                     try:
                         self.run_command(command,message='<<< Make Sentinel-2 {} list ({}) >>>'.format(targ,ystr))
@@ -219,9 +222,9 @@ class Download(Satellite_Process):
                     command += ' {}'.format(os.path.join(self.scr_dir,'file_station_download_file.py'))
                     command += ' --server "{}"'.format(self.values['server'])
                     command += ' --port "{}"'.format(self.values['port'])
-                    command += ' --rcdir {}'.format(self.values['netrc_dir'])
-                    command += ' --inp_list {}'.format(tmp_fnam)
-                    command += ' --dstdir {}'.format(os.path.join(self.s2_data,targ,ystr))
+                    command += ' --rcdir "{}"'.format(netrc_dir)
+                    command += ' --inp_list "{}"'.format(tmp_fnam)
+                    command += ' --dstdir "{}"'.format(os.path.join(self.s2_data,targ,ystr))
                     command += ' --verbose'
                     if self.values['oflag'][iflag]:
                         command += ' --overwrite'

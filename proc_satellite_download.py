@@ -6,7 +6,7 @@ proc_download.proc_name = 'download'
 proc_download.proc_title = 'Download Data'
 proc_download.pnams.append('server')
 proc_download.pnams.append('port')
-proc_download.pnams.append('netrc_dir')
+proc_download.pnams.append('netrc_fnam')
 proc_download.pnams.append('trans_path')
 proc_download.pnams.append('l2a_path')
 proc_download.pnams.append('geocor_path')
@@ -20,7 +20,7 @@ proc_download.pnams.append('dflag')
 proc_download.pnams.append('oflag')
 proc_download.params['server'] = 'NAS Server'
 proc_download.params['port'] = 'NAS Port'
-proc_download.params['netrc_dir'] = 'Netrc Folder'
+proc_download.params['netrc_fnam'] = 'Netrc File'
 proc_download.params['trans_path'] = 'Planting on NAS'
 proc_download.params['l2a_path'] = 'Sentinel-2 L2A on NAS'
 proc_download.params['geocor_path'] = 'Sentinel-2 geocor on NAS'
@@ -34,7 +34,7 @@ proc_download.params['dflag'] = 'Download Flag'
 proc_download.params['oflag'] = 'Overwrite Flag'
 proc_download.param_types['server'] = 'string'
 proc_download.param_types['port'] = 'int'
-proc_download.param_types['netrc_dir'] = 'string'
+proc_download.param_types['netrc_fnam'] = 'string'
 proc_download.param_types['trans_path'] = 'string'
 proc_download.param_types['l2a_path'] = 'string'
 proc_download.param_types['geocor_path'] = 'string'
@@ -49,7 +49,7 @@ proc_download.param_types['oflag'] = 'boolean_list'
 proc_download.param_range['port'] = (1,1000000)
 proc_download.defaults['server'] = 'satreps-nas'
 proc_download.defaults['port'] = 443
-proc_download.defaults['netrc_dir'] = 'Home'
+proc_download.defaults['netrc_fnam'] = '.netrc'
 proc_download.defaults['trans_path'] = '/SATREPS/ipb/User/1_Spatial-information/Transplanting_date/Cihea/final/v1.4'
 proc_download.defaults['l2a_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/L2A'
 proc_download.defaults['geocor_path'] = '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/geocor'
@@ -67,7 +67,7 @@ proc_download.list_labels['dflag'] = ['planting','L2A','geocor','indices','parce
 proc_download.list_labels['oflag'] = ['planting','L2A','geocor','indices','parcel','atcor','interp','tentative_interp']
 proc_download.input_types['server'] = 'box'
 proc_download.input_types['port'] = 'box'
-proc_download.input_types['netrc_dir'] = 'ask_folder'
+proc_download.input_types['netrc_fnam'] = 'ask_file'
 proc_download.input_types['trans_path'] = 'box'
 proc_download.input_types['l2a_path'] = 'box'
 proc_download.input_types['geocor_path'] = 'box'

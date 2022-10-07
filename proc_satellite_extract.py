@@ -11,6 +11,7 @@ proc_extract.pnams.append('epsg')
 proc_extract.pnams.append('major_flag')
 proc_extract.pnams.append('event_fnam')
 proc_extract.pnams.append('event_dates')
+proc_extract.pnams.append('data_select')
 proc_extract.params['gis_fnam'] = 'Polygon File'
 proc_extract.params['obs_src'] = 'Observation Source'
 proc_extract.params['obs_fnam'] = 'Observation File'

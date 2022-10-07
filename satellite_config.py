@@ -23,7 +23,7 @@ if not os.path.isdir(top_dir):
     top_dir = os.path.join(HOME,'Documents')
 python_path = sys.executable
 scr_dir = os.path.join(HOME,'SatelliteTool')
-netrc_dir = HOME
+netrc_fnam = os.path.join(HOME,'.netrc')
 cnf_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 now_dtim = datetime.now()
 main_start_date = (now_dtim-timedelta(days=300)).strftime('%Y-%m%b-%d')
@@ -83,7 +83,7 @@ config_defaults.update({
 #----------- download -----------
 'download.server'                     : 'satreps-nas',
 'download.port'                       : 443,
-'download.netrc_dir'                  : netrc_dir,
+'download.netrc_fnam'                 : netrc_fnam,
 'download.trans_path'                 : '/SATREPS/ipb/User/1_Spatial-information/Transplanting_date/Cihea/final/v1.4',
 'download.l2a_path'                   : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/L2A',
 'download.geocor_path'                : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/geocor',
