@@ -35,6 +35,7 @@ parser.add_argument('--buffer',default=None,type=float,help='Buffer distance (%(
 parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--plant',default=None,help='Planting date in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--peak',default=None,help='Peak date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--head',default=None,help='Heading date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--assess',default=None,help='Assessment date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--harvest',default=None,help='Harvesting date in the format YYYYMMDD (%(default)s)')
@@ -55,11 +56,14 @@ parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
 args_d = {}
-args_d['peak_d'] = None
 if args.plant is not None:
     args_d['plant_d'] = date2num(datetime.strptime(args.plant,'%Y%m%d'))
 else:
     args_d['plant_d'] = None
+if args.peak is not None:
+    args_d['peak_d'] = date2num(datetime.strptime(args.peak,'%Y%m%d'))
+else:
+    args_d['peak_d'] = None
 if args.head is not None:
     args_d['head_d'] = date2num(datetime.strptime(args.head,'%Y%m%d'))
 else:
