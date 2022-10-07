@@ -112,6 +112,10 @@ def set_title(pnam):
         modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    proc_pnam = 'spec_date'
+    modules[proc].values[proc_pnam] = dstr
+    if modules[proc].center_var is not None:
+        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # formula
     proc = 'formula'
     proc_pnam = 'inp_fnams'

@@ -233,6 +233,8 @@ config_defaults.update({
 'extract.major_flag'                  : True,
 'extract.event_fnam'                  : os.path.join(main_s2_analysis,'phenology','phenology.csv'),
 'extract.event_dates'                 : ['','','',''],
+'extract.data_select'                 : 'Specific Interpolated Data',
+'extract.spec_date'                   : '',
 'extract.python_path'                 : python_path,
 'extract.scr_dir'                     : scr_dir,
 'extract.middle_left_frame_width'     : 1000,
