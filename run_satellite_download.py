@@ -173,8 +173,9 @@ class Download(Satellite_Process):
                     os.remove(tmp_fnam)
 
         # Download Sentinel-2 geocor/indices/parcel/atcor/interp/tentative_interp
-        for i,(targ,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
-                                           ['.tif','.tif','.npz','.npz','.npz','npz'])):
+        for i,(targ,path,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
+                                                ['geocor','indices','parcel','atcor','interp','tentative'],
+                                                ['.tif','.tif','.npz','.npz','.npz','npz'])):
             itarg = self.list_labels['dflag'].index(targ)
             iflag = self.list_labels['oflag'].index(targ)
             if self.values['dflag'][itarg]:
@@ -188,7 +189,7 @@ class Download(Satellite_Process):
                     command += ' --server "{}"'.format(self.values['server'])
                     command += ' --port "{}"'.format(self.values['port'])
                     command += ' --rcdir "{}"'.format(netrc_dir)
-                    command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['{}_path'.format(targ)],year))
+                    command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['{}_path'.format(path)],year))
                     command += ' --out_csv "{}"'.format(tmp_fnam)
                     command += ' --max_layer 0'
                     try:

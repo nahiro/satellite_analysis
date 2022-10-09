@@ -235,7 +235,7 @@ config_defaults.update({
 'extract.spec_date'                   : '',
 'extract.atcor_flag'                  : True,
 'extract.event_fnam'                  : os.path.join(main_s2_analysis,'phenology','phenology.csv'),
-'extract.event_dates'                 : ['','','',''],
+'extract.event_dates'                 : ['','','','',''],
 'extract.event_flag'                  : False,
 'extract.python_path'                 : python_path,
 'extract.scr_dir'                     : scr_dir,
