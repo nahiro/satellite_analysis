@@ -173,9 +173,9 @@ class Download(Satellite_Process):
                     os.remove(tmp_fnam)
 
         # Download Sentinel-2 geocor/indices/parcel/atcor/interp/tentative_interp
-        for i,(targ,path,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
+        for i,(targ,pnam,enam) in enumerate(zip(['geocor','indices','parcel','atcor','interp','tentative_interp'],
                                                 ['geocor','indices','parcel','atcor','interp','tentative'],
-                                                ['.tif','.tif','.npz','.npz','.npz','npz'])):
+                                                ['geocor\S*\.\S*','indices\S*\.\S*','parcel\S*\.\S*','\S*\.\S*','interp\S*\.\S*','interp\S*\.\S*'])):
             itarg = self.list_labels['dflag'].index(targ)
             iflag = self.list_labels['oflag'].index(targ)
             if self.values['dflag'][itarg]:
@@ -189,7 +189,7 @@ class Download(Satellite_Process):
                     command += ' --server "{}"'.format(self.values['server'])
                     command += ' --port "{}"'.format(self.values['port'])
                     command += ' --rcdir "{}"'.format(netrc_dir)
-                    command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['{}_path'.format(path)],year))
+                    command += ' --srcdir "{}"'.format('{}/{}'.format(self.values['{}_path'.format(pnam)],year))
                     command += ' --out_csv "{}"'.format(tmp_fnam)
                     command += ' --max_layer 0'
                     try:
@@ -206,7 +206,7 @@ class Download(Satellite_Process):
                     for index,row in df.iterrows():
                         #fileName,nLayer,fileSize,modifiedDate,folderName,md5Checksum
                         src_fnam = row['fileName']
-                        m = re.search('^('+'\d'*8+')_'+targ+enam+'$',src_fnam)
+                        m = re.search('^('+'\d'*8+')_'+enam,src_fnam)
                         if not m:
                             continue
                         dstr = m.group(1)
