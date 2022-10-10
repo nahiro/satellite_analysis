@@ -395,7 +395,7 @@ class Geocor(Satellite_Process):
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_geocor.py'))
                 command += ' --img_fnam "{}"'.format(gnam)
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_geocor.pdf'.format(dstr)))
-                command += ' --ax1_title'.format(dstr)
+                command += ' --ax1_title "{}"'.format(dstr)
                 command += ' --batch'
                 self.run_command(command,message='<<< Draw figure for {} >>>'.format(dstr))
 
