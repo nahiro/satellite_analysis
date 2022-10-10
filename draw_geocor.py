@@ -21,6 +21,8 @@ S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n
 SC_BAND = 'quality_scene_classification'
 
 # Default values
+FACT = 1.5
+GAMMA = 2.2
 FIGNAM = 'geocor.pdf'
 
 # Read options
@@ -29,6 +31,8 @@ parser.add_argument('-f','--img_fnam',default=None,help='Image file name (%(defa
 parser.add_argument('-s','--shp_fnam',default=None,help='Shape file name (%(default)s)')
 parser.add_argument('-F','--fignam',default=FIGNAM,help='Output figure name (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title (%(default)s)')
+parser.add_argument('-S','--fact',default=FACT,type=float,help='Scale factor of output figure for debug (%(default)s)')
+parser.add_argument('-G','--gamma',default=GAMMA,type=float,help='Gamma factor of output figure for debug (%(default)s)')
 parser.add_argument('-D','--fig_dpi',default=None,type=int,help='DPI of figure for debug (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -63,11 +67,11 @@ b = src_data[b_indx].astype(np.float32)
 g = src_data[g_indx].astype(np.float32)
 r = src_data[r_indx].astype(np.float32)
 scl = src_data[scl_indx].astype(np.float32)
-fact = 1.5e-4
+fact = args.fact*1.0e-4
 b = (b*fact).clip(0,1)
 g = (g*fact).clip(0,1)
 r = (r*fact).clip(0,1)
-rgb = np.power(np.dstack((r,g,b)),1.0/2.2)
+rgb = np.power(np.dstack((r,g,b)),1.0/args.gamma)
 fig.clear()
 axs = plt.subplot(111)
 axs.xaxis.set_ticks([])
@@ -82,7 +86,7 @@ if args.shp_fnam is not None:
 axs.set_xlim(src_xmin,src_xmax)
 axs.set_ylim(src_ymin,src_ymax)
 if args.ax1_title is not None:
-    axs.set_title('{}'.format(args.ax1_title))
+    axs.set_title('{} (RGB)'.format(args.ax1_title))
 if args.fig_dpi is None:
     plt.savefig(pdf,format='pdf')
 else:
@@ -108,7 +112,7 @@ cax.set_visible(False)
 fig.canvas.draw()
 axs2 = fig.add_axes(cax.get_position().bounds)
 plt.colorbar(im,cax=axs2,extend='both',boundaries=[-10]+list(bounds)+[10],extendfrac='auto',ticks=bounds+0.5)
-axs2.set_ylabel('Label')
+#axs2.set_ylabel('Label')
 axs2.yaxis.set_label_coords(3.0,0.5)
 axs.set_xlim(src_xmin,src_xmax)
 axs.set_ylim(src_ymin,src_ymax)
@@ -116,7 +120,7 @@ if args.shp_fnam is not None:
     shp = shape(shapefile.Reader(args.shp_fnam).shapes())
     axs.add_patch(plt.Polygon(shp.points,edgecolor='k',facecolor='none',linestyle='-',alpha=1.0,linewidth=0.02))
 if args.ax1_title is not None:
-    axs.set_title('{}'.format(args.ax1_title))
+    axs.set_title('{} (Scene Classification)'.format(args.ax1_title))
 if args.fig_dpi is None:
     plt.savefig(pdf,format='pdf')
 else:
