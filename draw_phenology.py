@@ -3,6 +3,8 @@ import os
 import re
 import numpy as np
 import geopandas as gpd
+from datetime import datetime
+from matplotlib.dates import date2num,num2date
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -85,6 +87,36 @@ for iband,param in enumerate(args.param):
         if np.isnan(zmax):
             zmax = 1.0
     zdif = zmax-zmin
+    values = []
+    labels = []
+    ticks = []
+    ds = zdif/365
+    for y in range(num2date(zmin).year,num2date(zmax).year+1):
+        if ds > 2.0:
+            for m in range(1,13,3):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        elif ds > 1.0:
+            for m in range(1,13,2):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        else:
+            for m in range(1,13,1):
+                for day in [1]:
+                    d = datetime(y,m,day)
+                    values.append(date2num(d))
+                    labels.append(d.strftime('%m/%d'))
+                for day in [10,20]:
+                    d = datetime(y,m,day)
+                    ticks.append(date2num(d))
     indices.plot(column=param,ax=ax1,vmin=zmin,vmax=zmax,cmap=cm.jet)
     im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
     divider = make_axes_locatable(ax1)
@@ -102,6 +134,9 @@ for iband,param in enumerate(args.param):
     else:
         ax2 = plt.colorbar(im,cax=cax).ax
     ax2.minorticks_on()
+    ax2.yaxis.set_major_locator(plt.FixedLocator(values))
+    ax2.yaxis.set_major_formatter(plt.FixedFormatter(labels))
+    ax2.yaxis.set_minor_locator(plt.FixedLocator(ticks))
     ax2.set_ylabel('{}'.format(param))
     ax2.yaxis.set_label_coords(5.5,0.5)
     fig_xmin,fig_ymin,fig_xmax,fig_ymax = indices.total_bounds
