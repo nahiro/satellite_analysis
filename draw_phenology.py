@@ -62,6 +62,23 @@ if args.fignam is None:
     if args.fignam is None:
         args.fignam = bnam+'_phenology.pdf'
 
+def calc_mean(x,emax=2.0,nrpt=10,nmin=1,selected=None):
+    if selected is not None:
+        indx = selected.copy()
+    else:
+        indx = np.where(np.isfinite(x))[0]
+    for n in range(nrpt):
+        x_selected = x[indx]
+        i_selected = indx.copy()
+        x_center = x_selected.mean()
+        r_selected = np.abs(x_selected-x_center)
+        rmse = np.sqrt(np.mean(np.square(x_selected-x_center)))
+        cnd = (r_selected < rmse*emax)
+        indx = indx[cnd]
+        if (indx.size == x_selected.size) or (indx.size < nmin):
+            break
+    return x_center,rmse,x_selected.size,i_selected
+
 indices = gpd.read_file(args.shp_fnam)
 if not args.batch:
     plt.interactive(True)
@@ -74,16 +91,19 @@ for iband,param in enumerate(args.param):
     ax1 = plt.subplot(111)
     ax1.set_xticks([])
     ax1.set_yticks([])
+    vavg,vstd,n,selected_indx = calc_mean(data,emax=3.0)
     if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
         zmin = ax1_zmin[param]
     else:
-        zmin = np.nanmin(data)
+        #zmin = np.nanmin(data)
+        zmin = data[selected_indx].min()
         if np.isnan(zmin):
             zmin = 0.0
     if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
         zmax = ax1_zmax[param]
     else:
-        zmax = np.nanmax(data)
+        #zmax = np.nanmax(data)
+        zmax = data[selected_indx].max()
         if np.isnan(zmax):
             zmax = 1.0
     zdif = zmax-zmin
@@ -110,13 +130,17 @@ for iband,param in enumerate(args.param):
                 ticks.append(date2num(d))
         else:
             for m in range(1,13,1):
-                for day in [1]:
+                for day in [1,15]:
                     d = datetime(y,m,day)
                     values.append(date2num(d))
                     labels.append(d.strftime('%m/%d'))
-                for day in [10,20]:
+                for day in [5,10,20,25]:
                     d = datetime(y,m,day)
                     ticks.append(date2num(d))
+    if args.ax1_title is not None:
+        ax1.set_title('{} ({:%Y%m%d}-{:%Y%m%d})'.format(args.ax1_title,num2date(zmin),num2date(zmax)))
+    else:
+        ax1.set_title('{:%Y/%m/%d} $-$ {:%Y/%m/%d}'.format(num2date(zmin),num2date(zmax)))
     indices.plot(column=param,ax=ax1,vmin=zmin,vmax=zmax,cmap=cm.jet)
     im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
     divider = make_axes_locatable(ax1)
@@ -137,13 +161,11 @@ for iband,param in enumerate(args.param):
     ax2.yaxis.set_major_locator(plt.FixedLocator(values))
     ax2.yaxis.set_major_formatter(plt.FixedFormatter(labels))
     ax2.yaxis.set_minor_locator(plt.FixedLocator(ticks))
-    ax2.set_ylabel('{}'.format(param))
+    ax2.set_ylabel('{} (MM/DD)'.format(param))
     ax2.yaxis.set_label_coords(5.5,0.5)
     fig_xmin,fig_ymin,fig_xmax,fig_ymax = indices.total_bounds
     ax1.set_xlim(fig_xmin,fig_xmax)
     ax1.set_ylim(fig_ymin,fig_ymax)
-    if args.ax1_title is not None:
-        ax1.set_title(args.ax1_title)
     plt.savefig(pdf,format='pdf')
     if not args.batch:
         plt.draw()
