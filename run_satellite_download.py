@@ -82,6 +82,7 @@ class Download(Satellite_Process):
                     df.loc[index,'nLayer'] = 0
                     inds.append(index)
                 if len(inds) < 1:
+                    self.print_message('No planting data for download ({})'.format(ystr),print_time=False)
                     continue
                 tmp_fnam = self.mktemp(suffix='.csv')
                 df.loc[inds].to_csv(tmp_fnam,index=False)
@@ -96,7 +97,7 @@ class Download(Satellite_Process):
                 command += ' --verbose'
                 if self.values['oflag'][iflag]:
                     command += ' --overwrite'
-                self.run_command(command,message='<<< Download Planting data ({}) >>>'.format(ystr))
+                self.run_command(command,message='<<< Download planting data ({}) >>>'.format(ystr))
                 if os.path.exists(tmp_fnam):
                     os.remove(tmp_fnam)
 
@@ -154,6 +155,7 @@ class Download(Satellite_Process):
                             continue
                     inds.append(index)
                 if len(inds) < 1:
+                    self.print_message('No Sentinel-2 L2A data for download ({})'.format(ystr),print_time=False)
                     continue
                 tmp_fnam = self.mktemp(suffix='.csv')
                 df.loc[inds].to_csv(tmp_fnam,index=False)
@@ -215,6 +217,7 @@ class Download(Satellite_Process):
                             continue
                         inds.append(index)
                     if len(inds) < 1:
+                        self.print_message('No Sentinel-2 {} data for download ({})'.format(targ,ystr),print_time=False)
                         continue
                     tmp_fnam = self.mktemp(suffix='.csv')
                     df.loc[inds].to_csv(tmp_fnam,index=False)
