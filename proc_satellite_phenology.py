@@ -3,7 +3,7 @@ from run_satellite_phenology import Phenology
 
 proc_phenology = Phenology()
 proc_phenology.proc_name = 'phenology'
-proc_phenology.proc_title = 'Estimate Event Dates'
+proc_phenology.proc_title = 'Estimate Growth Stage'
 proc_phenology.pnams.append('gis_fnam')
 proc_phenology.pnams.append('mask_paddy')
 proc_phenology.pnams.append('mask_parcel')
