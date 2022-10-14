@@ -39,9 +39,9 @@ if not os.path.exists(main_browse_image):
     main_browse_image = os.path.join(HOME,'Pictures','browse.png')
 gis_fnam = os.path.join(top_dir,'Shapefile','All_area_polygon_20210914','All_area_polygon_20210914.shp')
 ref_fnam = os.path.join(top_dir,'WorldView','wv2_180629_mul.tif')
-mask_paddy = os.path.join(main_s1_data,'paddy_mask.tif')
 mask_parcel = os.path.join(main_s2_data,'parcel_mask.tif')
 mask_studyarea = os.path.join(main_s2_data,'studyarea_mask.tif')
+mask_paddy = os.path.join(main_s1_data,'paddy_mask.tif')
 
 # Set defaults
 config_defaults = dict(os.environ)
@@ -166,8 +166,8 @@ config_defaults.update({
 'atcor.geocor_dir'                    : os.path.join(main_s2_data,'geocor'),
 'atcor.indices_dir'                   : os.path.join(main_s2_data,'indices'),
 'atcor.gis_fnam'                      : gis_fnam,
-'atcor.mask_studyarea'                : mask_studyarea,
 'atcor.mask_parcel'                   : mask_parcel,
+'atcor.mask_studyarea'                : mask_studyarea,
 'atcor.out_refs'                      : [True,True,True,True,True,True,True,True,True,True],
 'atcor.atcor_refs'                    : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_nrefs'                     : [True,True,True,True,True,True,True,True,True,True],
@@ -203,8 +203,8 @@ config_defaults.update({
 'interp.middle_left_frame_width'      : 1000,
 #----------- phenology -----------
 'phenology.gis_fnam'                  : gis_fnam,
-'phenology.mask_paddy'                : mask_paddy,
 'phenology.mask_parcel'               : mask_parcel,
+'phenology.mask_paddy'                : mask_paddy,
 'phenology.trans_fnam'                : '',
 'phenology.head_fnam'                 : '',
 'phenology.harvest_fnam'              : '',
