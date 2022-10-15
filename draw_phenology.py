@@ -140,7 +140,7 @@ for iband,param in enumerate(args.param):
     if args.ax1_title is not None:
         ax1.set_title('{} ({:%Y%m%d}-{:%Y%m%d})'.format(args.ax1_title,num2date(zmin),num2date(zmax)))
     else:
-        ax1.set_title('{:%Y/%m/%d} $-$ {:%Y/%m/%d}'.format(num2date(zmin),num2date(zmax)))
+        ax1.set_title('{:%Y%m%d} $-$ {:%Y%m%d}'.format(num2date(zmin),num2date(zmax)))
     indices.plot(column=param,ax=ax1,vmin=zmin,vmax=zmax,cmap=cm.jet)
     im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
     divider = make_axes_locatable(ax1)
