@@ -443,4 +443,10 @@ for proc in pnams:
     modules[proc].s2_data = s2_data
     modules[proc].s2_analysis = s2_analysis
     modules[proc].browse_image = browse_image
+    for pnam in ['ax1_zmin','ax1_zmax','ax1_zstp','fig_dpi',
+                 'zmin_refs','zmin_nrefs','zmin_inds',
+                 'zmax_refs','zmax_nrefs','zmax_inds',
+                 'zstp_refs','zstp_nrefs','zstp_inds']:
+        if hasattr(modules[proc],pnam):
+            setattr(modules[proc],pnam,eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan')))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))
