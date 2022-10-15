@@ -9,9 +9,15 @@ class Parcel(Satellite_Process):
 
     def __init__(self):
         super().__init__()
-        self.ax1_zmin = None
-        self.ax1_zmax = None
-        self.ax1_zstp = None
+        self.zmin_refs = None
+        self.zmax_refs = None
+        self.zstp_refs = None
+        self.zmin_nrefs = None
+        self.zmax_nrefs = None
+        self.zstp_nrefs = None
+        self.zmin_inds = None
+        self.zmax_inds = None
+        self.zstp_inds = None
         self.fig_dpi = None
         self._freeze()
 
@@ -136,15 +142,33 @@ class Parcel(Satellite_Process):
                 command += ' --cloud_band {}'.format(self.values['cloud_band'])
                 command += ' --cloud_thr {}'.format(self.values['cloud_thr'])
                 command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_parcel.pdf'.format(dstr)))
-                #for value,flag in zip(self.ax1_zmin[2],self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zmin="{}"'.format(value)
-                #for value,flag in zip(self.ax1_zmax[2],self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zmax="{}"'.format(value)
-                #for value,flag in zip(self.ax1_zstp[2],self.values['out_refs']):
-                #    if flag:
-                #        command += ' --ax1_zstp="{}"'.format(value)
+                for value,flag in zip(self.zmin_refs,self.values['out_refs']):
+                    if flag:
+                        command += ' --ax1_zmin="{}"'.format(value)
+                for value,flag in zip(self.zmin_nrefs,self.values['out_nrefs']):
+                    if flag:
+                        command += ' --ax1_zmin="{}"'.format(value)
+                for value,flag in zip(self.zmin_inds,self.values['out_inds']):
+                    if flag:
+                        command += ' --ax1_zmin="{}"'.format(value)
+                for value,flag in zip(self.zmax_refs,self.values['out_refs']):
+                    if flag:
+                        command += ' --ax1_zmax="{}"'.format(value)
+                for value,flag in zip(self.zmax_nrefs,self.values['out_nrefs']):
+                    if flag:
+                        command += ' --ax1_zmax="{}"'.format(value)
+                for value,flag in zip(self.zmax_inds,self.values['out_inds']):
+                    if flag:
+                        command += ' --ax1_zmax="{}"'.format(value)
+                for value,flag in zip(self.zstp_refs,self.values['out_refs']):
+                    if flag:
+                        command += ' --ax1_zstp="{}"'.format(value)
+                for value,flag in zip(self.zstp_nrefs,self.values['out_nrefs']):
+                    if flag:
+                        command += ' --ax1_zstp="{}"'.format(value)
+                for value,flag in zip(self.zstp_inds,self.values['out_inds']):
+                    if flag:
+                        command += ' --ax1_zstp="{}"'.format(value)
                 command += ' --ax1_title "{}"'.format(dstr)
                 command += ' --use_index'
                 command += ' --remove_nan'
