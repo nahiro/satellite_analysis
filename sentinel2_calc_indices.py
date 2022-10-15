@@ -18,7 +18,10 @@ PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'NDVI','GNDVI','RGI','NRGI']
 S2_PARAM = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
 S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
-BAND_NAME = {'b':'Blue','g':'Green','r':'Red','e1':'RedEdge1','e2':'RedEdge2','e3':'RedEdge3','n1':'NIR1','n2':'NIR2','s1':'SWIR1','s2':'SWIR2'}
+BAND_NAME = {'Sb':'Blue','Sg':'Green','Sr':'Red','Se1':'RedEdge1','Se2':'RedEdge2','Se3':'RedEdge3','Sn1':'NIR1','Sn2':'NIR2','Ss1':'SWIR1','Ss2':'SWIR2',
+             'Nb':'Normalized Blue','Ng':'Normalized Green','Nr':'Normalized Red','Ne1':'Normalized RedEdge1','Ne2':'Normalized RedEdge2','Ne3':'Normalized RedEdge3',
+             'Nn1':'Normalized NIR1','Nn2':'Normalized NIR2','Ns1':'Normalized SWIR1','Ns2':'Normalized SWIR2',
+             'NDVI':'NDVI','GNDVI':'GNDVI','RGI':'RGI','NRGI':'NRGI'}
 
 # Default values
 PARAM = ['Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2','NDVI','GNDVI','RGI','NRGI']
@@ -87,12 +90,21 @@ inp_band = inp_band[indx]
 if args.ax1_zmin is not None:
     while len(args.ax1_zmin) < len(args.param):
         args.ax1_zmin.append(args.ax1_zmin[-1])
+    ax1_zmin = {}
+    for i,param in enumerate(args.param):
+        ax1_zmin[param] = args.ax1_zmin[i]
 if args.ax1_zmax is not None:
     while len(args.ax1_zmax) < len(args.param):
         args.ax1_zmax.append(args.ax1_zmax[-1])
+    ax1_zmax = {}
+    for i,param in enumerate(args.param):
+        ax1_zmax[param] = args.ax1_zmax[i]
 if args.ax1_zstp is not None:
     while len(args.ax1_zstp) < len(args.param):
         args.ax1_zstp.append(args.ax1_zstp[-1])
+    ax1_zstp = {}
+    for i,param in enumerate(args.param):
+        ax1_zstp[param] = args.ax1_zstp[i]
 if args.src_geotiff is None:
     raise ValueError('Error, src_geotiff is not specified.')
 elif args.dst_geotiff is None or args.fignam is None:
@@ -172,39 +184,32 @@ norm = 0.0
 for band in args.norm_band:
     norm += src_data[src_indx[band]]
 norm = len(args.norm_band)/norm
-pnams = []
 for iband,param in enumerate(args.param):
     if param == 'NDVI':
         red = src_data[src_indx['r']]
         nir = src_data[src_indx['n1']]
-        pnams.append(param)
         dst_data[iband] = ((nir-red)/(nir+red))
     elif param == 'GNDVI':
         green = src_data[src_indx['g']]
         nir = src_data[src_indx['n1']]
-        pnams.append(param)
         dst_data[iband] = ((nir-green)/(nir+green))
     elif param == 'RGI':
         green = src_data[src_indx['g']]
         red = src_data[src_indx[args.rgi_red_band]]
-        pnams.append(param)
         dst_data[iband] = (green*red)
     elif param == 'NRGI':
         green = src_data[src_indx['g']]
         red = src_data[src_indx[args.rgi_red_band]]
-        pnams.append(param)
         dst_data[iband] = (green*norm*red*norm)
     elif param[0] == 'S':
         if len(param) in [2,3]:
             band = param[1:]
-            pnams.append('{}'.format(BAND_NAME[band]))
             dst_data[iband] = src_data[src_indx[band]]
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
     elif param[0] == 'N':
         if len(param) in [2,3]:
             band = param[1:]
-            pnams.append('Normalized {}'.format(BAND_NAME[band]))
             dst_data[iband] = src_data[src_indx[band]]*norm
         else:
             raise ValueError('Error, len(param)={} >>> {}'.format(len(param),param))
@@ -232,51 +237,51 @@ if args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.85)
     pdf = PdfPages(args.fignam)
-    for i,param in enumerate(args.param):
+    for iband,param in enumerate(args.param):
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
         ax1.set_yticks([])
         if args.fig_dpi is None:
-            if args.ax1_zmin is not None and args.ax1_zmax is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],vmax=args.ax1_zmax[i],cmap=cm.jet,interpolation='none')
-            elif args.ax1_zmin is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],cmap=cm.jet,interpolation='none')
-            elif args.ax1_zmax is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=args.ax1_zmax[i],cmap=cm.jet,interpolation='none')
+            if args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],vmax=ax1_zmax[param],cmap=cm.jet,interpolation='none')
+            elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],cmap=cm.jet,interpolation='none')
+            elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=ax1_zmax[param],cmap=cm.jet,interpolation='none')
             else:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet,interpolation='none')
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet,interpolation='none')
         else:
-            if args.ax1_zmin is not None and args.ax1_zmax is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],vmax=args.ax1_zmax[i],cmap=cm.jet)
-            elif args.ax1_zmin is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=args.ax1_zmin[i],cmap=cm.jet)
-            elif args.ax1_zmax is not None:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=args.ax1_zmax[i],cmap=cm.jet)
+            if args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],vmax=ax1_zmax[param],cmap=cm.jet)
+            elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],cmap=cm.jet)
+            elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=ax1_zmax[param],cmap=cm.jet)
             else:
-                im = ax1.imshow(dst_data[i],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet)
+                im = ax1.imshow(dst_data[iband],extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet)
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right',size='5%',pad=0.05)
-        if args.ax1_zstp is not None:
-            if args.ax1_zmin is not None:
-                zmin = (np.floor(args.ax1_zmin[i]/args.ax1_zstp[i])-1.0)*args.ax1_zstp[i]
+        if args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
+            if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+                zmin = (np.floor(ax1_zmin[param]/ax1_zstp[param])-1.0)*ax1_zstp[param]
             else:
-                zmin = (np.floor(np.nanmin(dst_data[i])/args.ax1_zstp[i])-1.0)*args.ax1_zstp[i]
-            if args.ax1_zmax is not None:
-                zmax = args.ax1_zmax[i]+0.1*args.ax1_zstp[i]
+                zmin = (np.floor(np.nanmin(dst_data[iband])/ax1_zstp[param])-1.0)*ax1_zstp[param]
+            if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+                zmax = ax1_zmax[param]+0.1*ax1_zstp[param]
             else:
-                zmax = np.nanmax(dst_data[i])+0.1*args.ax1_zstp[i]
-            ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,args.ax1_zstp[i])).ax
+                zmax = np.nanmax(dst_data[iband])+0.1*ax1_zstp[param]
+            ax2 = plt.colorbar(im,cax=cax,ticks=np.arange(zmin,zmax,ax1_zstp[param])).ax
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
-        ax2.set_ylabel(pnams[i])
+        ax2.set_ylabel('{}'.format(BAND_NAME[param]))
         ax2.yaxis.set_label_coords(4.5,0.5)
         if args.remove_nan:
             src_indy,src_indx = np.indices(src_shape)
             src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
             src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
-            cnd = ~np.isnan(dst_data[i])
+            cnd = ~np.isnan(dst_data[iband])
             xp = src_xp[cnd]
             yp = src_yp[cnd]
             fig_xmin = xp.min()
