@@ -448,5 +448,7 @@ for proc in pnams:
                  'zmax_refs','zmax_nrefs','zmax_inds',
                  'zstp_refs','zstp_nrefs','zstp_inds']:
         if hasattr(modules[proc],pnam):
-            setattr(modules[proc],pnam,eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan')))
+            value = config[proc].get('{}.{}'.format(proc,pnam))
+            if value is not None:
+                setattr(modules[proc],pnam,eval(value.lower().replace('nan','np.nan')))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))
