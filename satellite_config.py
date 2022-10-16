@@ -94,7 +94,7 @@ config_defaults.update({
 'download.tentative_path'             : '/SATREPS/ipb/User/1_Spatial-information/Sentinel-2/Cihea/tentative_interp',
 'download.search_key'                 : '',
 'download.dflag'                      : [True,True,True,True,True,True,True,True],
-'download.oflag'                      : [False,False,False,False,False,False,False,False],
+'download.oflag'                      : [False,False,False,False,False,False,False,True],
 'download.python_path'                : python_path,
 'download.scr_dir'                    : scr_dir,
 'download.middle_left_frame_width'    : 1000,
