@@ -238,7 +238,7 @@ if args.inp_shp is not None and args.debug:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
         ax2.set_ylabel('{} Intensity (%)'.format(param))
-        ax2.yaxis.set_label_coords(5.5,0.5)
+        ax2.yaxis.set_label_coords(4.5,0.5)
         fig_xmin,fig_ymin,fig_xmax,fig_ymax = indices.total_bounds
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
