@@ -22,6 +22,7 @@ class Phenology(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         pref_dtim = datetime.strptime(self.values['trans_pref'],self.date_fmt)
+        trg_bnam = '{:%Y%m%d}_{:%Y%m%d}'.format(start_dtim,end_dtim)
         wrk_dir = os.path.join(self.s2_analysis,self.proc_name)
         if not os.path.exists(wrk_dir):
             os.makedirs(wrk_dir)
@@ -35,7 +36,7 @@ class Phenology(Satellite_Process):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
         # Select reference for planting
-        planting_ref = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting_ref.tif'.format(start_dtim,end_dtim))
+        planting_ref = os.path.join(self.s1_analysis,'planting','{}_planting_ref.tif'.format(trg_bnam))
         dnam = os.path.dirname(planting_ref)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
@@ -62,7 +63,7 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Select reference for planting >>>')
 
         # Calculate average for planting
-        planting_avg = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting_avg.tif'.format(start_dtim,end_dtim))
+        planting_avg = os.path.join(self.s1_analysis,'planting','{}_planting_avg.tif'.format(trg_bnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_average_reference.py'))
         command += ' --ref_fnam "{}"'.format(planting_ref)
@@ -72,7 +73,7 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Calculate average for planting >>>')
 
         # Select planting
-        planting_sel = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.tif'.format(start_dtim,end_dtim))
+        planting_sel = os.path.join(self.s1_analysis,'planting','{}_planting.tif'.format(trg_bnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
         command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
@@ -95,9 +96,9 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Select planting >>>')
 
         # Parcellate planting
-        planting_csv = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
-        planting_shp = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.shp'.format(start_dtim,end_dtim))
-        planting_pdf = os.path.join(self.s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.pdf'.format(start_dtim,end_dtim))
+        planting_csv = os.path.join(self.s1_analysis,'planting','{}_planting.csv'.format(trg_bnam))
+        planting_shp = os.path.join(self.s1_analysis,'planting','{}_planting.shp'.format(trg_bnam))
+        planting_pdf = os.path.join(self.s1_analysis,'planting','{}_planting.pdf'.format(trg_bnam))
         command = self.python_path
         command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
@@ -114,9 +115,9 @@ class Phenology(Satellite_Process):
         self.run_command(command,message='<<< Parcellate planting >>>')
 
         # Calculate assessment date
-        assess_csv = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
-        assess_shp = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.shp'.format(start_dtim,end_dtim))
-        assess_pdf = os.path.join(wrk_dir,'{:%Y%m%d}_{:%Y%m%d}_assess.pdf'.format(start_dtim,end_dtim))
+        assess_csv = os.path.join(wrk_dir,'{}_assess.csv'.format(trg_bnam))
+        assess_shp = os.path.join(wrk_dir,'{}_assess.shp'.format(trg_bnam))
+        assess_pdf = os.path.join(wrk_dir,'{}_assess.pdf'.format(trg_bnam))
         dnam = os.path.dirname(assess_csv)
         if not os.path.exists(dnam):
             os.makedirs(dnam)
@@ -156,12 +157,10 @@ class Phenology(Satellite_Process):
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_phenology.py'))
             command += ' --shp_fnam "{}"'.format(assess_shp)
-            command += ' --fignam "{}"'.format(os.path.join(dnam,'{:%Y%m%d}_{:%Y%m%d}_phenology.pdf'.format(start_dtim,end_dtim)))
+            command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_phenology.pdf'.format(trg_bnam)))
             command += ' --use_index'
             command += ' --batch'
-            self.run_command(command,message='<<< Draw figure for {} >>>'.format(dstr))
-
-
+            self.run_command(command,message='<<< Draw figure for {} >>>'.format(trg_bnam))
 
         # Finish process
         super().finish()
