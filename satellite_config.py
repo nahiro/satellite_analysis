@@ -167,7 +167,7 @@ config_defaults.update({
 'parcel.cloud_band'                   : 'r',
 'parcel.cloud_thr'                    : 0.35,
 'parcel.csv_flag'                     : True,
-'parcel.oflag'                        : False,
+'parcel.oflag'                        : [False,False],
 'parcel.zmin_refs'                    : [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 'parcel.zmin_nrefs'                   : [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
 'parcel.zmin_inds'                    : [-0.2,-0.2,0.0,0.0],
