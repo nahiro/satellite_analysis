@@ -152,6 +152,16 @@ class Phenology(Satellite_Process):
         command += ' --debug'
         command += ' --batch'
         self.run_command(command,message='<<< Calculate assessment date >>>')
+        if os.path.exists(assess_shp):
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_phenology.py'))
+            command += ' --shp_fnam "{}"'.format(assess_shp)
+            command += ' --fignam "{}"'.format(os.path.join(dnam,'{:%Y%m%d}_{:%Y%m%d}_phenology.pdf'.format(start_dtim,end_dtim)))
+            command += ' --use_index'
+            command += ' --batch'
+            self.run_command(command,message='<<< Draw figure for {} >>>'.format(dstr))
+
+
 
         # Finish process
         super().finish()
