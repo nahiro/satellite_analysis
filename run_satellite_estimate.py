@@ -114,6 +114,7 @@ class Estimate(Satellite_Process):
                 command += ' --ax1_zstp="{}"'.format(value)
             for value in self.zstp_inds:
                 command += ' --ax1_zstp="{}"'.format(value)
+            command += ' --ax1_title "{}"'.format(ax1_title)
             command += ' --use_index'
             command += ' --debug'
             command += ' --batch'

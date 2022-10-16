@@ -26,6 +26,10 @@ PARAMS = ['Age','plant_d','peak_d','head_d','assess_d','harvest_d']
 S2_PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
              'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
              'NDVI','GNDVI','RGI','NRGI']
+BAND_NAME = {'Sb':'Blue','Sg':'Green','Sr':'Red','Se1':'RedEdge1','Se2':'RedEdge2','Se3':'RedEdge3','Sn1':'NIR1','Sn2':'NIR2','Ss1':'SWIR1','Ss2':'SWIR2',
+             'Nb':'Normalized Blue','Ng':'Normalized Green','Nr':'Normalized Red','Ne1':'Normalized RedEdge1','Ne2':'Normalized RedEdge2','Ne3':'Normalized RedEdge3',
+             'Nn1':'Normalized NIR1','Nn2':'Normalized NIR2','Ns1':'Normalized SWIR1','Ns2':'Normalized SWIR2',
+             'NDVI':'NDVI','GNDVI':'GNDVI','RGI':'RGI','NRGI':'NRGI'}
 
 # Default values
 PARAM = 'harvest_d'
@@ -259,8 +263,8 @@ if args.shp_fnam is not None and args.debug:
         else:
             ax2 = plt.colorbar(im,cax=cax).ax
         ax2.minorticks_on()
-        ax2.set_ylabel('{}'.format(param))
-        ax2.yaxis.set_label_coords(5.5,0.5)
+        ax2.set_ylabel('{}'.format(BAND_NAME[param]))
+        ax2.yaxis.set_label_coords(4.5,0.5)
         fig_xmin,fig_ymin,fig_xmax,fig_ymax = indices.total_bounds
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
