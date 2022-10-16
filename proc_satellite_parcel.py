@@ -8,7 +8,7 @@ proc_parcel.pnams.append('geocor_dir')
 proc_parcel.pnams.append('indices_dir')
 proc_parcel.pnams.append('gis_fnam')
 proc_parcel.pnams.append('mask_parcel')
-proc_parcel.pnams.append('buffer')
+proc_parcel.pnams.append('buffer_parcel')
 proc_parcel.pnams.append('out_refs')
 proc_parcel.pnams.append('cr_sc_refs')
 proc_parcel.pnams.append('cr_ref_refs')
@@ -26,7 +26,7 @@ proc_parcel.params['geocor_dir'] = 'Geocor Folder'
 proc_parcel.params['indices_dir'] = 'Indices Folder'
 proc_parcel.params['gis_fnam'] = 'Polygon File'
 proc_parcel.params['mask_parcel'] = 'Mask File for Parcellate'
-proc_parcel.params['buffer'] = 'Buffer for Parcellate (m)'
+proc_parcel.params['buffer_parcel'] = 'Buffer for Parcellate (m)'
 proc_parcel.params['out_refs'] = 'Output Reflectance'
 proc_parcel.params['cr_sc_refs'] = 'CR-SC Reflactance'
 proc_parcel.params['cr_ref_refs'] = 'CR-Ref Reflactance'
@@ -44,7 +44,7 @@ proc_parcel.param_types['geocor_dir'] = 'string'
 proc_parcel.param_types['indices_dir'] = 'string'
 proc_parcel.param_types['gis_fnam'] = 'string'
 proc_parcel.param_types['mask_parcel'] = 'string'
-proc_parcel.param_types['buffer'] = 'float'
+proc_parcel.param_types['buffer_parcel'] = 'float'
 proc_parcel.param_types['out_refs'] = 'boolean_list'
 proc_parcel.param_types['cr_sc_refs'] = 'boolean_list'
 proc_parcel.param_types['cr_ref_refs'] = 'boolean_list'
@@ -58,13 +58,13 @@ proc_parcel.param_types['cloud_band'] = 'string_select'
 proc_parcel.param_types['cloud_thr'] = 'float'
 proc_parcel.param_types['csv_flag'] = 'boolean'
 proc_parcel.param_types['oflag'] = 'boolean'
-proc_parcel.param_range['buffer'] = (0.0,10.0e3)
+proc_parcel.param_range['buffer_parcel'] = (0.0,10.0e3)
 proc_parcel.param_range['cloud_thr'] = (0.0,10.0)
 proc_parcel.defaults['geocor_dir'] = 'geocor'
 proc_parcel.defaults['indices_dir'] = 'indices'
 proc_parcel.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_parcel.defaults['mask_parcel'] = 'parcel_mask.tif'
-proc_parcel.defaults['buffer'] = 0.0
+proc_parcel.defaults['buffer_parcel'] = 0.0
 proc_parcel.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_parcel.defaults['cr_sc_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_parcel.defaults['cr_ref_refs'] = [True,True,True,True,True,True,True,True,True,True]
@@ -102,7 +102,7 @@ proc_parcel.input_types['geocor_dir'] = 'ask_folder'
 proc_parcel.input_types['indices_dir'] = 'ask_folder'
 proc_parcel.input_types['gis_fnam'] = 'ask_file'
 proc_parcel.input_types['mask_parcel'] = 'ask_file'
-proc_parcel.input_types['buffer'] = 'box'
+proc_parcel.input_types['buffer_parcel'] = 'box'
 proc_parcel.input_types['out_refs'] = 'boolean_list'
 proc_parcel.input_types['cr_sc_refs'] = 'boolean_list'
 proc_parcel.input_types['cr_ref_refs'] = 'boolean_list'
