@@ -7,6 +7,15 @@ class Estimate(Satellite_Process):
 
     def __init__(self):
         super().__init__()
+        self.zmin_refs = None
+        self.zmax_refs = None
+        self.zstp_refs = None
+        self.zmin_nrefs = None
+        self.zmax_nrefs = None
+        self.zstp_nrefs = None
+        self.zmin_inds = None
+        self.zmax_inds = None
+        self.zstp_inds = None
         self.ax1_zmin = None
         self.ax1_zmax = None
         self.ax1_zstp = None
