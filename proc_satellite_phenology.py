@@ -25,6 +25,7 @@ proc_phenology.pnams.append('atc_params')
 proc_phenology.pnams.append('assess_dthrs')
 proc_phenology.pnams.append('y1_smooth')
 proc_phenology.pnams.append('y1_thr')
+proc_phenology.pnams.append('oflag')
 proc_phenology.params['gis_fnam'] = 'Polygon File'
 proc_phenology.params['mask_paddy'] = 'Mask File for Paddy Select'
 proc_phenology.params['mask_parcel'] = 'Mask File for Parcellate'
@@ -46,6 +47,7 @@ proc_phenology.params['atc_params'] = 'Parameter for Assessment'
 proc_phenology.params['assess_dthrs'] = 'Date Interval for Assessment (day)'
 proc_phenology.params['y1_smooth'] = 'Smoothing for Assessment'
 proc_phenology.params['y1_thr'] = 'Threshold for Assessment'
+proc_phenology.params['oflag'] = 'Overwrite Flag'
 proc_phenology.param_types['gis_fnam'] = 'string'
 proc_phenology.param_types['mask_paddy'] = 'string'
 proc_phenology.param_types['mask_parcel'] = 'string'
@@ -67,6 +69,7 @@ proc_phenology.param_types['atc_params'] = 'float_list'
 proc_phenology.param_types['assess_dthrs'] = 'int_list'
 proc_phenology.param_types['y1_smooth'] = 'float'
 proc_phenology.param_types['y1_thr'] = 'float'
+proc_phenology.param_types['oflag'] = 'boolean_list'
 proc_phenology.param_range['buffer_paddy'] = (0.0,10.0e3)
 proc_phenology.param_range['buffer_parcel'] = (0.0,10.0e3)
 proc_phenology.param_range['trans_thr1'] = (-1.0e3,1.0e3)
@@ -99,6 +102,7 @@ proc_phenology.defaults['atc_params'] = [100.0,10.0]
 proc_phenology.defaults['assess_dthrs'] = [120,10,10]
 proc_phenology.defaults['y1_smooth'] = 0.02
 proc_phenology.defaults['y1_thr'] = 0.0
+proc_phenology.defaults['oflag'] = [False,False,False]
 proc_phenology.list_sizes['trans_select'] = 2
 proc_phenology.list_sizes['trans_indicator'] = 4
 proc_phenology.list_sizes['trans_thr1'] = 5
@@ -108,6 +112,7 @@ proc_phenology.list_sizes['trans_thr4'] = 2
 proc_phenology.list_sizes['trans_thr5'] = 2
 proc_phenology.list_sizes['atc_params'] = 2
 proc_phenology.list_sizes['assess_dthrs'] = 3
+proc_phenology.list_sizes['oflag'] = 3
 proc_phenology.list_labels['trans_select'] = ['Around Probable Planting','Probable Planting Indicator']
 proc_phenology.list_labels['trans_indicator'] = ['\u03C3 Min','\u03C3 Sig','\U0001D6E5\u03C3 Avg','\U0001D6E5\u03C3 Max']
 proc_phenology.list_labels['trans_thr1'] = ['Min :',' Sig :',' \U0001D6E5 Min :',' \U0001D6E5 Avg :',' \U0001D6E5 Max :']
@@ -117,6 +122,7 @@ proc_phenology.list_labels['trans_thr4'] = ['Diff :',' Rise :']
 proc_phenology.list_labels['trans_thr5'] = ['Ratio (%) :',' Differ (day) :']
 proc_phenology.list_labels['atc_params'] = ['Ratio (%) :',' Offset (day) :']
 proc_phenology.list_labels['assess_dthrs'] = ['Planting - Harvesting (Max) :',' Heading - Peak (Max) :',' Peak - Harvesting (Min) :']
+proc_phenology.list_labels['oflag'] = ['mask','plant','assess']
 proc_phenology.input_types['gis_fnam'] = 'ask_file'
 proc_phenology.input_types['mask_paddy'] = 'ask_file'
 proc_phenology.input_types['mask_parcel'] = 'ask_file'
@@ -138,6 +144,7 @@ proc_phenology.input_types['atc_params'] = 'float_list'
 proc_phenology.input_types['assess_dthrs'] = 'int_list'
 proc_phenology.input_types['y1_smooth'] = 'box'
 proc_phenology.input_types['y1_thr'] = 'box'
+proc_phenology.input_types['oflag'] = 'boolean_list'
 proc_phenology.flag_check['mask_paddy'] = False
 proc_phenology.flag_check['mask_parcel'] = False
 proc_phenology.flag_check['trans_fnam'] = False

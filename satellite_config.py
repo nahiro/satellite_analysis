@@ -251,6 +251,7 @@ config_defaults.update({
 'phenology.assess_dthrs'              : [120,10,10],
 'phenology.y1_smooth'                 : 0.02,
 'phenology.y1_thr'                    : 0.0,
+'phenology.oflag'                     : [False,False,False],
 'phenology.python_path'               : python_path,
 'phenology.scr_dir'                   : scr_dir,
 'phenology.middle_left_frame_width'   : 1000,
