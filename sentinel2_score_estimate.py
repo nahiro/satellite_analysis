@@ -200,7 +200,7 @@ if args.inp_shp is not None and args.debug:
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
-    for iband,param in enumerate(args.y_param):
+    for param in args.y_param:
         indices[param] *= 100.0
         data = indices[param]
         fig.clear()
