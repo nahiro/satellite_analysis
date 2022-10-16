@@ -47,6 +47,7 @@ class Estimate(Satellite_Process):
                 spec_fnam = os.path.join(self.s2_data,'interp',ystr,'{:%Y%m%d}_interp.npz'.format(spec_dtim))
             if not os.path.exists(spec_fnam):
                 raise IOError('Error, no such file >>> {}'.format(spec_fnam))
+            ax1_title = '{}: {:%Y%m%d}'.format(self.values['data_select'],spec_dtim)
         else:
             select_csv = os.path.join(wrk_dir,'{}_select.csv'.format(trg_bnam))
             select_shp = os.path.join(wrk_dir,'{}_select.shp'.format(trg_bnam))
@@ -58,21 +59,27 @@ class Estimate(Satellite_Process):
             if 'Age' in self.values['data_select']:
                 command += ' --param Age'
                 command += ' --offset {}'.format(self.values['age_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['age_value'])
             elif 'Harvesting' in self.values['data_select']:
                 command += ' --param harvest_d'
                 command += ' --offset {}'.format(self.values['harvest_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['harvest_value'])
             elif 'Assessment' in self.values['data_select']:
                 command += ' --param assess_d'
                 command += ' --offset {}'.format(self.values['assess_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['assess_value'])
             elif 'Heading' in self.values['data_select']:
                 command += ' --param head_d'
                 command += ' --offset {}'.format(self.values['head_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['head_value'])
             elif 'Peak' in self.values['data_select']:
                 command += ' --param peak_d'
                 command += ' --offset {}'.format(self.values['peak_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['peak_value'])
             elif 'Planting' in self.values['data_select']:
                 command += ' --param plant_d'
                 command += ' --offset {}'.format(self.values['plant_value'])
+                ax1_title = '{}: {:.1f}'.format(self.values['data_select'],self.values['plant_value'])
             else:
                 raise ValueError('{}: error, unknown data selection >>> {}'.format(self.proc_name,self.values['data_select']))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
@@ -113,7 +120,7 @@ class Estimate(Satellite_Process):
         for value,flag in zip(self.ax1_zstp,self.values['y_params']):
             if flag:
                 command += ' --ax1_zstp="{}"'.format(value)
-        command += ' --ax1_title "{}"'.format(trg_bnam)
+        command += ' --ax1_title "{}"'.format(ax1_title)
         command += ' --use_index'
         command += ' --debug'
         command += ' --batch'
