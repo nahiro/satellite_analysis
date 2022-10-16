@@ -327,7 +327,7 @@ if args.debug:
         else:
             ax2.minorticks_on()
         ax2.set_ylabel('{}'.format(PARAM_LABELS[param]))
-        ax2.yaxis.set_label_coords(6.5,0.5)
+        ax2.yaxis.set_label_coords(5.5,0.5)
         if fig_xmin is None:
             if args.remove_nan:
                 src_indy,src_indx = np.indices(src_shape)

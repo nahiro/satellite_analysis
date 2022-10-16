@@ -53,6 +53,7 @@ class Estimate(Satellite_Process):
             select_pdf = os.path.join(wrk_dir,'{}_select.pdf'.format(trg_bnam))
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_select_data.py'))
+            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
             command += ' --phenology "{}"'.format(self.values['event_fnam'])
             if 'Age' in self.values['data_select']:
                 command += ' --param Age'
