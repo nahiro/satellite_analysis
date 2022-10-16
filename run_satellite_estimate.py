@@ -96,6 +96,24 @@ class Estimate(Satellite_Process):
             command += ' --out_csv "{}"'.format(select_csv)
             command += ' --out_shp "{}"'.format(select_shp)
             command += ' --fignam "{}"'.format(select_pdf)
+            for value in self.zmin_refs:
+                command += ' --ax1_zmin="{}"'.format(value)
+            for value in self.zmin_nrefs:
+                command += ' --ax1_zmin="{}"'.format(value)
+            for value in self.zmin_inds:
+                command += ' --ax1_zmin="{}"'.format(value)
+            for value in self.zmax_refs:
+                command += ' --ax1_zmax="{}"'.format(value)
+            for value in self.zmax_nrefs:
+                command += ' --ax1_zmax="{}"'.format(value)
+            for value in self.zmax_inds:
+                command += ' --ax1_zmax="{}"'.format(value)
+            for value in self.zstp_refs:
+                command += ' --ax1_zstp="{}"'.format(value)
+            for value in self.zstp_nrefs:
+                command += ' --ax1_zstp="{}"'.format(value)
+            for value in self.zstp_inds:
+                command += ' --ax1_zstp="{}"'.format(value)
             command += ' --use_index'
             command += ' --debug'
             command += ' --batch'
