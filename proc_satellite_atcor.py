@@ -33,8 +33,8 @@ proc_atcor.pnams.append('oflag')
 proc_atcor.params['geocor_dir'] = 'Geocor Folder'
 proc_atcor.params['indices_dir'] = 'Indices Folder'
 proc_atcor.params['gis_fnam'] = 'Polygon File'
-proc_atcor.params['mask_parcel'] = 'Mask for Parcellate'
-proc_atcor.params['mask_studyarea'] = 'Mask for Reference Select'
+proc_atcor.params['mask_parcel'] = 'Mask File for Parcellate'
+proc_atcor.params['mask_studyarea'] = 'Mask File for Reference Select'
 proc_atcor.params['out_refs'] = 'Output Reflectance'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
 proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
@@ -173,4 +173,5 @@ proc_atcor.expected['mask_parcel'] = '*.tif'
 proc_atcor.expected['mask_studyarea'] = '*.tif'
 for pnam in proc_atcor.pnams:
     proc_atcor.values[pnam] = proc_atcor.defaults[pnam]
+proc_atcor.left_frame_width = 210
 proc_atcor.middle_left_frame_width = 1000
