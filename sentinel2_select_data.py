@@ -23,6 +23,9 @@ PARAMS = ['Age','plant_d','peak_d','head_d','assess_d','harvest_d']
 # head_d    : Heading date (between two peaks of NDVI 2nd difference)
 # assess_d  : Assessment date
 # harvest_d : Harvesting date
+S2_PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
+             'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
+             'NDVI','GNDVI','RGI','NRGI']
 
 # Default values
 PARAM = 'harvest_d'
@@ -50,6 +53,39 @@ parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch
 args = parser.parse_args()
 if not args.param in PARAMS:
     raise ValueError('Error, unknown parameter for selection >>> {}'.format(args.param))
+ax1_zmin = {}
+if args.ax1_zmin is not None:
+    for s in args.ax1_zmin:
+        m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+        if not m:
+            raise ValueError('Error, invalid ax1_zmin >>> {}'.format(s))
+        param = m.group(1)
+        value = float(m.group(2))
+        if not param in S2_PARAMS:
+            raise ValueError('Error, unknown parameter for ax1_zmin ({}) >>> {}'.format(param,s))
+        ax1_zmin[param] = value
+ax1_zmax = {}
+if args.ax1_zmax is not None:
+    for s in args.ax1_zmax:
+        m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+        if not m:
+            raise ValueError('Error, invalid ax1_zmax >>> {}'.format(s))
+        param = m.group(1)
+        value = float(m.group(2))
+        if not param in S2_PARAMS:
+            raise ValueError('Error, unknown parameter for ax1_zmax ({}) >>> {}'.format(param,s))
+        ax1_zmax[param] = value
+ax1_zstp = {}
+if args.ax1_zstp is not None:
+    for s in args.ax1_zstp:
+        m = re.search('\s*(\S+)\s*:\s*(\S+)\s*',s)
+        if not m:
+            raise ValueError('Error, invalid ax1_zstp >>> {}'.format(s))
+        param = m.group(1)
+        value = float(m.group(2))
+        if not param in S2_PARAMS:
+            raise ValueError('Error, unknown parameter for ax1_zstp ({}) >>> {}'.format(param,s))
+        ax1_zstp[param] = value
 if args.phenology is None or not os.path.exists(args.phenology):
     raise IOError('Error, no such file >>> {}'.format(args.phenology))
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
