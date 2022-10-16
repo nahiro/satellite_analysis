@@ -5,6 +5,7 @@ import zlib # import zlib before gdal to prevent segmentation fault when saving 
 import shapefile
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -193,13 +194,15 @@ if args.inp_shp is not None:
 
 # For debug
 if args.inp_shp is not None and args.debug:
+    indices = gpd.read_file(args.out_shp)
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
     plt.subplots_adjust(top=0.9,bottom=0.1,left=0.05,right=0.80)
     pdf = PdfPages(args.fignam)
     for iband,param in enumerate(args.y_param):
-        data = out_data[:,iband]*100.0
+        indices[param] *= 100.0
+        data = indices[param]
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
@@ -217,12 +220,7 @@ if args.inp_shp is not None and args.debug:
             if np.isnan(zmax):
                 zmax = 100.0
         zdif = zmax-zmin
-        for iobj,shaperec in enumerate(r.iterShapeRecords()):
-            rec = shaperec.record
-            shp = shaperec.shape
-            z = data[iobj]
-            if not np.isnan(z):
-                ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
+        indices.plot(column=param,ax=ax1,vmin=zmin,vmax=zmax,cmap=cm.jet)
         im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right',size='5%',pad=0.05)
@@ -241,7 +239,7 @@ if args.inp_shp is not None and args.debug:
         ax2.minorticks_on()
         ax2.set_ylabel('{} Intensity (%)'.format(param))
         ax2.yaxis.set_label_coords(5.5,0.5)
-        fig_xmin,fig_ymin,fig_xmax,fig_ymax = r.bbox
+        fig_xmin,fig_ymin,fig_xmax,fig_ymax = indices.total_bounds
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
         if args.ax1_title is not None:
