@@ -7,6 +7,7 @@ proc_phenology.proc_title = 'Estimate Growth Stage'
 proc_phenology.pnams.append('gis_fnam')
 proc_phenology.pnams.append('mask_paddy')
 proc_phenology.pnams.append('mask_parcel')
+proc_phenology.pnams.append('buffer_paddy')
 proc_phenology.pnams.append('buffer_parcel')
 proc_phenology.pnams.append('trans_fnam')
 proc_phenology.pnams.append('head_fnam')
@@ -25,8 +26,9 @@ proc_phenology.pnams.append('assess_dthrs')
 proc_phenology.pnams.append('y1_smooth')
 proc_phenology.pnams.append('y1_thr')
 proc_phenology.params['gis_fnam'] = 'Polygon File'
-proc_phenology.params['mask_paddy'] = 'Mask File for Paddy Selection'
+proc_phenology.params['mask_paddy'] = 'Mask File for Paddy Select'
 proc_phenology.params['mask_parcel'] = 'Mask File for Parcellate'
+proc_phenology.params['buffer_paddy'] = 'Buffer for Paddy Select (m)'
 proc_phenology.params['buffer_parcel'] = 'Buffer for Parcellate (m)'
 proc_phenology.params['trans_fnam'] = 'Planting Date File'
 proc_phenology.params['head_fnam'] = 'Heading Date File'
@@ -47,6 +49,7 @@ proc_phenology.params['y1_thr'] = 'Threshold for Assessment'
 proc_phenology.param_types['gis_fnam'] = 'string'
 proc_phenology.param_types['mask_paddy'] = 'string'
 proc_phenology.param_types['mask_parcel'] = 'string'
+proc_phenology.param_types['buffer_paddy'] = 'float'
 proc_phenology.param_types['buffer_parcel'] = 'float'
 proc_phenology.param_types['trans_fnam'] = 'string'
 proc_phenology.param_types['head_fnam'] = 'string'
@@ -64,6 +67,7 @@ proc_phenology.param_types['atc_params'] = 'float_list'
 proc_phenology.param_types['assess_dthrs'] = 'int_list'
 proc_phenology.param_types['y1_smooth'] = 'float'
 proc_phenology.param_types['y1_thr'] = 'float'
+proc_phenology.param_range['buffer_paddy'] = (0.0,10.0e3)
 proc_phenology.param_range['buffer_parcel'] = (0.0,10.0e3)
 proc_phenology.param_range['trans_thr1'] = (-1.0e3,1.0e3)
 proc_phenology.param_range['trans_thr2'] = (-1.0e3,1.0e3)
@@ -77,6 +81,7 @@ proc_phenology.param_range['y1_thr'] = (-1.0,1.0)
 proc_phenology.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_phenology.defaults['mask_paddy'] = 'paddy_mask.tif'
 proc_phenology.defaults['mask_parcel'] = 'parcel_mask.tif'
+proc_phenology.defaults['buffer_paddy'] = 0.0
 proc_phenology.defaults['buffer_parcel'] = 0.0
 proc_phenology.defaults['trans_fnam'] = ''
 proc_phenology.defaults['head_fnam'] = ''
@@ -115,6 +120,7 @@ proc_phenology.list_labels['assess_dthrs'] = ['Planting - Harvesting (Max) :',' 
 proc_phenology.input_types['gis_fnam'] = 'ask_file'
 proc_phenology.input_types['mask_paddy'] = 'ask_file'
 proc_phenology.input_types['mask_parcel'] = 'ask_file'
+proc_phenology.input_types['buffer_paddy'] = 'box'
 proc_phenology.input_types['buffer_parcel'] = 'box'
 proc_phenology.input_types['trans_fnam'] = 'ask_file'
 proc_phenology.input_types['head_fnam'] = 'ask_file'

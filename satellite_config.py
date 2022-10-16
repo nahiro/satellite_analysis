@@ -233,6 +233,7 @@ config_defaults.update({
 'phenology.gis_fnam'                  : gis_fnam,
 'phenology.mask_parcel'               : mask_parcel,
 'phenology.mask_paddy'                : mask_paddy,
+'phenology.buffer_paddy'              : 0.0,
 'phenology.buffer_parcel'             : 0.0,
 'phenology.trans_fnam'                : '',
 'phenology.head_fnam'                 : '',
