@@ -104,15 +104,15 @@ class Estimate(Satellite_Process):
                 command += ' --y_param {}'.format(param)
                 command += ' --y_number {}'.format(self.values['pm_number'])
         command += ' --fignam "{}"'.format(estimate_pdf)
-        #for value,flag in zip(self.ax1_zmin[1],self.values['y_params']):
-        #    if flag:
-        #        command += ' --ax1_zmin="{}"'.format(value)
-        #for value,flag in zip(self.ax1_zmax[1],self.values['y_params']):
-        #    if flag:
-        #        command += ' --ax1_zmax="{}"'.format(value)
-        #for value,flag in zip(self.ax1_zstp[1],self.values['y_params']):
-        #    if flag:
-        #        command += ' --ax1_zstp="{}"'.format(value)
+        for value,flag in zip(self.ax1_zmin,self.values['y_params']):
+            if flag:
+                command += ' --ax1_zmin="{}"'.format(value)
+        for value,flag in zip(self.ax1_zmax,self.values['y_params']):
+            if flag:
+                command += ' --ax1_zmax="{}"'.format(value)
+        for value,flag in zip(self.ax1_zstp,self.values['y_params']):
+            if flag:
+                command += ' --ax1_zstp="{}"'.format(value)
         command += ' --ax1_title "{}"'.format(trg_bnam)
         command += ' --use_index'
         command += ' --debug'
