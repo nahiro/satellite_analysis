@@ -9,7 +9,7 @@ proc_atcor.pnams.append('indices_dir')
 proc_atcor.pnams.append('gis_fnam')
 proc_atcor.pnams.append('mask_parcel')
 proc_atcor.pnams.append('mask_studyarea')
-proc_atcor.pnams.append('buffer')
+proc_atcor.pnams.append('buffer_parcel')
 proc_atcor.pnams.append('out_refs')
 proc_atcor.pnams.append('atcor_refs')
 proc_atcor.pnams.append('out_nrefs')
@@ -36,7 +36,7 @@ proc_atcor.params['indices_dir'] = 'Indices Folder'
 proc_atcor.params['gis_fnam'] = 'Polygon File'
 proc_atcor.params['mask_parcel'] = 'Mask File for Parcellate'
 proc_atcor.params['mask_studyarea'] = 'Mask File for Reference Select'
-proc_atcor.params['buffer'] = 'Buffer for Parcellate (m)'
+proc_atcor.params['buffer_parcel'] = 'Buffer for Parcellate (m)'
 proc_atcor.params['out_refs'] = 'Output Reflectance'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
 proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
@@ -63,7 +63,7 @@ proc_atcor.param_types['indices_dir'] = 'string'
 proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_parcel'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
-proc_atcor.param_types['buffer'] = 'float'
+proc_atcor.param_types['buffer_parcel'] = 'float'
 proc_atcor.param_types['out_refs'] = 'boolean_list'
 proc_atcor.param_types['atcor_refs'] = 'boolean_list'
 proc_atcor.param_types['out_nrefs'] = 'boolean_list'
@@ -85,7 +85,7 @@ proc_atcor.param_types['rel_thr'] = 'float'
 proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['csv_flag'] = 'boolean'
 proc_atcor.param_types['oflag'] = 'boolean_list'
-proc_atcor.param_range['buffer'] = (0.0,10.0e3)
+proc_atcor.param_range['buffer_parcel'] = (0.0,10.0e3)
 proc_atcor.param_range['stat_period'] = (10,1000000)
 proc_atcor.param_range['stat_nmin'] = (1,1000000)
 proc_atcor.param_range['n_ref'] = (10,1000000)
@@ -101,7 +101,7 @@ proc_atcor.defaults['indices_dir'] = 'indices'
 proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
-proc_atcor.defaults['buffer'] = 0.0
+proc_atcor.defaults['buffer_parcel'] = 0.0
 proc_atcor.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['atcor_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True,True,True]
@@ -150,7 +150,7 @@ proc_atcor.input_types['indices_dir'] = 'ask_folder'
 proc_atcor.input_types['gis_fnam'] = 'ask_file'
 proc_atcor.input_types['mask_parcel'] = 'ask_file'
 proc_atcor.input_types['mask_studyarea'] = 'ask_file'
-proc_atcor.input_types['buffer'] = 'box'
+proc_atcor.input_types['buffer_parcel'] = 'box'
 proc_atcor.input_types['out_refs'] = 'boolean_list'
 proc_atcor.input_types['atcor_refs'] = 'boolean_list'
 proc_atcor.input_types['out_nrefs'] = 'boolean_list'

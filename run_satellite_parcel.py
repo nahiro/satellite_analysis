@@ -94,10 +94,10 @@ class Parcel(Satellite_Process):
                     command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                     command += ' --src_geotiff "{}"'.format(fnam)
                     command += ' --dst_geotiff "{}"'.format(mask_fnam)
-                    if abs(self.values['buffer']) < 1.0e-6:
+                    if abs(self.values['buffer_parcel']) < 1.0e-6:
                         command += ' --buffer 0.0'
                     else:
-                        command += ' --buffer="{}"'.format(-abs(self.values['buffer']))
+                        command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
                     command += ' --use_index'
                     self.run_command(command,message='<<< Make mask >>>')
                 if not os.path.exists(mask_fnam):
