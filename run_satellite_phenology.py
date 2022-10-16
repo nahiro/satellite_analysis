@@ -139,7 +139,7 @@ class Phenology(Satellite_Process):
         command += ' --out_shp "{}"'.format(assess_shp)
         command += ' --fignam "{}"'.format(assess_pdf)
         command += ' --smooth "{}"'.format(self.values['y1_smooth'])
-        command += ' --atc {}'.format(self.values['atc_params'][0]*1.0e-2)
+        command += ' --atc {}'.format(self.values['atc_params'][0])
         command += ' --offset {}'.format(self.values['atc_params'][1])
         command += ' --sthr {}'.format(self.values['y1_thr'])
         command += ' --tmin {:%Y%m%d}'.format(start_dtim)
