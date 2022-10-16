@@ -466,5 +466,5 @@ for proc in pnams:
         if hasattr(modules[proc],pnam):
             value = config[proc].get('{}.{}'.format(proc,pnam))
             if value is not None:
-                setattr(modules[proc],pnam,eval(value.lower().replace('nan','np.nan')))
+                setattr(modules[proc],pnam,eval(value.replace('nan','np.nan').replace('NaN','np.nan')))
     modules[proc].middle_left_frame_width = config[proc].getint('{}.middle_left_frame_width'.format(proc))
