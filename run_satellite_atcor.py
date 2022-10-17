@@ -198,6 +198,7 @@ class Atcor(Satellite_Process):
                 command += ' --nstp {}'.format(self.values['nstp'])
                 command += ' --ethr {}'.format(self.values['rel_thr'])
                 command += ' --fignam "{}"'.format(fact_pdf)
+                command += ' --ax1_title "{}"'.format(dstr)
                 command += ' --nfig 10'
                 command += ' --debug'
                 command += ' --batch'
