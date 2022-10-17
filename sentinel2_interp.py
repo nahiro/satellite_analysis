@@ -15,6 +15,10 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 PARAMS = ['Sb','Sg','Sr','Se1','Se2','Se3','Sn1','Sn2','Ss1','Ss2',
           'Nb','Ng','Nr','Ne1','Ne2','Ne3','Nn1','Nn2','Ns1','Ns2',
           'NDVI','GNDVI','RGI','NRGI']
+BAND_NAME = {'Sb':'Blue','Sg':'Green','Sr':'Red','Se1':'RedEdge1','Se2':'RedEdge2','Se3':'RedEdge3','Sn1':'NIR1','Sn2':'NIR2','Ss1':'SWIR1','Ss2':'SWIR2',
+             'Nb':'Normalized Blue','Ng':'Normalized Green','Nr':'Normalized Red','Ne1':'Normalized RedEdge1','Ne2':'Normalized RedEdge2','Ne3':'Normalized RedEdge3',
+             'Nn1':'Normalized NIR1','Nn2':'Normalized NIR2','Ns1':'Normalized SWIR1','Ns2':'Normalized SWIR2',
+             'NDVI':'NDVI','GNDVI':'GNDVI','RGI':'RGI','NRGI':'NRGI'}
 
 # Default values
 DATA_TMIN = '20190315'
@@ -229,7 +233,7 @@ for iobj,object_id in enumerate(object_ids):
                     ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
                 ax1.set_xlim(xmin,xmax)
                 ax1.set_ylim(ymin-0.1*ydif,ymax+0.1*ydif)
-                ax1.set_ylabel(param)
+                ax1.set_ylabel('{}'.format(BAND_NAME[param]))
                 if args.ax1_title is not None:
                     ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
                 else:
