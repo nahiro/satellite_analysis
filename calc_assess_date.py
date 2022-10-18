@@ -355,6 +355,7 @@ for iobj,object_id in enumerate(object_ids):
         dtim = num2date(x)
         fig.clear()
         ax1 = plt.subplot(111)
+        ax1.tick_params('x',length=8,which='major')
         ax2 = ax1.twinx()
         ax3 = ax1.twinx()
         ax1.minorticks_on()
@@ -366,6 +367,13 @@ for iobj,object_id in enumerate(object_ids):
         ax2.plot(dtim,y1*1.0e2,'g-',zorder=5)
         ax2.plot(x_harvest,y_harvest*1.0e2,'go',zorder=5)
         ax3.plot(dtim,y2*1.0e3,'r-',zorder=1)
+        indx_1 = np.argmin(np.abs(x-xp_1))
+        indx_2 = np.argmin(np.abs(x-xp_2))
+        if indx_1 != indx_2:
+            yp_1 = y2[indx_1]
+            yp_2 = y2[indx_2]
+            ax3.plot(xp_1,yp_1*1.0e3,'ro',zorder=1)
+            ax3.plot(xp_2,yp_2*1.0e3,'ro',zorder=1)
         ax1.axvline(xp_1,color='k',linestyle=':',zorder=1)
         ax1.axvline(xp_2,color='k',linestyle=':',zorder=1)
         ax1.axvline(x_head,color='r',zorder=1)
@@ -374,9 +382,9 @@ for iobj,object_id in enumerate(object_ids):
         ax1.xaxis.set_minor_locator(DayLocator(bymonthday=(15)))
         ax1.zorder = 10
         ax1.set_frame_on(False)
-        ax1.set_ylabel('NDVI')
-        ax2.set_ylabel(r'NDVI$^{\prime}$ $\times$ 10$^{2}$')
-        ax3.set_ylabel(r'NDVI$^{\prime\prime}$ $\times$ 10$^{3}$')
+        ax1.set_ylabel('NDVI',color='b')
+        ax2.set_ylabel(r'NDVI$^{\prime}$ $\times$ 10$^{2}$',color='g')
+        ax3.set_ylabel(r'NDVI$^{\prime\prime}$ $\times$ 10$^{3}$',color='r')
         ax1.set_title('OBJECTID: {}'.format(object_id))
         fig.autofmt_xdate()
         plt.savefig(pdf,format='pdf')

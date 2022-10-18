@@ -36,131 +36,169 @@ class Phenology(Satellite_Process):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
 
         # Select reference for planting
-        planting_ref = os.path.join(self.s1_analysis,'planting','{}_planting_ref.tif'.format(trg_bnam))
-        dnam = os.path.dirname(planting_ref)
-        if not os.path.exists(dnam):
-            os.makedirs(dnam)
-        if not os.path.isdir(dnam):
-            raise IOError('Error, no such folder >>> {}'.format(dnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
-        command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
-        command += ' --dst_fnam "{}"'.format(planting_ref)
-        command += ' --mask_fnam "{}"'.format(mask_paddy)
-        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-        command += ' --tmax {:%Y%m%d}'.format(end_dtim)
-        command += ' --tref {:%Y%m%d}'.format(pref_dtim)
-        if not np.isnan(self.values['trans_thr3'][0]):
-            command += ' --trans_n_max {}'.format(self.values['trans_thr3'][0])
-        if not np.isnan(self.values['trans_thr1'][0]):
-            command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
-        if not np.isnan(self.values['trans_thr1'][2]):
-            command += ' --post_min_min {}'.format(self.values['trans_thr1'][2])
-        if not np.isnan(self.values['trans_thr1'][3]):
-            command += ' --post_avg_min {}'.format(self.values['trans_thr1'][3])
-        if not np.isnan(self.values['trans_thr3'][1]):
-            command += ' --risetime_max {}'.format(self.values['trans_thr3'][1])
-        self.run_command(command,message='<<< Select reference for planting >>>')
+        dnam = os.path.join(self.s1_analysis,'planting')
+        planting_ref = os.path.join(dnam,'{}_planting_ref.tif'.format(trg_bnam))
+        iflag = self.list_labels['oflag'].index('plant')
+        if self.values['oflag'][iflag]:
+            if os.path.exists(planting_ref):
+                os.remove(planting_ref)
+        if not os.path.exists(planting_ref):
+            if not os.path.exists(dnam):
+                os.makedirs(dnam)
+            if not os.path.isdir(dnam):
+                raise IOError('Error, no such folder >>> {}'.format(dnam))
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
+            command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+            command += ' --dst_fnam "{}"'.format(planting_ref)
+            command += ' --mask_fnam "{}"'.format(mask_paddy)
+            command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+            command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+            command += ' --tref {:%Y%m%d}'.format(pref_dtim)
+            if not np.isnan(self.values['trans_thr3'][0]):
+                command += ' --trans_n_max {}'.format(self.values['trans_thr3'][0])
+            if not np.isnan(self.values['trans_thr1'][0]):
+                command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
+            if not np.isnan(self.values['trans_thr1'][2]):
+                command += ' --post_min_min {}'.format(self.values['trans_thr1'][2])
+            if not np.isnan(self.values['trans_thr1'][3]):
+                command += ' --post_avg_min {}'.format(self.values['trans_thr1'][3])
+            if not np.isnan(self.values['trans_thr3'][1]):
+                command += ' --risetime_max {}'.format(self.values['trans_thr3'][1])
+            self.run_command(command,message='<<< Select reference for planting >>>')
+        else:
+            self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
 
         # Calculate average for planting
-        planting_avg = os.path.join(self.s1_analysis,'planting','{}_planting_avg.tif'.format(trg_bnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_average_reference.py'))
-        command += ' --ref_fnam "{}"'.format(planting_ref)
-        command += ' --dst_fnam "{}"'.format(planting_avg)
-        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-        command += ' --tmax {:%Y%m%d}'.format(end_dtim)
-        self.run_command(command,message='<<< Calculate average for planting >>>')
+        planting_avg = os.path.join(dnam,'{}_planting_avg.tif'.format(trg_bnam))
+        if self.values['oflag'][iflag]:
+            if os.path.exists(planting_avg):
+                os.remove(planting_avg)
+        if not os.path.exists(planting_avg):
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_average_reference.py'))
+            command += ' --ref_fnam "{}"'.format(planting_ref)
+            command += ' --dst_fnam "{}"'.format(planting_avg)
+            command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+            command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+            self.run_command(command,message='<<< Calculate average for planting >>>')
+        else:
+            self.print_message('File exists >>> {}'.format(planting_avg),print_time=False)
 
         # Select planting
-        planting_sel = os.path.join(self.s1_analysis,'planting','{}_planting.tif'.format(trg_bnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
-        command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
-        command += ' --stat_fnam "{}"'.format(planting_avg)
-        command += ' --dst_fnam "{}"'.format(planting_sel)
-        command += ' --mask_fnam "{}"'.format(mask_paddy)
-        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-        command += ' --tmax {:%Y%m%d}'.format(end_dtim)
-        #command += ' --tref {:%Y%m%d}'.format(pref_dtim)
-        if not np.isnan(self.values['trans_thr4'][0]):
-            command += ' --trans_n_max {}'.format(self.values['trans_thr4'][0])
-        if not np.isnan(self.values['trans_thr2'][0]):
-            command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
-        if not np.isnan(self.values['trans_thr2'][2]):
-            command += ' --post_min_min {}'.format(self.values['trans_thr2'][2])
-        if not np.isnan(self.values['trans_thr2'][3]):
-            command += ' --post_avg_min {}'.format(self.values['trans_thr2'][3])
-        if not np.isnan(self.values['trans_thr4'][1]):
-            command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
-        self.run_command(command,message='<<< Select planting >>>')
+        planting_sel = os.path.join(dnam,'{}_planting.tif'.format(trg_bnam))
+        if self.values['oflag'][iflag]:
+            if os.path.exists(planting_sel):
+                os.remove(planting_sel)
+        if not os.path.exists(planting_sel):
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
+            command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+            command += ' --stat_fnam "{}"'.format(planting_avg)
+            command += ' --dst_fnam "{}"'.format(planting_sel)
+            command += ' --mask_fnam "{}"'.format(mask_paddy)
+            command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+            command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+            #command += ' --tref {:%Y%m%d}'.format(pref_dtim)
+            if not np.isnan(self.values['trans_thr4'][0]):
+                command += ' --trans_n_max {}'.format(self.values['trans_thr4'][0])
+            if not np.isnan(self.values['trans_thr2'][0]):
+                command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
+            if not np.isnan(self.values['trans_thr2'][2]):
+                command += ' --post_min_min {}'.format(self.values['trans_thr2'][2])
+            if not np.isnan(self.values['trans_thr2'][3]):
+                command += ' --post_avg_min {}'.format(self.values['trans_thr2'][3])
+            if not np.isnan(self.values['trans_thr4'][1]):
+                command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
+            self.run_command(command,message='<<< Select planting >>>')
+        else:
+            self.print_message('File exists >>> {}'.format(planting_sel),print_time=False)
 
         # Parcellate planting
-        planting_csv = os.path.join(self.s1_analysis,'planting','{}_planting.csv'.format(trg_bnam))
-        planting_shp = os.path.join(self.s1_analysis,'planting','{}_planting.shp'.format(trg_bnam))
-        planting_pdf = os.path.join(self.s1_analysis,'planting','{}_planting.pdf'.format(trg_bnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
-        command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-        command += ' --src_geotiff "{}"'.format(planting_sel)
-        command += ' --mask_geotiff "{}"'.format(mask_parcel)
-        command += ' --out_csv "{}"'.format(planting_csv)
-        command += ' --out_shp "{}"'.format(planting_shp)
-        command += ' --fignam "{}"'.format(planting_pdf)
-        command += ' --ax1_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
-        command += ' --use_index'
-        command += ' --remove_nan'
-        command += ' --debug'
-        command += ' --batch'
-        self.run_command(command,message='<<< Parcellate planting >>>')
+        planting_csv = os.path.join(dnam,'{}_planting.csv'.format(trg_bnam))
+        planting_shp = os.path.join(dnam,'{}_planting.shp'.format(trg_bnam))
+        planting_pdf = os.path.join(dnam,'{}_planting.pdf'.format(trg_bnam))
+        if self.values['oflag'][iflag]:
+            if os.path.exists(planting_csv):
+                os.remove(planting_csv)
+            if os.path.exists(planting_shp):
+                os.remove(planting_shp)
+            if os.path.exists(planting_pdf):
+                os.remove(planting_pdf)
+        if not os.path.exists(planting_csv):
+            command = self.python_path
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
+            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+            command += ' --src_geotiff "{}"'.format(planting_sel)
+            command += ' --mask_geotiff "{}"'.format(mask_parcel)
+            command += ' --out_csv "{}"'.format(planting_csv)
+            command += ' --out_shp "{}"'.format(planting_shp)
+            command += ' --fignam "{}"'.format(planting_pdf)
+            command += ' --ax1_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
+            command += ' --use_index'
+            command += ' --remove_nan'
+            command += ' --debug'
+            command += ' --batch'
+            self.run_command(command,message='<<< Parcellate planting >>>')
+        else:
+            self.print_message('File exists >>> {}'.format(planting_csv),print_time=False)
 
         # Calculate assessment date
         assess_csv = os.path.join(wrk_dir,'{}_assess.csv'.format(trg_bnam))
         assess_shp = os.path.join(wrk_dir,'{}_assess.shp'.format(trg_bnam))
         assess_pdf = os.path.join(wrk_dir,'{}_assess.pdf'.format(trg_bnam))
-        dnam = os.path.dirname(assess_csv)
-        if not os.path.exists(dnam):
-            os.makedirs(dnam)
-        if not os.path.isdir(dnam):
-            raise IOError('Error, no such folder >>> {}'.format(dnam))
-        command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'calc_assess_date.py'))
-        command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
-        command += ' --plant "{}"'.format(planting_csv)
-        if self.values['head_fnam'] != '':
-            command += ' --head "{}"'.format(self.values['head_fnam'])
-        if self.values['harvest_fnam'] != '':
-            command += ' --harvest "{}"'.format(self.values['harvest_fnam'])
-        if self.values['assess_fnam'] != '':
-            command += ' --assess "{}"'.format(self.values['assess_fnam'])
-        command += ' --out_csv "{}"'.format(assess_csv)
-        command += ' --out_shp "{}"'.format(assess_shp)
-        command += ' --fignam "{}"'.format(assess_pdf)
-        command += ' --smooth "{}"'.format(self.values['y1_smooth'])
-        command += ' --atc {}'.format(self.values['atc_params'][0])
-        command += ' --offset {}'.format(self.values['atc_params'][1])
-        command += ' --sthr {}'.format(self.values['y1_thr'])
-        command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-        command += ' --tmax {:%Y%m%d}'.format(finish_dtim)
-        command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
-        command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
-        command += ' --grow_period {}'.format(self.values['assess_dthrs'][0])
-        command += ' --dthr1 {}'.format(self.values['assess_dthrs'][1])
-        command += ' --dthr2 {}'.format(self.values['assess_dthrs'][2])
-        command += ' --use_index'
-        command += ' --debug'
-        command += ' --batch'
-        self.run_command(command,message='<<< Calculate assessment date >>>')
-        if os.path.exists(assess_shp):
+        phenology_pdf = os.path.join(wrk_dir,'{}_phenology.pdf'.format(trg_bnam))
+        iflag = self.list_labels['oflag'].index('assess')
+        if self.values['oflag'][iflag]:
+            if os.path.exists(assess_csv):
+                os.remove(assess_csv)
+            if os.path.exists(assess_shp):
+                os.remove(assess_shp)
+            if os.path.exists(assess_pdf):
+                os.remove(assess_pdf)
+            if os.path.exists(phenology_pdf):
+                os.remove(phenology_pdf)
+        if not os.path.exists(assess_csv):
             command = self.python_path
-            command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_phenology.py'))
-            command += ' --shp_fnam "{}"'.format(assess_shp)
-            command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_phenology.pdf'.format(trg_bnam)))
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'calc_assess_date.py'))
+            command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+            command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
+            command += ' --plant "{}"'.format(planting_csv)
+            if self.values['head_fnam'] != '':
+                command += ' --head "{}"'.format(self.values['head_fnam'])
+            if self.values['harvest_fnam'] != '':
+                command += ' --harvest "{}"'.format(self.values['harvest_fnam'])
+            if self.values['assess_fnam'] != '':
+                command += ' --assess "{}"'.format(self.values['assess_fnam'])
+            command += ' --out_csv "{}"'.format(assess_csv)
+            command += ' --out_shp "{}"'.format(assess_shp)
+            command += ' --fignam "{}"'.format(assess_pdf)
+            command += ' --smooth "{}"'.format(self.values['y1_smooth'])
+            command += ' --atc {}'.format(self.values['atc_params'][0])
+            command += ' --offset {}'.format(self.values['atc_params'][1])
+            command += ' --sthr {}'.format(self.values['y1_thr'])
+            command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+            command += ' --tmax {:%Y%m%d}'.format(finish_dtim)
+            command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
+            command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
+            command += ' --grow_period {}'.format(self.values['assess_dthrs'][0])
+            command += ' --dthr1 {}'.format(self.values['assess_dthrs'][1])
+            command += ' --dthr2 {}'.format(self.values['assess_dthrs'][2])
             command += ' --use_index'
+            command += ' --debug'
             command += ' --batch'
-            self.run_command(command,message='<<< Draw figure for {} >>>'.format(trg_bnam))
+            self.run_command(command,message='<<< Calculate assessment date >>>')
+            if os.path.exists(assess_shp):
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_phenology.py'))
+                command += ' --shp_fnam "{}"'.format(assess_shp)
+                command += ' --fignam "{}"'.format(phenology_pdf)
+                command += ' --use_index'
+                command += ' --batch'
+                self.run_command(command,message='<<< Draw figure for {} >>>'.format(trg_bnam))
+        else:
+            self.print_message('File exists >>> {}'.format(assess_csv),print_time=False)
 
         # Finish process
         super().finish()

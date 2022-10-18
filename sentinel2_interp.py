@@ -215,6 +215,8 @@ for iobj,object_id in enumerate(object_ids):
             if fig_flag:
                 fig.clear()
                 ax1 = plt.subplot(111)
+                ax1.minorticks_on()
+                ax1.tick_params('x',length=8,which='major')
                 ax1.plot(xc,yc,'b-')
                 ax1.plot(xc[~cnd],yc[~cnd],'kx')
                 ax1.plot(out_dtim,ys,'r-')
@@ -226,6 +228,10 @@ for iobj,object_id in enumerate(object_ids):
                 ydif = ymax-ymin
                 if xdif < 365.0:
                     ax1.xaxis.set_major_locator(MonthLocator())
+                    ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
+                elif xdif < 547.0:
+                    ax1.xaxis.set_major_locator(MonthLocator(bymonth=[1,4,7,10]))
+                    ax1.xaxis.set_minor_locator(MonthLocator())
                     ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
                 else:
                     ax1.xaxis.set_major_locator(MonthLocator(bymonth=[1,7]))
