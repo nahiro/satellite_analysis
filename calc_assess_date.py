@@ -376,8 +376,8 @@ for iobj,object_id in enumerate(object_ids):
             ax3.plot(xp_2,yp_2*1.0e3,'ro',zorder=1)
         ax1.axvline(xp_1,color='k',linestyle=':',zorder=1)
         ax1.axvline(xp_2,color='k',linestyle=':',zorder=1)
-        ax1.axvline(x_head,color='r',zorder=1)
-        ax1.axvline(x_assess,color='g',zorder=1)
+        ax1.axvline(x_head,color='r',linestyle='--',zorder=1)
+        ax1.axvline(x_assess,color='g',linestyle='--',zorder=1)
         ax1.xaxis.set_major_locator(MonthLocator())
         ax1.xaxis.set_minor_locator(DayLocator(bymonthday=(15)))
         ax1.zorder = 10
