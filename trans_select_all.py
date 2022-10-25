@@ -63,7 +63,7 @@ dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
-years = np.arange(dmin.year,dmax.year+1,1)
+years = np.arange(dmin.year,dmax.year+2,1)
 
 ds = gdal.Open(args.mask_fnam)
 mask_nx = ds.RasterXSize
@@ -105,8 +105,8 @@ for year in years:
             continue
         bnam = m.group(1)
         dstr = m.group(2)
-        fnam = os.path.join(args.datdir,dnam,f)
-        gnam = os.path.join(args.datdir,dnam,'{}_{}_final.json'.format(bnam,dstr))
+        fnam = os.path.join(dnam,f)
+        gnam = os.path.join(dnam,'{}_{}_final.json'.format(bnam,dstr))
         if not os.path.exists(gnam):
             continue
         #print(dstr)
