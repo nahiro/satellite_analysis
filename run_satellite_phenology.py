@@ -31,9 +31,8 @@ class Phenology(Satellite_Process):
         mask_paddy = self.values['mask_paddy']
         if not os.path.exists(mask_paddy):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_paddy))
-        mask_parcel = self.values['mask_parcel']
-        if not os.path.exists(mask_parcel):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
+        iflag = self.list_labels['oflag'].index('mask')
+        flag_parcel = self.values['oflag'][iflag]
 
         # Select reference for planting
         dnam = os.path.join(self.s1_analysis,'planting')
@@ -126,6 +125,31 @@ class Phenology(Satellite_Process):
             if os.path.exists(planting_pdf):
                 os.remove(planting_pdf)
         if not os.path.exists(planting_csv):
+            # Make mask
+            mask_parcel = self.values['mask_parcel']
+            if os.path.exists(mask_parcel) and flag_parcel:
+                os.remove(mask_parcel)
+                flag_parcel = False
+            if not os.path.exists(mask_parcel):
+                mask_dnam = os.path.dirname(mask_parcel)
+                if not os.path.exists(mask_dnam):
+                    os.makedirs(mask_dnam)
+                if not os.path.isdir(mask_dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                command += ' --src_geotiff "{}"'.format(planting_sel)
+                command += ' --dst_geotiff "{}"'.format(mask_parcel)
+                if abs(self.values['buffer_parcel']) < 1.0e-6:
+                    command += ' --buffer 0.0'
+                else:
+                    command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
+                command += ' --use_index'
+                self.run_command(command,message='<<< Make mask >>>')
+            if not os.path.exists(mask_parcel):
+                raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
+            # Parcellate
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
             command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
