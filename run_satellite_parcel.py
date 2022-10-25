@@ -35,6 +35,8 @@ class Parcel(Satellite_Process):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,self.s2_data))
+        iflag = self.list_labels['oflag'].index('mask')
+        flag_parcel = self.values['oflag'][iflag]
 
         # Check Indices
         indices_fnams = []
@@ -89,9 +91,9 @@ class Parcel(Satellite_Process):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
                 mask_fnam = self.values['mask_parcel']
-                iflag = self.list_labels['oflag'].index('mask')
-                if os.path.exists(mask_fnam) and self.values['oflag'][iflag]:
+                if os.path.exists(mask_fnam) and flag_parcel:
                     os.remove(mask_fnam)
+                    flag_parcel = False
                 if not os.path.exists(mask_fnam):
                     mask_dnam = os.path.dirname(mask_fnam)
                     if not os.path.exists(mask_dnam):
