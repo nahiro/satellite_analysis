@@ -44,9 +44,8 @@ class Atcor(Satellite_Process):
         mask_studyarea = self.values['mask_studyarea']
         if not os.path.exists(mask_studyarea):
             raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_studyarea))
-        mask_parcel = self.values['mask_parcel']
-        if not os.path.exists(mask_parcel):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_parcel))
+        iflag = self.list_labels['oflag'].index('mask')
+        flag_parcel = self.values['oflag'][iflag]
 
         # Check Indices
         indices_fnams = []
@@ -233,6 +232,31 @@ class Atcor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
+                # Make mask
+                mask_parcel = self.values['mask_parcel']
+                if os.path.exists(mask_parcel) and flag_parcel:
+                    os.remove(mask_parcel)
+                    flag_parcel = False
+                if not os.path.exists(mask_parcel):
+                    mask_dnam = os.path.dirname(mask_parcel)
+                    if not os.path.exists(mask_dnam):
+                        os.makedirs(mask_dnam)
+                    if not os.path.isdir(mask_dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                    command += ' --src_geotiff "{}"'.format(fnam)
+                    command += ' --dst_geotiff "{}"'.format(mask_parcel)
+                    if abs(self.values['buffer_parcel']) < 1.0e-6:
+                        command += ' --buffer 0.0'
+                    else:
+                        command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
+                    command += ' --use_index'
+                    self.run_command(command,message='<<< Make mask >>>')
+                if not os.path.exists(mask_parcel):
+                    raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
+                # Correct
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_atcor_correct.py'))
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
