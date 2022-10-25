@@ -236,7 +236,6 @@ class Atcor(Satellite_Process):
                 mask_parcel = self.values['mask_parcel']
                 if os.path.exists(mask_parcel) and flag_parcel:
                     os.remove(mask_parcel)
-                    flag_parcel = False
                 if not os.path.exists(mask_parcel):
                     mask_dnam = os.path.dirname(mask_parcel)
                     if not os.path.exists(mask_dnam):
@@ -256,6 +255,8 @@ class Atcor(Satellite_Process):
                     self.run_command(command,message='<<< Make mask >>>')
                 if not os.path.exists(mask_parcel):
                     raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
+                else:
+                    flag_parcel = False
                 # Correct
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_atcor_correct.py'))
