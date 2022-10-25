@@ -90,12 +90,12 @@ class Parcel(Satellite_Process):
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
-                mask_fnam = self.values['mask_parcel']
-                if os.path.exists(mask_fnam) and flag_parcel:
-                    os.remove(mask_fnam)
+                mask_parcel = self.values['mask_parcel']
+                if os.path.exists(mask_parcel) and flag_parcel:
+                    os.remove(mask_parcel)
                     flag_parcel = False
-                if not os.path.exists(mask_fnam):
-                    mask_dnam = os.path.dirname(mask_fnam)
+                if not os.path.exists(mask_parcel):
+                    mask_dnam = os.path.dirname(mask_parcel)
                     if not os.path.exists(mask_dnam):
                         os.makedirs(mask_dnam)
                     if not os.path.isdir(mask_dnam):
@@ -104,20 +104,20 @@ class Parcel(Satellite_Process):
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
                     command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                     command += ' --src_geotiff "{}"'.format(fnam)
-                    command += ' --dst_geotiff "{}"'.format(mask_fnam)
+                    command += ' --dst_geotiff "{}"'.format(mask_parcel)
                     if abs(self.values['buffer_parcel']) < 1.0e-6:
                         command += ' --buffer 0.0'
                     else:
                         command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
                     command += ' --use_index'
                     self.run_command(command,message='<<< Make mask >>>')
-                if not os.path.exists(mask_fnam):
-                    raise ValueError('Error, no such file >>> {}'.format(mask_fnam))
+                if not os.path.exists(mask_parcel):
+                    raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_parcellate.py'))
                 command += ' --src_geotiff "{}"'.format(fnam)
                 command += ' --res_geotiff "{}"'.format(rnam)
-                command += ' --mask_geotiff "{}"'.format(mask_fnam)
+                command += ' --mask_geotiff "{}"'.format(mask_parcel)
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
                 command += ' --out_fnam "{}"'.format(data_npz)
                 command += ' --out_shp "{}"'.format(os.path.join(dnam,'{}_parcel.shp'.format(dstr)))
