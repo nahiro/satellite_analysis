@@ -29,6 +29,8 @@ class Phenology(Satellite_Process):
             os.makedirs(wrk_dir)
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
+        mask_paddy = self.values['mask_paddy']
+        mask_parcel = self.values['mask_parcel']
         iflag = self.list_labels['oflag'].index('mask')
         flag_paddy = self.values['oflag'][iflag]
         flag_parcel = self.values['oflag'][iflag]
@@ -46,55 +48,58 @@ class Phenology(Satellite_Process):
             if not os.path.isdir(dnam):
                 raise IOError('Error, no such folder >>> {}'.format(dnam))
             # Make paddy mask
-            mask_paddy = self.values['mask_paddy']
             if os.path.exists(mask_paddy) and flag_paddy:
                 os.remove(mask_paddy)
-                flag_paddy = False
             if not os.path.exists(mask_paddy):
-                src_fnam = None
-                years = np.arange(start_dtim.year,end_dtim.year+2,1)
-                for year in years:
-                    ystr = '{}'.format(year)
-                    dnam = os.path.join(self.s1_data,'planting',ystr)
-                    if not os.path.isdir(dnam):
-                        continue
-                    for f in sorted(os.listdir(dnam)):
-                        if not re.search('_final.tif',f)
-                            continue
-                        bnam = os.path.basename(f)
-                        fnam = os.path.join(dnam,f)
-                        gnam = os.path.join(dnam,'{}.json'.format(bnam))
-                        if not os.path.exists(gnam):
-                            continue
-                        with open(gnam,'r') as fp:
-                            data_info = json.load(fp)
-                        tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
-                        tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
-                        if tmin < end_dtim and tmax > start_dtim:
-                            src_fnam = fnam
-                            break
-                    if src_fnam is not None:
-                        break
-                if src_fnam is None:
-                    raise IOError('Error, no planting data between {:%Y%m%d} - {:%Y%m%d}'.format(start_dtim,end_dtim))
                 mask_dnam = os.path.dirname(mask_paddy)
                 if not os.path.exists(mask_dnam):
                     os.makedirs(mask_dnam)
                 if not os.path.isdir(mask_dnam):
                     raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
-                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                command += ' --src_geotiff "{}"'.format(src_fnam)
-                command += ' --dst_geotiff "{}"'.format(mask_paddy)
-                if abs(self.values['buffer_paddy']) < 1.0e-6:
-                    command += ' --buffer 0.0'
+                if os.path.exists(mask_parcel) and not flag_parcel and (self.values['buffer_paddy'] == self.values['buffer_parcel']):
+                    shutil.copy2(mask_parcel,mask_paddy)
                 else:
-                    command += ' --buffer="{}"'.format(-abs(self.values['buffer_paddy']))
-                command += ' --use_index'
-                self.run_command(command,message='<<< Make paddy mask >>>')
+                    src_fnam = None
+                    years = np.arange(start_dtim.year,end_dtim.year+2,1)
+                    for year in years:
+                        ystr = '{}'.format(year)
+                        dnam = os.path.join(self.s1_data,'planting',ystr)
+                        if not os.path.isdir(dnam):
+                            continue
+                        for f in sorted(os.listdir(dnam)):
+                            if not re.search('_final.tif',f)
+                                continue
+                            bnam = os.path.basename(f)
+                            fnam = os.path.join(dnam,f)
+                            gnam = os.path.join(dnam,'{}.json'.format(bnam))
+                            if not os.path.exists(gnam):
+                                continue
+                            with open(gnam,'r') as fp:
+                                data_info = json.load(fp)
+                            tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
+                            tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+                            if tmin < end_dtim and tmax > start_dtim:
+                                src_fnam = fnam
+                                break
+                        if src_fnam is not None:
+                            break
+                    if src_fnam is None:
+                        raise IOError('Error, no planting data between {:%Y%m%d} - {:%Y%m%d}'.format(start_dtim,end_dtim))
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                    command += ' --src_geotiff "{}"'.format(src_fnam)
+                    command += ' --dst_geotiff "{}"'.format(mask_paddy)
+                    if abs(self.values['buffer_paddy']) < 1.0e-6:
+                        command += ' --buffer 0.0'
+                    else:
+                        command += ' --buffer="{}"'.format(-abs(self.values['buffer_paddy']))
+                    command += ' --use_index'
+                    self.run_command(command,message='<<< Make paddy mask >>>')
             if not os.path.exists(mask_paddy):
                 raise ValueError('Error, no such file >>> {}'.format(mask_paddy))
+            else:
+                flag_paddy = False
             # Select
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
@@ -141,29 +146,32 @@ class Phenology(Satellite_Process):
                 os.remove(planting_sel)
         if not os.path.exists(planting_sel):
             # Make paddy mask
-            mask_paddy = self.values['mask_paddy']
             if os.path.exists(mask_paddy) and flag_paddy:
                 os.remove(mask_paddy)
-                flag_paddy = False
             if not os.path.exists(mask_paddy):
                 mask_dnam = os.path.dirname(mask_paddy)
                 if not os.path.exists(mask_dnam):
                     os.makedirs(mask_dnam)
                 if not os.path.isdir(mask_dnam):
                     raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
-                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                command += ' --src_geotiff "{}"'.format(planting_avg)
-                command += ' --dst_geotiff "{}"'.format(mask_paddy)
-                if abs(self.values['buffer_paddy']) < 1.0e-6:
-                    command += ' --buffer 0.0'
+                if os.path.exists(mask_parcel) and not flag_parcel and (self.values['buffer_paddy'] == self.values['buffer_parcel']):
+                    shutil.copy2(mask_parcel,mask_paddy)
                 else:
-                    command += ' --buffer="{}"'.format(-abs(self.values['buffer_paddy']))
-                command += ' --use_index'
-                self.run_command(command,message='<<< Make paddy mask >>>')
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                    command += ' --src_geotiff "{}"'.format(planting_avg)
+                    command += ' --dst_geotiff "{}"'.format(mask_paddy)
+                    if abs(self.values['buffer_paddy']) < 1.0e-6:
+                        command += ' --buffer 0.0'
+                    else:
+                        command += ' --buffer="{}"'.format(-abs(self.values['buffer_paddy']))
+                    command += ' --use_index'
+                    self.run_command(command,message='<<< Make paddy mask >>>')
             if not os.path.exists(mask_paddy):
                 raise ValueError('Error, no such file >>> {}'.format(mask_paddy))
+            else:
+                flag_paddy = False
             # Select
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
@@ -201,7 +209,6 @@ class Phenology(Satellite_Process):
                 os.remove(planting_pdf)
         if not os.path.exists(planting_csv):
             # Make parcel mask
-            mask_parcel = self.values['mask_parcel']
             if os.path.exists(mask_parcel) and flag_parcel:
                 os.remove(mask_parcel)
                 flag_parcel = False
