@@ -211,26 +211,30 @@ class Phenology(Satellite_Process):
             # Make parcel mask
             if os.path.exists(mask_parcel) and flag_parcel:
                 os.remove(mask_parcel)
-                flag_parcel = False
             if not os.path.exists(mask_parcel):
                 mask_dnam = os.path.dirname(mask_parcel)
                 if not os.path.exists(mask_dnam):
                     os.makedirs(mask_dnam)
                 if not os.path.isdir(mask_dnam):
                     raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
-                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
-                command += ' --src_geotiff "{}"'.format(planting_sel)
-                command += ' --dst_geotiff "{}"'.format(mask_parcel)
-                if abs(self.values['buffer_parcel']) < 1.0e-6:
-                    command += ' --buffer 0.0'
+                if os.path.exists(mask_paddy) and not flag_paddy and (self.values['buffer_parcel'] == self.values['buffer_paddy']):
+                    shutil.copy2(mask_paddy,mask_parcel)
                 else:
-                    command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
-                command += ' --use_index'
-                self.run_command(command,message='<<< Make parcel mask >>>')
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                    command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                    command += ' --src_geotiff "{}"'.format(planting_sel)
+                    command += ' --dst_geotiff "{}"'.format(mask_parcel)
+                    if abs(self.values['buffer_parcel']) < 1.0e-6:
+                        command += ' --buffer 0.0'
+                    else:
+                        command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
+                    command += ' --use_index'
+                    self.run_command(command,message='<<< Make parcel mask >>>')
             if not os.path.exists(mask_parcel):
                 raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
+            else:
+                flag_parcel = False
             # Parcellate
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_parcellate.py'))
