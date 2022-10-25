@@ -89,7 +89,15 @@ class Parcel(Satellite_Process):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 # Make mask
                 mask_fnam = self.values['mask_parcel']
+                iflag = self.list_labels['oflag'].index('mask')
+                if os.path.exists(mask_fnam) and self.values['oflag'][iflag]:
+                    os.remove(mask_fnam)
                 if not os.path.exists(mask_fnam):
+                    mask_dnam = os.path.dirname(mask_fnam)
+                    if not os.path.exists(mask_dnam):
+                        os.makedirs(mask_dnam)
+                    if not os.path.isdir(mask_dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
                     command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
