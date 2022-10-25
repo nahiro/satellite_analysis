@@ -140,6 +140,31 @@ class Phenology(Satellite_Process):
             if os.path.exists(planting_sel):
                 os.remove(planting_sel)
         if not os.path.exists(planting_sel):
+            # Make paddy mask
+            mask_paddy = self.values['mask_paddy']
+            if os.path.exists(mask_paddy) and flag_paddy:
+                os.remove(mask_paddy)
+                flag_paddy = False
+            if not os.path.exists(mask_paddy):
+                mask_dnam = os.path.dirname(mask_paddy)
+                if not os.path.exists(mask_dnam):
+                    os.makedirs(mask_dnam)
+                if not os.path.isdir(mask_dnam):
+                    raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                command = self.python_path
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                command += ' --src_geotiff "{}"'.format(planting_avg)
+                command += ' --dst_geotiff "{}"'.format(mask_paddy)
+                if abs(self.values['buffer_paddy']) < 1.0e-6:
+                    command += ' --buffer 0.0'
+                else:
+                    command += ' --buffer="{}"'.format(-abs(self.values['buffer_paddy']))
+                command += ' --use_index'
+                self.run_command(command,message='<<< Make paddy mask >>>')
+            if not os.path.exists(mask_paddy):
+                raise ValueError('Error, no such file >>> {}'.format(mask_paddy))
+            # Select
             command = self.python_path
             command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
             command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
