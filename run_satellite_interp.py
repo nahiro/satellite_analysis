@@ -34,11 +34,11 @@ class Interp(Satellite_Process):
         if not os.path.isdir(dnam):
             raise IOError('Error, no such folder >>> {}'.format(dnam))
         command = self.python_path
-        command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
         if self.values['atcor_flag']:
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp_atcor.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'atcor'))
-            command += ' --atcor'
         else:
+            command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
         command += ' --dstdir "{}"'.format(os.path.join(self.s2_data,'interp'))
         command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
