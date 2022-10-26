@@ -68,7 +68,7 @@ class Phenology(Satellite_Process):
                         if not os.path.isdir(dnam):
                             continue
                         for f in sorted(os.listdir(dnam)):
-                            if not re.search('_final.tif',f)
+                            if not re.search('_final.tif',f):
                                 continue
                             bnam = os.path.basename(f)
                             fnam = os.path.join(dnam,f)
