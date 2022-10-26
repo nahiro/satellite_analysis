@@ -27,7 +27,7 @@ TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.002
 NFIG = 1000
-RTHR = 0.8
+RTHR = 0.5
 ETHR = 3.0
 
 # Read options
@@ -198,10 +198,19 @@ for iobj,object_id in enumerate(object_ids):
             if param in atcor_params:
                 rc = inp_rval[cnd,iobj,iband]
                 cnd2 = (~np.isnan(rc)) & (rc > args.rthr)
-                yt = csaps(xc[cnd2],yc[cnd2],xc,smooth=args.smooth)
-                yd = yc-yt
-                ye = np.std(yd)
-                cnd = np.abs(yd) < ye*args.ethr
+                xc2 = xc[cnd2]
+                yc2 = yc[cnd2]
+                if xc2.size > 4:
+                    yt = csaps(xc2,yc2,xc,smooth=args.smooth)
+                    yd = yc-yt
+                    ye = np.std(yd[cnd2])
+                    cnd = np.abs(yd) < ye*args.ethr
+                else:
+                    x1 = np.gradient(xc)
+                    y1 = np.gradient(yc)/x1
+                    y2 = np.gradient(y1)/x1
+                    ye = np.std(y2)
+                    cnd = np.abs(y2) < ye*args.ethr
             else:
                 x1 = np.gradient(xc)
                 y1 = np.gradient(yc)/x1
@@ -216,8 +225,6 @@ for iobj,object_id in enumerate(object_ids):
                 ax1.minorticks_on()
                 ax1.tick_params('x',length=8,which='major')
                 ax1.plot(xc,yc,'b-')
-                if param in atcor_params:
-                    ax1.plot(xc[~cnd2],yc[~cnd2],'c^')
                 ax1.plot(xc[~cnd],yc[~cnd],'kx')
                 ax1.plot(out_dtim,ys,'r-')
                 xmin = xc.min()
@@ -228,6 +235,7 @@ for iobj,object_id in enumerate(object_ids):
                 ydif = ymax-ymin
                 if xdif < 365.0:
                     ax1.xaxis.set_major_locator(MonthLocator())
+                    ax1.xaxis.set_minor_locator(DayLocator(bymonthday=[16]))
                     ax1.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
                 elif xdif < 547.0:
                     ax1.xaxis.set_major_locator(MonthLocator(bymonth=[1,4,7,10]))
