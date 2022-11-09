@@ -36,6 +36,10 @@ class Download(Satellite_Process):
         itarg = self.list_labels['dflag'].index('planting')
         iflag = self.list_labels['oflag'].index('planting')
         if self.values['dflag'][itarg]:
+            if 'bojongsoang' in self.values['trans_path'].lower():
+                enam_list = ['.json','.dbf','.prj','.shp','.shx']
+            else:
+                enam_list = ['.tif','.json']
             data_years = np.arange(d1.year,d2.year+1,1)
             for year in data_years:
                 ystr = '{}'.format(year)
@@ -67,12 +71,13 @@ class Download(Satellite_Process):
                         continue
                     src_dnam = items[0]
                     src_fnam = items[1]
-                    m = re.search('_('+'\d'*8+')_final.tif$',src_fnam)
+                    m = re.search('_('+'\d'*8+')_final(\.\S+)$',src_fnam)
                     if not m:
-                        m = re.search('_('+'\d'*8+')_final.json$',src_fnam)
-                        if not m:
-                            continue
+                        continue
                     dstr = m.group(1)
+                    enam = m.group(2)
+                    if not enam in enam_list:
+                        continue
                     d = datetime.strptime(dstr,'%Y%m%d')
                     if d < d1 or d > d2:
                         continue
