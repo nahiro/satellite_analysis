@@ -202,6 +202,11 @@ for iobj,object_id in enumerate(object_ids):
         yc = inp_data[cnd,iobj,iband]
         if xc.size > 4:
             if param in atcor_params:
+                xmin = xc.min()
+                xmax = xc.max()
+                xdif = xmax-xmin
+                nmax = int(args.nmax*xdif/365.0+0.5)
+                ic = np.argsort(rc)
                 cnd2 = (rc > args.rthr)
                 xc2 = xc[cnd2]
                 yc2 = yc[cnd2]
