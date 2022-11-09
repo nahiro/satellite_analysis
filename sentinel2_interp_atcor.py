@@ -193,13 +193,16 @@ for iobj,object_id in enumerate(object_ids):
     else:
         fig_flag = False
     for iband,param in enumerate(params):
-        cnd = ~np.isnan(inp_data[:,iobj,iband])
+        if param in atcor_params:
+            cnd = (~np.isnan(inp_data[:,iobj,iband])) & (~np.isnan(inp_rval[:,iobj,iband])):
+            rc = inp_rval[cnd,iobj,iband]
+        else:
+            cnd = ~np.isnan(inp_data[:,iobj,iband])
         xc = inp_ntim[cnd]
         yc = inp_data[cnd,iobj,iband]
         if xc.size > 4:
             if param in atcor_params:
-                rc = inp_rval[cnd,iobj,iband]
-                cnd2 = (~np.isnan(rc)) & (rc > args.rthr)
+                cnd2 = (rc > args.rthr)
                 xc2 = xc[cnd2]
                 yc2 = yc[cnd2]
                 if xc2.size > 4:
@@ -226,13 +229,15 @@ for iobj,object_id in enumerate(object_ids):
                 ax1 = plt.subplot(111)
                 ax1.minorticks_on()
                 ax1.tick_params('x',length=8,which='major')
-                ax1.plot(xc,yc,'b-')
-                ax1.plot(xc[~cnd2],yc[~cnd2],'r^')
-                ax1.plot(xc[~cnd],yc[~cnd],'kx')
-                ax1.plot(out_dtim,ys,'r-')
-                xmin = xc.min()
-                xmax = xc.max()
-                xdif = xmax-xmin
+                ax1.plot(xc,yc,'b-',zorder=1)
+                ax1.plot(xc[~cnd],yc[~cnd],'kx',zorder=2)
+                ax1.plot(out_dtim,ys,'r-',zorder=10)
+                if param in atcor_params:
+                    ax1.plot(xc[~cnd2],yc[~cnd2],'r^',zorder=1)
+                else:
+                    xmin = xc.min()
+                    xmax = xc.max()
+                    xdif = xmax-xmin
                 ymin = yc.min()
                 ymax = yc.max()
                 ydif = ymax-ymin
