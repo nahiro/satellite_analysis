@@ -27,7 +27,8 @@ TMGN = 90 # day
 TSTP = 1 # day
 SMOOTH = 0.002
 NFIG = 1000
-RTHR = 0.5
+NMAX = 5
+RTHR = 0.7
 ETHR = 3.0
 
 # Read options
@@ -40,6 +41,7 @@ parser.add_argument('--data_tmax',default=DATA_TMAX,help='Max date of input data
 parser.add_argument('--tmgn',default=TMGN,type=float,help='Margin of input data in day (%(default)s)')
 parser.add_argument('--tstp',default=TSTP,type=int,help='Time step in day (%(default)s)')
 parser.add_argument('-S','--smooth',default=SMOOTH,type=float,help='Smoothing factor from 0 to 1 (%(default)s)')
+parser.add_argument('-N','--nmax',default=NMAX,type=int,help='Max number of exclusions per year (%(default)s)')
 parser.add_argument('-R','--rthr',default=RTHR,type=float,help='R threshold (%(default)s)')
 parser.add_argument('-E','--ethr',default=ETHR,type=float,help='Max error in sigma for cloud removal (%(default)s)')
 parser.add_argument('--out_csv',default=False,action='store_true',help='Output CSV (%(default)s)')
@@ -225,6 +227,7 @@ for iobj,object_id in enumerate(object_ids):
                 ax1.minorticks_on()
                 ax1.tick_params('x',length=8,which='major')
                 ax1.plot(xc,yc,'b-')
+                ax1.plot(xc[~cnd2],yc[~cnd2],'r^')
                 ax1.plot(xc[~cnd],yc[~cnd],'kx')
                 ax1.plot(out_dtim,ys,'r-')
                 xmin = xc.min()
