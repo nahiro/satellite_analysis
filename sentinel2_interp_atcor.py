@@ -194,7 +194,7 @@ for iobj,object_id in enumerate(object_ids):
         fig_flag = False
     for iband,param in enumerate(params):
         if param in atcor_params:
-            cnd = (~np.isnan(inp_data[:,iobj,iband])) & (~np.isnan(inp_rval[:,iobj,iband])):
+            cnd = (~np.isnan(inp_data[:,iobj,iband])) & (~np.isnan(inp_rval[:,iobj,iband]))
             rc = inp_rval[cnd,iobj,iband]
         else:
             cnd = ~np.isnan(inp_data[:,iobj,iband])
@@ -207,7 +207,11 @@ for iobj,object_id in enumerate(object_ids):
                 xdif = xmax-xmin
                 nmax = int(args.nmax*xdif/365.0+0.5)
                 ic = np.argsort(rc)
-                cnd2 = (rc > args.rthr)
+                cnd2 = np.full(xc.size,True)
+                for ii in range(nmax):
+                    indc = ic[ii]
+                    if rc[indc] < args.rthr:
+                        cnd2[indc] = False
                 xc2 = xc[cnd2]
                 yc2 = yc[cnd2]
                 if xc2.size > 4:
