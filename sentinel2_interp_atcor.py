@@ -8,6 +8,7 @@ import pandas as pd
 from matplotlib.dates import date2num,num2date,YearLocator,MonthLocator,DayLocator,DateFormatter
 from csaps import csaps
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from matplotlib.backends.backend_pdf import PdfPages
 from argparse import ArgumentParser,RawTextHelpFormatter
 
@@ -29,7 +30,7 @@ SMOOTH = 0.002
 NFIG = 1000
 NMAX = 5
 RTHR = 0.7
-ETHR = 3.0
+ETHR = 2.5
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -181,7 +182,7 @@ if args.debug:
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(6,3.5))
-    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.90)
+    plt.subplots_adjust(top=0.85,bottom=0.20,left=0.15,right=0.98)
     pdf = PdfPages(args.fignam)
     fig_interval = int(np.ceil(nobject/args.nfig)+0.1)
 out_ndat = len(out_dtim)
@@ -239,10 +240,14 @@ for iobj,object_id in enumerate(object_ids):
                 ax1.minorticks_on()
                 ax1.tick_params('x',length=8,which='major')
                 ax1.plot(xc,yc,'b-',zorder=1)
-                ax1.plot(xc[~cnd],yc[~cnd],'kx',zorder=2)
+                ax1.plot(xc[~cnd],yc[~cnd],'kx',ms=10,zorder=2)
                 ax1.plot(out_dtim,ys,'r-',zorder=10)
                 if param in atcor_params:
-                    ax1.plot(xc[~cnd2],yc[~cnd2],'r^',zorder=1)
+                    ax1.plot(xc[~cnd2],yc[~cnd2],'^',ms=10,mfc='none',mec='k',zorder=1)
+                    im = ax1.scatter(xc,yc,s=5,c=rc,vmin=0.5,vmax=1.0,cmap=cm.jet_r,zorder=10)
+                    ax2 = plt.colorbar(im,pad=0.01).ax
+                    ax2.set_ylabel('Correlation Coefficient')
+                    ax2.yaxis.set_label_coords(5.0,0.5)
                 else:
                     xmin = xc.min()
                     xmax = xc.max()
@@ -269,7 +274,7 @@ for iobj,object_id in enumerate(object_ids):
                     ax1.set_title('{} (OBJECTID={})'.format(args.ax1_title,object_id))
                 else:
                     ax1.set_title('OBJECTID={}'.format(object_id))
-                ax1.yaxis.set_label_coords(-0.12,0.5)
+                ax1.yaxis.set_label_coords(-0.16,0.5)
                 fig.autofmt_xdate()
                 plt.savefig(pdf,format='pdf')
                 if not args.batch:
