@@ -182,6 +182,8 @@ if args.no_interp:
         fnam = os.path.join(args.inpdir,ystr,'{}_parcel{}'.format(args.tobs,ext))
     else:
         fnam = os.path.join(args.inpdir,ystr,'{}_atcor{}'.format(args.tobs,ext))
+    if not os.path.exists(fnam):
+        raise IOError('Error, no such file >>> {}\n{}'.format(fnam))
 else:
     fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(args.tobs,ext))
     if not os.path.exists(fnam):
