@@ -52,6 +52,8 @@ parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug 
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--use_major_plot',default=False,action='store_true',help='Use major plot (%(default)s)')
 parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
+parser.add_argument('--no_interp',default=None,help='Use non-interpolated data (%(default)s)')
+parser.add_argument('--no_atcor',default=None,help='Use non-atcor data (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -175,13 +177,19 @@ else:
     ext = '.npz'
 dtim = datetime.strptime(args.tobs,'%Y%m%d')
 ystr = '{}'.format(dtim.year)
-fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(args.tobs,ext))
-if not os.path.exists(fnam):
-    gnam = os.path.join(args.tendir,ystr,'{}_interp{}'.format(args.tobs,ext))
-    if not os.path.exists(gnam):
-        raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
+if args.no_interp:
+    if args.no_atcor:
+        fnam = os.path.join(args.inpdir,ystr,'{}_parcel{}'.format(args.tobs,ext))
     else:
-        fnam = gnam
+        fnam = os.path.join(args.inpdir,ystr,'{}_atcor{}'.format(args.tobs,ext))
+else:
+    fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(args.tobs,ext))
+    if not os.path.exists(fnam):
+        gnam = os.path.join(args.tendir,ystr,'{}_interp{}'.format(args.tobs,ext))
+        if not os.path.exists(gnam):
+            raise IOError('Error, no such file >>> {}\n{}'.format(fnam,gnam))
+        else:
+            fnam = gnam
 if args.inp_csv:
     df = pd.read_csv(fnam,comment='#')
     df.columns = df.columns.str.strip()
