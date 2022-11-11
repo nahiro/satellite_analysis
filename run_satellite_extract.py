@@ -83,8 +83,16 @@ class Extract(Satellite_Process):
         if self.values['event_dates'][idate] != '':
             dtim = datetime.strptime(self.values['event_dates'][idate],date_fmt)
             command += ' --harvest {:%Y%m%d}'.format(dtim)
-        command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
-        command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
+        if 'Non-interpolated' in self.values['data_select']:
+            command += ' --no_interp'
+            if self.values['atcor_flag']:
+                command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'atcor'))
+            else:
+                command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
+                command += ' --no_atcor'
+        else:
+            command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
+            command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --out_csv "{}"'.format(extract_csv)
         command += ' --fignam "{}"'.format(extract_pdf)
         #command += ' --ax1_zmin="{}"'.format(self.ax1_zmin)
