@@ -61,7 +61,8 @@ class Extract(Satellite_Process):
         command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_extract_values.py'))
         command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
         command += ' --obs_fnam "{}"'.format(obs_csv)
-        command += ' --phenology "{}"'.format(self.values['event_fnam'])
+        if not self.values['event_flag']:
+            command += ' --phenology "{}"'.format(self.values['event_fnam'])
         command += ' --tobs {:%Y%m%d}'.format(spec_dtim)
         list_labels = [s.split()[0] for s in self.list_labels['event_dates']]
         idate = list_labels.index('Planting')
