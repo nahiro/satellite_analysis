@@ -155,20 +155,24 @@ x_center = np.array(x_center)
 y_center = np.array(y_center)
 
 # Read phenology CSV
-df = pd.read_csv(args.phenology,comment='#')
-df.columns = df.columns.str.strip()
-columns = df.columns.to_list()
-if not 'OBJECTID' in columns:
-    raise ValueError('Error in finding OBJECTID >>> {}'.format(args.phenology))
-iband = columns.index('OBJECTID')
-if not np.array_equal(df.iloc[:,iband].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(args.phenology))
 event_d = {}
-for param in PARAMS:
-    if not param in columns:
-        raise ValueError('Error in finding {} >>> {}'.format(param,args.phenology))
-    iband = columns.index(param)
-    event_d[param] = df.iloc[:,iband].astype(float).values
+if args.phenology is None:
+    for param in PARAMS:
+        event_d[param] = None
+else:
+    df = pd.read_csv(args.phenology,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'OBJECTID' in columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.phenology))
+    iband = columns.index('OBJECTID')
+    if not np.array_equal(df.iloc[:,iband].astype(int),object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(args.phenology))
+    for param in PARAMS:
+        if not param in columns:
+            raise ValueError('Error in finding {} >>> {}'.format(param,args.phenology))
+        iband = columns.index(param)
+        event_d[param] = df.iloc[:,iband].astype(float).values
 
 # Read indices
 if args.inp_csv:
@@ -295,8 +299,10 @@ for plot in plots:
     for param in PARAMS:
         if args_d[param] is not None:
             out_event[plot][param] = args_d[param]
-        else:
+        elif event_d[param] is not None:
             out_event[plot][param] = event_d[param][observe_indx]
+        else:
+            out_event[plot][param] = np.nan
     if args.debug:
         out_inds[plot] = observe_inds.copy()
         if observe_inds.size == 1:
