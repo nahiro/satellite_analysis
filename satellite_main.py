@@ -55,6 +55,8 @@ def set_title(pnam):
     end_dtim = datetime.strptime(end_date,date_fmt)
     first_dtim = datetime.strptime(first_date,date_fmt)
     last_dtim = datetime.strptime(last_date,date_fmt)
+    # set observation data
+    set_obs_fnam(block,dstr,field_data,date_format=date_format)
     # geocor
     proc = 'geocor'
     proc_pnam = 'l2a_dir'

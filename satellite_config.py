@@ -3,6 +3,7 @@ import sys
 import numpy as np
 from datetime import datetime,timedelta
 import configparser
+from proc_set_fnam import set_obs_fnam
 from proc_satellite_download import proc_download
 from proc_satellite_geocor import proc_geocor
 from proc_satellite_indices import proc_indices
