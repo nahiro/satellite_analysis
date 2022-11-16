@@ -32,6 +32,7 @@ NCHECK_MIN = 1
 NMODEL_MAX = 3
 CRITERIA = 'RMSE_test'
 N_CROSS = 5
+RANDOM_STATE = 3
 Y_THRESHOLD = ['BLB:0.2','Blast:0.2','Borer:0.2','Rat:0.2','Hopper:0.2','Drought:0.2']
 Y_MAX = ['BLB:9.0','Blast:9.0','Drought:9.0']
 Y_INT = ['BLB:2.0','Blast:2.0','Borer:0.2','Rat:0.2','Hopper:0.2','Drought:2.0']
@@ -56,6 +57,7 @@ parser.add_argument('-m','--ncheck_min',default=NCHECK_MIN,type=int,help='Min nu
 parser.add_argument('-M','--nmodel_max',default=NMODEL_MAX,type=int,help='Max number of formula (%(default)s)')
 parser.add_argument('-C','--criteria',default=CRITERIA,help='Selection criteria (%(default)s)')
 parser.add_argument('-c','--n_cross',default=N_CROSS,type=int,help='Number of cross validation (%(default)s)')
+parser.add_argument('-r','--random_state',default=RANDOM_STATE,type=int,help='Random state of cross validation (%(default)s)')
 parser.add_argument('-a','--amin',default=None,type=float,help='Min age in day (%(default)s)')
 parser.add_argument('-A','--amax',default=None,type=float,help='Max age in day (%(default)s)')
 parser.add_argument('--dmin_harvest',default=None,type=float,help='Min days from harvesting (%(default)s)')
@@ -70,6 +72,7 @@ parser.add_argument('--dmin_plant',default=None,type=float,help='Min days from p
 parser.add_argument('--dmax_plant',default=None,type=float,help='Max days from planting (%(default)s)')
 parser.add_argument('-F','--fignam',default=FIGNAM,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--mean_fitting',default=False,action='store_true',help='Mean value fitting (%(default)s)')
+parser.add_argument('--no_shuffle',default=False,action='store_true',help='Disable shuffle for cross validation (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -422,40 +425,43 @@ for y_param in args.y_param:
             coef_ps.append(model.pvalues)
             coef_ts.append(model.tvalues)
             coef_values.append(model.params)
-            if args.mean_fitting:
-                cov = model.cov_params()
-                errors = {}
-                for param in x_all:
-                    errors[param] = np.sqrt(cov.loc[param,param])
-                coef_errors.append(errors)
-                model_rmse_test.append(np.nan)
-                model_r2_test.append(np.nan)
-                model_aic_test.append(np.nan)
+            #if args.mean_fitting:
+            #    cov = model.cov_params()
+            #    errors = {}
+            #    for param in x_all:
+            #        errors[param] = np.sqrt(cov.loc[param,param])
+            #    coef_errors.append(errors)
+            #    model_rmse_test.append(np.nan)
+            #    model_r2_test.append(np.nan)
+            #    model_aic_test.append(np.nan)
+            #else:
+            rmses = []
+            r2s = []
+            aics = []
+            values = {}
+            errors = {}
+            for param in x_all:
+                values[param] = []
+            if args.no_shuffle:
+                kf = KFold(n_splits=args.n_cross,shuffle=False)
             else:
-                rmses = []
-                r2s = []
-                aics = []
-                values = {}
-                errors = {}
+                kf = KFold(n_splits=args.n_cross,random_state=args.random_state,shuffle=True)
+            for train_index,test_index in kf.split(X):
+                X_train,X_test = X.iloc[train_index],X.iloc[test_index]
+                Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
+                model = sm.OLS(Y_train,X_train).fit()
+                Y_pred = model.predict(X_test)
+                rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
+                r2s.append(r2_score(Y_test,Y_pred))
+                aics.append(aic(Y_test,Y_pred,0))
                 for param in x_all:
-                    values[param] = []
-                kf = KFold(n_splits=args.n_cross,random_state=None,shuffle=False)
-                for train_index,test_index in kf.split(X):
-                    X_train,X_test = X.iloc[train_index],X.iloc[test_index]
-                    Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
-                    model = sm.OLS(Y_train,X_train).fit()
-                    Y_pred = model.predict(X_test)
-                    rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
-                    r2s.append(r2_score(Y_test,Y_pred))
-                    aics.append(aic(Y_test,Y_pred,0))
-                    for param in x_all:
-                        values[param].append(model.params[param])
-                for param in x_all:
-                    errors[param] = np.std(values[param])
-                coef_errors.append(errors)
-                model_rmse_test.append(np.mean(rmses))
-                model_r2_test.append(np.mean(r2s))
-                model_aic_test.append(np.mean(aics))
+                    values[param].append(model.params[param])
+            for param in x_all:
+                errors[param] = np.std(values[param])
+            coef_errors.append(errors)
+            model_rmse_test.append(np.mean(rmses))
+            model_r2_test.append(np.mean(r2s))
+            model_aic_test.append(np.mean(aics))
 
     # Sort formulas
     if args.criteria == 'RMSE_test':
