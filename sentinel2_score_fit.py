@@ -339,6 +339,7 @@ for y_param in args.y_param:
             Y_score[y_param].append(Y_cnd)
         X_score = pd.DataFrame(X_score)
         Y_score = pd.DataFrame(Y_score)
+        Y_fit = Y_score[y_param]
     if args.debug:
         for param in args.x_param:
             fact = 100.0
@@ -349,7 +350,7 @@ for y_param in args.y_param:
             ax1.plot(X_all[param],Y*fact,'bo')
             ax1.plot(X_inp[param],Y_inp[y_param]*fact,'k.')
             if args.mean_fitting:
-                ax1.plot(X_score[param],Y_score[y_param]*fact,'mo',ms=10)
+                ax1.plot(X_score[param],Y_fit*fact,'mo',ms=10)
             xmin = X_inp[param].min()
             ymin = Y_inp[y_param].min()*fact
             xmax = X_inp[param].max()
@@ -358,7 +359,7 @@ for y_param in args.y_param:
             ydif = ymax-ymin
             xfit = np.linspace(xmin,xmax,100)
             if args.mean_fitting:
-                yfit = np.polyval(np.polyfit(X_score[param],Y_score[y_param]*fact,1),xfit)
+                yfit = np.polyval(np.polyfit(X_score[param],Y_fit*fact,1),xfit)
             else:
                 yfit = np.polyval(np.polyfit(X_all[param],Y*fact,1),xfit)
             ax1.plot(xfit,yfit,'r-')
@@ -406,7 +407,7 @@ for y_param in args.y_param:
                 x_all = list(X.columns)
                 if len(X) <= len(x_all):
                     raise ValueError('Error, not enough data available >>> {}'.format(len(X_all)))
-                model = sm.OLS(Y_score[y_param],X).fit()
+                model = sm.OLS(Y_fit,X).fit()
             else:
                 X = sm.add_constant(X_all[x_list]) # adding a constant
                 x_all = list(X.columns)
