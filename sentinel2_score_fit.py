@@ -402,17 +402,16 @@ for y_param in args.y_param:
                 for x in x_list:
                     r_list.append(np.corrcoef(X_all[x],Y)[0,1])
                 x_list = [c[indx] for indx in np.argsort(r_list)[::-1]]
+            X = sm.add_constant(X_all[x_list]) # adding a constant
+            x_all = list(X.columns)
             if args.mean_fitting:
-                X = sm.add_constant(X_score[x_list]) # adding a constant
-                x_all = list(X.columns)
-                if len(X) <= len(x_all):
-                    raise ValueError('Error, not enough data available >>> {}'.format(len(X_all)))
-                model = sm.OLS(Y_fit,X).fit()
+                X_fit = sm.add_constant(X_score[x_list]) # adding a constant
+                if len(X_fit) <= len(x_all):
+                    raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X_fit),len(x_all)))
+                model = sm.OLS(Y_fit,X_fit).fit()
             else:
-                X = sm.add_constant(X_all[x_list]) # adding a constant
-                x_all = list(X.columns)
                 if len(X) <= len(x_all):
-                    raise ValueError('Error, not enough data available >>> {}'.format(len(X_all)))
+                    raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X),len(x_all)))
                 model = sm.OLS(Y,X).fit()
             model_xs.append(x_all)
             model_rmse_train.append(np.sqrt(model.mse_resid)) # adjusted for df_resid
