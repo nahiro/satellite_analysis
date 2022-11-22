@@ -450,6 +450,7 @@ for y_param in args.y_param:
                 n_score = len(cnds)
                 X_kfold = []
                 Y_kfold = []
+                line = ''
                 for cnd in cnds:
                     X_cnd = X[cnd] # X_cnd[ncnd][nx]
                     Y_cnd = Y[cnd] # Y_cnd[ncnd]
@@ -459,10 +460,9 @@ for y_param in args.y_param:
                         np.random.shuffle(indx)
                     indx = np.array_split(indx,args.n_cross)
                     if y_param in y_max:
-                        sys.stderr.write('Cross Validation for Y={:.0f}: N={:4d} {}\n'.format(Y_cnd.mean()*y_max,ncnd,[indx[n].size for n in range(args.n_cross)]))
+                        line += 'Cross Validation for Y={:.0f}: N={:4d} {}\n'.format(Y_cnd.mean()*y_max[y_param],ncnd,[indx[n].size for n in range(args.n_cross)])
                     else:
-                        sys.stderr.write('Cross Validation for Y={:.2f}: N={:4d} {}\n'.format(Y_cnd.mean(),ncnd,[indx[n].size for n in range(args.n_cross)]))
-                    sys.stderr.flush()
+                        line += 'Cross Validation for Y={:.2f}: N={:4d} {}\n'.format(Y_cnd.mean(),ncnd,[indx[n].size for n in range(args.n_cross)])
                     X_temp = []
                     Y_temp = []
                     for n in range(args.n_cross):
@@ -486,6 +486,14 @@ for y_param in args.y_param:
                     Y_train = pd.Series(Y_train_list,name=Y.name)
                     X_test = pd.concat([d for d in X_test_list],axis=1).T
                     Y_test = pd.Series(Y_test_list,name=Y.name)
+                    cnd = (~np.isnan(Y_train.values)) & (~np.isnan(Y_test.values))
+                    X_train = X_train[cnd]
+                    Y_train = Y_train[cnd]
+                    X_test = X_test[cnd]
+                    Y_test = Y_test[cnd]
+                    if len(X_train) <= len(x_all):
+                        sys.stderr.write(line)
+                        raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X_train),len(x_all)))
                     model = sm.OLS(Y_train,X_train).fit()
                     Y_pred = model.predict(X_test)
                     rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
