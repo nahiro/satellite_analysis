@@ -458,6 +458,11 @@ for y_param in args.y_param:
                     if not args.no_shuffle:
                         np.random.shuffle(indx)
                     indx = np.array_split(indx,args.n_cross)
+                    if y_param in y_max:
+                        sys.stderr.write('Cross Validation for Y={:.0f}: N={:4d} {}\n'.format(Y_cnd.mean()*y_max,ncnd,[indx[n].size for n in range(args.n_cross)]))
+                    else:
+                        sys.stderr.write('Cross Validation for Y={:.2f}: N={:4d} {}\n'.format(Y_cnd.mean(),ncnd,[indx[n].size for n in range(args.n_cross)]))
+                    sys.stderr.flush()
                     X_temp = []
                     Y_temp = []
                     for n in range(args.n_cross):
