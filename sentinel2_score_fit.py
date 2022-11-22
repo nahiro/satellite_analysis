@@ -494,7 +494,7 @@ for y_param in args.y_param:
                     if len(X_train) <= len(x_all):
                         if args.criteria in ['RMSE_test','R2_test','AIC_test']:
                             sys.stderr.write(line)
-                            raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X_train),len(x_all)))
+                            raise ValueError('Error, not enough data available for Cross Validation >>> {} ({})'.format(len(X_train),len(x_all)))
                         else:
                             rmses.append(np.nan)
                             r2s.append(np.nan)
