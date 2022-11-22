@@ -265,6 +265,8 @@ Y_inp = Y.copy()
 P_inp = P.copy()
 
 # Make formulas
+if args.mean_fitting:
+    np.random.seed(args.random_state)
 if args.debug:
     if not args.batch:
         plt.interactive(True)
@@ -431,7 +433,6 @@ for y_param in args.y_param:
             for param in x_all:
                 values[param] = []
             if args.mean_fitting:
-                np.random.seed(args.random_state)
                 cnd1 = np.full((len(Y),),True)
                 cnds = []
                 for score in np.arange(smax,0,-sint):
