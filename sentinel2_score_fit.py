@@ -80,8 +80,6 @@ if args.inp_list is None and args.inp_fnam is None:
     raise ValueError('Error, args.inp_list={}, args.inp_fnam={}'.format(args.inp_list,args.inp_fnam))
 if not args.criteria in CRITERIAS:
     raise ValueError('Error, unsupported criteria >>> {}'.format(args.criteria))
-if args.mean_fitting and args.criteria in ['RMSE_test','R2_test','AIC_test']:
-    raise ValueError('Error, {} is not calculated for mean value fitting. Choose another selection criteria.'.format(args.criteria))
 if args.x_param is None:
     args.x_param = X_PARAM
 for param in args.x_param:
@@ -425,16 +423,6 @@ for y_param in args.y_param:
             coef_ps.append(model.pvalues)
             coef_ts.append(model.tvalues)
             coef_values.append(model.params)
-            #if args.mean_fitting:
-            #    cov = model.cov_params()
-            #    errors = {}
-            #    for param in x_all:
-            #        errors[param] = np.sqrt(cov.loc[param,param])
-            #    coef_errors.append(errors)
-            #    model_rmse_test.append(np.nan)
-            #    model_r2_test.append(np.nan)
-            #    model_aic_test.append(np.nan)
-            #else:
             rmses = []
             r2s = []
             aics = []
@@ -442,20 +430,82 @@ for y_param in args.y_param:
             errors = {}
             for param in x_all:
                 values[param] = []
-            if args.no_shuffle:
-                kf = KFold(n_splits=args.n_cross,shuffle=False)
+            if args.mean_fitting:
+                np.random.seed(args.random_state)
+                cnd1 = np.full((len(Y),),True)
+                cnds = []
+                for score in np.arange(smax,0,-sint):
+                    s_next = score-sint
+                    s = 0.5*(score+s_next)
+                    if np.abs(s) < EPSILON:
+                        s = 0.0
+                    cnd2 = (Y > s).to_numpy()
+                    cnd = (cnd1 & cnd2)
+                    if cnd.sum() > 0:
+                        cnds.append(cnd.copy())
+                    cnd1[cnd2] = False
+                cnd = cnd1
+                if cnd.sum() > 0:
+                    cnds.append(cnd.copy())
+                n_score = len(cnds)
+                X_kfold = []
+                Y_kfold = []
+                for cnd in cnds:
+                    X_cnd = X[cnd] # X_cnd[ncnd][nx]
+                    Y_cnd = Y[cnd] # Y_cnd[ncnd]
+                    ncnd = len(X_cnd)
+                    indx = np.arange(ncnd)
+                    if not args.no_shuffle:
+                        np.random.shuffle(indx)
+                    indx = np.array_split(indx,args.n_cross)
+                    X_temp = []
+                    Y_temp = []
+                    for n in range(args.n_cross):
+                        indx_sample = indx[n] # indx_sample[n_sample]
+                        X_temp.append(X_cnd.iloc[indx_sample]) # X_temp[n_cross][n_sample][nx]
+                        Y_temp.append(Y_cnd.iloc[indx_sample]) # Y_temp[n_cross][n_sample]
+                    X_kfold.append(X_temp) # X_kfold[n_score][n_cross][n_sample][nx]
+                    Y_kfold.append(Y_temp) # Y_kfold[n_score][n_cross][n_sample]
+                for n in range(args.n_cross):
+                    X_train_list = []
+                    Y_train_list = []
+                    X_test_list = []
+                    Y_test_list = []
+                    for i in range(n_score):
+                        indx = [m for m in range(args.n_cross) if m != n]
+                        X_train_list.append(pd.concat([X_kfold[i][m] for m in indx]).mean(axis=0))
+                        Y_train_list.append(pd.concat([Y_kfold[i][m] for m in indx]).mean())
+                        X_test_list.append(X_kfold[i][n].mean(axis=0))
+                        Y_test_list.append(Y_kfold[i][n].mean())
+                    X_train = pd.concat([d for d in X_train_list],axis=1).T
+                    Y_train = pd.Series(Y_train_list,name=Y.name)
+                    X_test = pd.concat([d for d in X_test_list],axis=1).T
+                    Y_test = pd.Series(Y_test_list,name=Y.name)
+                    model = sm.OLS(Y_train,X_train).fit()
+                    Y_pred = model.predict(X_test)
+                    rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
+                    r2s.append(r2_score(Y_test,Y_pred))
+                    aics.append(aic(Y_test,Y_pred,0))
+                    for param in x_all:
+                        values[param].append(model.params[param])
             else:
-                kf = KFold(n_splits=args.n_cross,random_state=args.random_state,shuffle=True)
-            for train_index,test_index in kf.split(X):
-                X_train,X_test = X.iloc[train_index],X.iloc[test_index]
-                Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
-                model = sm.OLS(Y_train,X_train).fit()
-                Y_pred = model.predict(X_test)
-                rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
-                r2s.append(r2_score(Y_test,Y_pred))
-                aics.append(aic(Y_test,Y_pred,0))
-                for param in x_all:
-                    values[param].append(model.params[param])
+                if args.no_shuffle:
+                    kf = KFold(n_splits=args.n_cross,shuffle=False)
+                else:
+                    kf = KFold(n_splits=args.n_cross,random_state=args.random_state,shuffle=True)
+                for train_index,test_index in kf.split(X):
+                    X_train,X_test = X.iloc[train_index],X.iloc[test_index]
+                    Y_train,Y_test = Y.iloc[train_index],Y.iloc[test_index]
+                    model = sm.OLS(Y_train,X_train).fit()
+                    Y_pred = model.predict(X_test)
+                    rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
+                    r2s.append(r2_score(Y_test,Y_pred))
+                    aics.append(aic(Y_test,Y_pred,0))
+                    for param in x_all:
+                        values[param].append(model.params[param])
+            #cov = model.cov_params()
+            #for param in x_all:
+            #    errors[param] = np.sqrt(cov.loc[param,param])
             for param in x_all:
                 errors[param] = np.std(values[param])
             coef_errors.append(errors)
