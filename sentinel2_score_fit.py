@@ -492,15 +492,23 @@ for y_param in args.y_param:
                     X_test = X_test[cnd]
                     Y_test = Y_test[cnd]
                     if len(X_train) <= len(x_all):
-                        sys.stderr.write(line)
-                        raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X_train),len(x_all)))
-                    model = sm.OLS(Y_train,X_train).fit()
-                    Y_pred = model.predict(X_test)
-                    rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
-                    r2s.append(r2_score(Y_test,Y_pred))
-                    aics.append(aic(Y_test,Y_pred,0))
-                    for param in x_all:
-                        values[param].append(model.params[param])
+                        if args.criteria in ['RMSE_test','R2_test','AIC_test']:
+                            sys.stderr.write(line)
+                            raise ValueError('Error, not enough data available >>> {} ({})'.format(len(X_train),len(x_all)))
+                        else:
+                            rmses.append(np.nan)
+                            r2s.append(np.nan)
+                            aics.append(np.nan)
+                            for param in x_all:
+                                values[param].append(np.nan)
+                    else:
+                        model = sm.OLS(Y_train,X_train).fit()
+                        Y_pred = model.predict(X_test)
+                        rmses.append(mean_squared_error(Y_test,Y_pred,squared=False))
+                        r2s.append(r2_score(Y_test,Y_pred))
+                        aics.append(aic(Y_test,Y_pred,0))
+                        for param in x_all:
+                            values[param].append(model.params[param])
             else:
                 if args.no_shuffle:
                     kf = KFold(n_splits=args.n_cross,shuffle=False)
@@ -520,11 +528,11 @@ for y_param in args.y_param:
             #for param in x_all:
             #    errors[param] = np.sqrt(cov.loc[param,param])
             for param in x_all:
-                errors[param] = np.std(values[param])
+                errors[param] = np.nanstd(values[param])
             coef_errors.append(errors)
-            model_rmse_test.append(np.mean(rmses))
-            model_r2_test.append(np.mean(r2s))
-            model_aic_test.append(np.mean(aics))
+            model_rmse_test.append(np.nanmean(rmses))
+            model_r2_test.append(np.nanmean(r2s))
+            model_aic_test.append(np.nanmean(aics))
 
     # Sort formulas
     if args.criteria == 'RMSE_test':
