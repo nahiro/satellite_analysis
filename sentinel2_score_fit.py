@@ -316,6 +316,7 @@ for y_param in args.y_param:
             X_score[param] = []
         Y_score[y_param] = []
         V_score = []
+        C_score = []
         cnd1 = np.full((len(Y),),True)
         smax = 1.0
         if y_param in y_max:
@@ -327,7 +328,7 @@ for y_param in args.y_param:
             s = 0.5*(score+s_next)
             if np.abs(s) < EPSILON:
                 s = 0.0
-            cnd2 = (Y > s)
+            cnd2 = (Y > s).to_numpy()
             cnd = (cnd1 & cnd2)
             if cnd.sum() > 0:
                 X_cnd = X_all[cnd].mean()
@@ -336,6 +337,7 @@ for y_param in args.y_param:
                     X_score[param].append(X_cnd[param])
                 Y_score[y_param].append(Y_cnd)
                 V_score.append((score*y_max[y_param] if y_param in y_max else score))
+                C_score.append(cnd.copy())
             cnd1[cnd2] = False
         cnd = cnd1
         if cnd.sum() > 0:
@@ -345,6 +347,7 @@ for y_param in args.y_param:
                 X_score[param].append(X_cnd[param])
             Y_score[y_param].append(Y_cnd)
             V_score.append((score*y_max[y_param] if y_param in y_max else score))
+            C_score.append(cnd.copy())
         X_score = pd.DataFrame(X_score)
         Y_score = pd.DataFrame(Y_score)
         Y_fit = Y_score[y_param]
@@ -439,27 +442,10 @@ for y_param in args.y_param:
             for param in x_all:
                 values[param] = []
             if args.mean_fitting:
-                cnd1 = np.full((len(Y),),True)
-                cnds = []
-                for score in np.arange(smax,0,-sint):
-                    s_next = score-sint
-                    s = 0.5*(score+s_next)
-                    if np.abs(s) < EPSILON:
-                        s = 0.0
-                    cnd2 = (Y > s).to_numpy()
-                    cnd = (cnd1 & cnd2)
-                    if cnd.sum() > 0:
-                        cnds.append(cnd.copy())
-                    cnd1[cnd2] = False
-                cnd = cnd1
-                if cnd.sum() > 0:
-                    cnds.append(cnd.copy())
-                if len(cnds) != n_score:
-                    raise ValueError('Error, len(cnds)={}, n_score={}'.format(len(cnds),n_score))
                 X_kfold = []
                 Y_kfold = []
                 line = 'x_list = {}\n'.format(x_list)
-                for score,cnd in zip(V_score,cnds):
+                for score,cnd in zip(V_score,C_score):
                     X_cnd = X[cnd] # X_cnd[ncnd][nx]
                     Y_cnd = Y[cnd] # Y_cnd[ncnd]
                     ncnd = len(X_cnd)
