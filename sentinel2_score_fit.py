@@ -243,6 +243,7 @@ for param in d_range:
     if param in p_param:
         if np.all(np.isnan(P[param].values)):
             sys.stderr.write('Warning, no data available for {}.\n'.format(param))
+            sys.stderr.flush()
         elif param == 'Age':
             if d_range[param][0] is not None:
                 cnd |= (P[param] < d_range[param][0]).values
@@ -251,6 +252,7 @@ for param in d_range:
         else:
             if np.all(np.isnan(P[d_param].values)):
                 sys.stderr.write('Warning, no data available for {}.\n'.format(d_param))
+                sys.stderr.flush()
             else:
                 if d_range[param][0] is not None:
                     cnd |= ((P[d_param]-P[param]) < d_range[param][0]).values
@@ -313,6 +315,7 @@ for y_param in args.y_param:
         for param in args.x_param:
             X_score[param] = []
         Y_score[y_param] = []
+        V_score = []
         cnd1 = np.full((len(Y),),True)
         smax = 1.0
         if y_param in y_max:
@@ -332,6 +335,7 @@ for y_param in args.y_param:
                 for param in args.x_param:
                     X_score[param].append(X_cnd[param])
                 Y_score[y_param].append(Y_cnd)
+                V_score.append((score*y_max[y_param] if y_param in y_max else score))
             cnd1[cnd2] = False
         cnd = cnd1
         if cnd.sum() > 0:
@@ -340,9 +344,11 @@ for y_param in args.y_param:
             for param in args.x_param:
                 X_score[param].append(X_cnd[param])
             Y_score[y_param].append(Y_cnd)
+            V_score.append((score*y_max[y_param] if y_param in y_max else score))
         X_score = pd.DataFrame(X_score)
         Y_score = pd.DataFrame(Y_score)
         Y_fit = Y_score[y_param]
+        n_score = len(V_score)
     if args.debug:
         for param in args.x_param:
             fact = 100.0
@@ -448,11 +454,12 @@ for y_param in args.y_param:
                 cnd = cnd1
                 if cnd.sum() > 0:
                     cnds.append(cnd.copy())
-                n_score = len(cnds)
+                if len(cnds) != n_score:
+                    raise ValueError('Error, len(cnds)={}, n_score={}'.format(len(cnds),n_score))
                 X_kfold = []
                 Y_kfold = []
-                line = ''
-                for cnd in cnds:
+                line = 'x_list = {}\n'.format(x_list)
+                for score,cnd in zip(V_score,cnds):
                     X_cnd = X[cnd] # X_cnd[ncnd][nx]
                     Y_cnd = Y[cnd] # Y_cnd[ncnd]
                     ncnd = len(X_cnd)
@@ -461,9 +468,9 @@ for y_param in args.y_param:
                         np.random.shuffle(indx)
                     indx = np.array_split(indx,args.n_cross)
                     if y_param in y_max:
-                        line += 'Cross Validation for Y={:.0f}: N={:4d} {}\n'.format(Y_cnd.mean()*y_max[y_param],ncnd,[indx[n].size for n in range(args.n_cross)])
+                        line += 'Cross Validation for Y={:.0f}: N={:4d} {}\n'.format(score,ncnd,[indx[n].size for n in range(args.n_cross)])
                     else:
-                        line += 'Cross Validation for Y={:.2f}: N={:4d} {}\n'.format(Y_cnd.mean(),ncnd,[indx[n].size for n in range(args.n_cross)])
+                        line += 'Cross Validation for Y={:.2f}: N={:4d} {}\n'.format(score,ncnd,[indx[n].size for n in range(args.n_cross)])
                     X_temp = []
                     Y_temp = []
                     for n in range(args.n_cross):
@@ -472,6 +479,9 @@ for y_param in args.y_param:
                         Y_temp.append(Y_cnd.iloc[indx_sample]) # Y_temp[n_cross][n_sample]
                     X_kfold.append(X_temp) # X_kfold[n_score][n_cross][n_sample][nx]
                     Y_kfold.append(Y_temp) # Y_kfold[n_score][n_cross][n_sample]
+                if args.criteria in ['RMSE_test','R2_test','AIC_test']:
+                    sys.stderr.write(line)
+                    sys.stderr.flush()
                 for n in range(args.n_cross):
                     X_train_list = []
                     Y_train_list = []
@@ -494,7 +504,6 @@ for y_param in args.y_param:
                     Y_test = Y_test[cnd]
                     if len(X_train) <= len(x_all):
                         if args.criteria in ['RMSE_test','R2_test','AIC_test']:
-                            sys.stderr.write(line)
                             raise ValueError('Error, not enough data available for Cross Validation >>> {} ({})'.format(len(X_train),len(x_all)))
                         else:
                             rmses.append(np.nan)
