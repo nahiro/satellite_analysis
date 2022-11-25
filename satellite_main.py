@@ -60,21 +60,21 @@ def set_title(pnam):
     # geocor
     proc = 'geocor'
     proc_pnam = 'l2a_dir'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         modules[proc].values[proc_pnam] = os.path.join(s2_data,'L2A')
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # indices
     proc = 'indices'
     proc_pnam = 'geocor_dir'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         modules[proc].values[proc_pnam] = os.path.join(s2_data,'geocor')
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # parcel
     proc = 'parcel'
     for proc_pnam,dnam in zip(['geocor_dir','indices_dir'],['geocor','indices']):
-        if not modules[proc].flag_fix[proc_pnam]:
+        if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
             modules[proc].values[proc_pnam] = os.path.join(s2_data,dnam)
             if modules[proc].center_var is not None:
                 modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
@@ -82,14 +82,14 @@ def set_title(pnam):
     proc = 'atcor'
     for proc_pnam,fnam in zip(['geocor_dir','indices_dir','mask_studyarea'],
                               ['geocor','indices','studyarea_mask.tif']):
-        if not modules[proc].flag_fix[proc_pnam]:
+        if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
             modules[proc].values[proc_pnam] = os.path.join(s2_data,fnam)
             if modules[proc].center_var is not None:
                 modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # phenology
     proc = 'phenology'
     proc_pnam = 'trans_fnam'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
@@ -102,7 +102,7 @@ def set_title(pnam):
     # extract
     proc = 'extract'
     proc_pnam = 'obs_fnam'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         if 'Drone' in modules[proc].values['obs_src']:
             modules[proc].values[proc_pnam] = os.path.join(drone_analysis,'extract','{}_{}_observation.csv'.format(block,dstr))
         else:
@@ -110,7 +110,7 @@ def set_title(pnam):
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'event_fnam'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
@@ -137,7 +137,7 @@ def set_title(pnam):
     # estimate
     proc = 'estimate'
     proc_pnam = 'event_fnam'
-    if not modules[proc].flag_fix[proc_pnam]:
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
         modules[proc].values[proc_pnam] = os.path.join(s2_analysis,'phenology','{:%Y%m%d}_{:%Y%m%d}_assess.csv'.format(start_dtim,end_dtim))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
