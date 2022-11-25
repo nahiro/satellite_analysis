@@ -93,12 +93,13 @@ def set_title(pnam):
         modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
-    dt = (end_dtim-start_dtim).total_seconds()
-    trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
     proc_pnam = 'trans_pref'
-    modules[proc].values[proc_pnam] = trans_pref
-    if modules[proc].center_var is not None:
-        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
+        dt = (end_dtim-start_dtim).total_seconds()
+        trans_pref = (start_dtim+timedelta(seconds=dt/2)).strftime(date_fmt)
+        modules[proc].values[proc_pnam] = trans_pref
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # extract
     proc = 'extract'
     proc_pnam = 'obs_fnam'
@@ -115,25 +116,27 @@ def set_title(pnam):
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'spec_date'
-    modules[proc].values[proc_pnam] = dstr
-    if modules[proc].center_var is not None:
-        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
+        modules[proc].values[proc_pnam] = dstr
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # formula
     proc = 'formula'
     proc_pnam = 'inp_fnams'
-    dnam = os.path.join(s2_analysis,'extract')
-    fnams = glob(os.path.join(dnam,'*_extract.csv'))
-    if len(fnams) > 0:
-        modules[proc].values[proc_pnam] = '\n'.join(sorted(fnams))
-    else:
-        modules[proc].values[proc_pnam] = os.path.join(dnam,'{}_{}_extract.csv'.format(block,dstr))
-    if modules[proc].center_var is not None:
-        try:
-            modules[proc].center_inp[proc_pnam].delete('1.0',tk.END)
-            modules[proc].center_inp[proc_pnam].insert('1.0',modules[proc].values[proc_pnam])
-        except Exception:
-            pass
-        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
+        dnam = os.path.join(s2_analysis,'extract')
+        fnams = glob(os.path.join(dnam,'*_extract.csv'))
+        if len(fnams) > 0:
+            modules[proc].values[proc_pnam] = '\n'.join(sorted(fnams))
+        else:
+            modules[proc].values[proc_pnam] = os.path.join(dnam,'{}_{}_extract.csv'.format(block,dstr))
+        if modules[proc].center_var is not None:
+            try:
+                modules[proc].center_inp[proc_pnam].delete('1.0',tk.END)
+                modules[proc].center_inp[proc_pnam].insert('1.0',modules[proc].values[proc_pnam])
+            except Exception:
+                pass
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # estimate
     proc = 'estimate'
     proc_pnam = 'event_fnam'
@@ -142,9 +145,10 @@ def set_title(pnam):
         if modules[proc].center_var is not None:
             modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'spec_date'
-    modules[proc].values[proc_pnam] = dstr
-    if modules[proc].center_var is not None:
-        modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
+    if (proc_pnam in modules[proc].flag_fix) and (not modules[proc].flag_fix[proc_pnam]):
+        modules[proc].values[proc_pnam] = dstr
+        if modules[proc].center_var is not None:
+            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     if pnam is None:
         return
     # change color
