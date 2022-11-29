@@ -404,46 +404,67 @@ for proc in pnams:
     defaults[proc] = config['main'].getboolean('main.{}'.format(proc))
     if not proc in config:
         config[proc] = {}
-    for pnam in modules[proc].pnams:
-        if modules[proc].input_types[pnam] in ['ask_file','ask_folder']:
-            modules[proc].flag_fix[pnam] = False
-            fnam = config[proc].get('{}.{}'.format(proc,pnam)).strip()
-            if len(fnam) < 1:
-                modules[proc].values[pnam] = fnam
-            else:
-                if fnam[0] == '!':
-                    modules[proc].flag_fix[pnam] = True
-                    fnam = fnam[1:]
-                modules[proc].values[pnam] = os.path.normpath(fnam)
-        elif modules[proc].input_types[pnam] in ['ask_files','ask_folders']:
-            lines = config[proc].get('{}.{}'.format(proc,pnam)).strip()
-            if len(lines) < 1:
-                modules[proc].values[pnam] = lines
-            else:
-                fnams = []
-                for line in lines.splitlines():
-                    if len(line) < 1:
-                        continue
-                    fnams.append(os.path.normpath(line))
-                modules[proc].values[pnam] = '\n'.join(fnams)
-        elif modules[proc].param_types[pnam] in ['string','string_select']:
-            modules[proc].values[pnam] = config[proc].get('{}.{}'.format(proc,pnam))
-        elif modules[proc].param_types[pnam] in ['int','int_select']:
-            modules[proc].values[pnam] = config[proc].getint('{}.{}'.format(proc,pnam))
-        elif modules[proc].param_types[pnam] in ['float','float_select']:
-            modules[proc].values[pnam] = config[proc].getfloat('{}.{}'.format(proc,pnam))
-        elif modules[proc].param_types[pnam] in ['boolean','boolean_select']:
-            modules[proc].values[pnam] = config[proc].getboolean('{}.{}'.format(proc,pnam))
-        elif modules[proc].param_types[pnam] in ['float_list','float_select_list']:
-            modules[proc].values[pnam] = eval(config[proc].get('{}.{}'.format(proc,pnam)).lower().replace('nan','np.nan'))
+    t = config[proc].get('{}.{}'.format(proc,pnam))
+    if t is None:
+        raise ValueError('Error, no parameter settings found >>> {}.{}'.format(proc,pnam))
+    else:
+        t = t.strip()
+    if len(t) > 0:
+        if t[0] == '!':
+            modules[proc].flag_fix[pnam] = True
+            t = t[1:]
         else:
-            v = config[proc].get('{}.{}'.format(proc,pnam))
-            if v is None:
-                raise ValueError('Errror, no such parameter >>> {}.{}'.format(proc,pnam))
-            elif len(v) < 1:
-                modules[proc].values[pnam] = v
+            modules[proc].flag_fix[pnam] = False
+    if modules[proc].input_types[pnam] in ['ask_file','ask_folder']:
+        if len(t) < 1:
+            modules[proc].values[pnam] = t
+        else:
+            modules[proc].values[pnam] = os.path.normpath(t)
+    elif modules[proc].input_types[pnam] in ['ask_files','ask_folders']:
+        if len(t) < 1:
+            modules[proc].values[pnam] = t
+        else:
+            fnams = []
+            for line in t.splitlines():
+                if len(line) < 1:
+                    continue
+                fnams.append(os.path.normpath(line))
+            modules[proc].values[pnam] = '\n'.join(fnams)
+    elif '_list' in modules[proc].param_types[pnam]:
+        m = re.search('\[([^\[\]]*)\]',t)
+        if not m:
+            raise ValueError('Error in reading {}.{} ({}) >>> {}'.format(proc,pnam,modules[proc].param_types[pnam],t))
+        ts = m.group(1).split(',')
+        if len(ts) != modules[proc].list_sizes[pnam]:
+            raise ValueError('Error, len(ts)={}, modules[{}].list_sizes[{}]={} >>> {}'.format(len(ts),proc,pnam,modules[proc].list_sizes[pnam],t))
+        for j in range(modules[proc].list_sizes[pnam]):
+            ret = modules[proc].check_par(pnam,ts[j])
+            if not ret:
+                raise ValueError('Error in reading {}.{} ({}) >>> {}'.format(proc,pnam,modules[proc].param_types[pnam],t))
+            elif modules[proc].param_types[pnam] in ['string_list','date_list','string_select_list']:
+                modules[proc].values[pnam][j] = ts[j]
+            elif modules[proc].param_types[pnam] in ['int_list','int_select_list']:
+                modules[proc].values[pnam][j] = int(ts[j])
+            elif modules[proc].param_types[pnam] in ['float_list','float_select_list']:
+                modules[proc].values[pnam][j] = float(ts[j])
+            elif modules[proc].param_types[pnam] in ['boolean_list']:
+                modules[proc].values[pnam][j] = bool(ts[j])
             else:
-                modules[proc].values[pnam] = eval(v)
+                raise ValueError('{}: Error, unsupported parameter type ({}) >>> {}'.format(modules[proc].proc_name,pnam,modules[proc].param_types[pnam]))
+    else:
+        ret = modules[proc].check_par(pnam,t)
+        if not ret:
+            raise ValueError('Error in reading {}.{} ({}) >>> {}'.format(proc,pnam,modules[proc].param_types[pnam],t))
+        elif modules[proc].param_types[pnam] in ['string','date','string_select','date_select']:
+            modules[proc].values[pnam] = t
+        elif modules[proc].param_types[pnam] in ['int','int_select']:
+            modules[proc].values[pnam] = int(t)
+        elif modules[proc].param_types[pnam] in ['float','float_select']:
+            modules[proc].values[pnam] = float(t)
+        elif modules[proc].param_types[pnam] in ['boolean']:
+            modules[proc].values[pnam] = bool(t)
+        else:
+            raise ValueError('{}: Error, unsupported parameter type ({}) >>> {}'.format(modules[proc].proc_name,pnam,modules[proc].param_types[pnam]))
     modules[proc].python_path = config[proc].get('{}.python_path'.format(proc))
     modules[proc].scr_dir = config[proc].get('{}.scr_dir'.format(proc))
     modules[proc].date_fmt = date_fmt
