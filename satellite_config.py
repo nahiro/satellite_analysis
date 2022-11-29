@@ -433,10 +433,13 @@ for proc in pnams:
                     fnams.append(os.path.normpath(line))
                 modules[proc].values[pnam] = '\n'.join(fnams)
         elif '_list' in modules[proc].param_types[pnam]:
-            m = re.search('\[([^\[\]]*)\]',t)
-            if not m:
-                raise ValueError('Error in reading {}.{} ({}) >>> {}'.format(proc,pnam,modules[proc].param_types[pnam],t))
-            ts = m.group(1).split(',')
+            if modules[proc].param_types[pnam] in ['string_list','date_list','string_select_list']:
+                ts = eval(t)
+            else:
+                m = re.search('\[([^\[\]]*)\]',t)
+                if not m:
+                    raise ValueError('Error in reading {}.{} ({}) >>> {}'.format(proc,pnam,modules[proc].param_types[pnam],t))
+                ts = m.group(1).split(',')
             if len(ts) != modules[proc].list_sizes[pnam]:
                 raise ValueError('Error, len(ts)={}, modules[{}].list_sizes[{}]={} >>> {}'.format(len(ts),proc,pnam,modules[proc].list_sizes[pnam],t))
             for j in range(modules[proc].list_sizes[pnam]):
