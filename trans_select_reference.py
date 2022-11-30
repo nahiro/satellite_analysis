@@ -292,6 +292,7 @@ for iy in range(src_ny):
             post_avg = np.delete(post_avg,ind_max)
             post_min = np.delete(post_min,ind_max)
             post_max = np.delete(post_max,ind_max)
+            risetime = np.delete(risetime,ind_max)
             ncnd = trans_d.size
         if ncnd > 1:
             if np.abs(trans_d[1]-trans_ref) < np.abs(trans_d[0]-trans_ref):
