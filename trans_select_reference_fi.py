@@ -14,7 +14,8 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 HOME = os.environ.get('HOME')
 if HOME is None:
     HOME = os.environ.get('USERPROFILE')
-DST_PARAMS = ['OBJECTID','Shape_Leng','Shape_Area','geometry']
+PARAMS = ['trans_d#','bsc_min#','fp_offs#','post_s#','fpi_#']
+OUT_PARAMS = ['OBJECTID','Shape_Leng','Shape_Area','geometry']
 
 # Default values
 TMIN = '20200216'
@@ -25,11 +26,12 @@ BSC_MIN_MAX = -18.0 # dB
 POST_S_MIN = 2.2 # dB
 DET_NMIN = 3
 OFFSET = 0.0 # day
+NCAN = 1
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
-parser.add_argument('-O','--dst_fnam',default=None,help='Output file name (%(default)s)')
+parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
@@ -37,9 +39,10 @@ parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
+parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 3 (%(default)s)')
 args = parser.parse_args()
-if args.dst_fnam is None:
-    raise ValueError('Error, args.dst_fnam={}'.format(args.dst_fnam))
+if args.out_fnam is None:
+    raise ValueError('Error, args.out_fnam={}'.format(args.out_fnam))
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
@@ -58,14 +61,13 @@ dref = datetime.strptime(args.tref,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
-years = np.arange(dmin.year,dmax.year+2,1)
 
 tmins = []
 tmaxs = []
 dstrs = []
 src_data = []
 nobject = None
-params = ['trans_d1','bsc_min1','fp_offs1','post_s1','fpi_1']
+params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
     if not os.path.isdir(dnam):
@@ -232,21 +234,7 @@ for iobj in range(nobject):
     #if flag:
     #    break
 
-out_data = data[DST_PARAMS].copy()
+out_data = data[OUT_PARAMS].copy()
 for i,param in enumerate(params):
     out_data[param] = dst_data[i]
-out_data.to_file(args.dst_fnam)
-"""
-drv = gdal.GetDriverByName('GTiff')
-ds = drv.Create(args.dst_fnam,dst_nx,dst_ny,dst_nb,gdal.GDT_Float32)
-ds.SetProjection(dst_prj)
-ds.SetGeoTransform(dst_trans)
-ds.SetMetadata(dst_meta)
-for i in range(dst_nb):
-    band = ds.GetRasterBand(i+1)
-    band.WriteArray(dst_data[i])
-    band.SetDescription(dst_band[i])
-band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
-ds.FlushCache()
-ds = None # close dataset
-"""
+out_data.to_file(args.out_fnam)
