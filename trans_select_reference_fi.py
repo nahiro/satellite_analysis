@@ -4,6 +4,7 @@ import sys
 import re
 import json
 import geopandas as gpd
+import xmltodict
 from glob import glob
 from datetime import datetime
 import numpy as np
@@ -122,7 +123,7 @@ dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
-dst_band = ['trans_d','bsc_min','fp_offs','post_s','fpi','p1_2','p2_2','p3_2','p4_2','p5_2']
+dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
 
 #flag = False
@@ -238,3 +239,6 @@ out_data = data[OUT_PARAMS].copy()
 for i,param in enumerate(params):
     out_data[param] = dst_data[i]
 out_data.to_file(args.out_fnam)
+with open('{}.xml'.format(args.out_fnam),'w') as fp:
+    dst_meta.update({'@xml:lang':'en'})
+    fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
