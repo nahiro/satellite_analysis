@@ -33,11 +33,15 @@ DATDIR = os.path.join(HOME,'Work','SATREPS','Transplanting_date','Bojongsoang','
 BSC_MIN_MAX = -13.0 # dB
 POST_S_MIN = 0.0 # dB
 DET_NMIN = 1
+REF_RMAX = 500.0 # m
+REF_NMAX = 10
+REF_DMAX = 30.1 # day
 OFFSET = 0.0 # day
 NCAN = 1
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-R','--ref_fnam',default=None,help='Reference file name (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
@@ -46,13 +50,18 @@ parser.add_argument('--tref',default=TREF,help='Reference date in the format YYY
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
+parser.add_argument('--ref_rmax',default=REF_RMAX,type=float,help='Maximum distance from reference in m (%(default)s)')
+parser.add_argument('--ref_nmax',default=REF_NMAX,type=int,help='Maximum number of reference (%(default)s)')
+parser.add_argument('--ref_dmax',default=REF_DMAX,type=float,help='Maximum difference from reference in day (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
-parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 3 (%(default)s)')
+parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 2 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
+if args.ref_fnam is None:
+    raise ValueError('Error, args.ref_fnam={}'.format(args.ref_fnam))
 if args.out_fnam is None:
     raise ValueError('Error, args.out_fnam={}'.format(args.out_fnam))
 
@@ -74,13 +83,25 @@ nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
 
+# Read reference
+data = gpd.read_file(args.ref_fnam)
+nobject = len(data)
+center_x = np.array(data.centroid.x)
+center_y = np.array(data.centroid.y)
+if args.ncan == 2:
+    ref_data = data['p1_2']
+else:
+    ref_data = np.array(data['trans_d'])
+cnd = (ref_data > nmin-1.0e-4) & (ref_data < nmax+1.0e-4)
+sel_data = ref_data[cnd]
+sel_x = center_x[cnd]
+sel_y = center_y[cnd]
+
+# Read all
 tmins = []
 tmaxs = []
 dstrs = []
 src_data = []
-nobject = None
-x_center = None
-y_center = None
 params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
@@ -100,11 +121,7 @@ for d in sorted(os.listdir(args.datdir)):
     data = gpd.read_file(fnams[0])
     with open(gnams[0],'r') as fp:
         data_info = json.load(fp)
-    if nobject is None:
-        nobject = len(data)
-        x_center = np.array(data.centroid.x)
-        y_center = np.array(data.centroid.y)
-    elif len(data) != nobject:
+    if len(data) != nobject:
         raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
     columns = data.columns.str.strip()
     for param in params:
@@ -137,6 +154,7 @@ dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
 dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
+dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)

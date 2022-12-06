@@ -133,6 +133,7 @@ dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
 dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
+dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
