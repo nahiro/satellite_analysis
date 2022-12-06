@@ -30,9 +30,9 @@ TMIN = '20200216'
 TMAX = '20200730'
 TREF = '20200501'
 DATDIR = os.path.join(HOME,'Work','SATREPS','Transplanting_date','Bojongsoang','final','v1.0')
-BSC_MIN_MAX = -18.0 # dB
-POST_S_MIN = 2.2 # dB
-DET_NMIN = 3
+BSC_MIN_MAX = -13.0 # dB
+POST_S_MIN = 0.0 # dB
+DET_NMIN = 1
 OFFSET = 0.0 # day
 NCAN = 1
 
@@ -79,6 +79,8 @@ tmaxs = []
 dstrs = []
 src_data = []
 nobject = None
+x_center = None
+y_center = None
 params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
@@ -100,6 +102,8 @@ for d in sorted(os.listdir(args.datdir)):
         data_info = json.load(fp)
     if nobject is None:
         nobject = len(data)
+        x_center = np.array(data.centroid.x)
+        y_center = np.array(data.centroid.y)
     elif len(data) != nobject:
         raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
     columns = data.columns.str.strip()
