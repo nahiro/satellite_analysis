@@ -196,7 +196,7 @@ for iy in range(src_ny):
         if np.isnan(stat_data[0,iy,ix]) or stat_data[4,iy,ix] < args.rthr:
             continue
         isrt = np.argsort(src_data[:,0,iy,ix])
-        dtmp = src_data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,reserved
+        dtmp = src_data[isrt,:,iy,ix] # trans_d,trans_s,trans_n,bsc_min,post_avg,post_min,post_max,risetime
         ttmp = tvals[isrt]
         stmp = dstrs[isrt]
         inds = None
