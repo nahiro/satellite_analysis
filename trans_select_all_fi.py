@@ -28,7 +28,6 @@ OUT_PARAMS = ['OBJECTID','Shape_Leng','Shape_Area','geometry']
 # Default values
 TMIN = '20200216'
 TMAX = '20200730'
-TREF = '20200501'
 DATDIR = os.path.join(HOME,'Work','SATREPS','Transplanting_date','Bojongsoang','final','v1.0')
 BSC_MIN_MAX = -13.0 # dB
 POST_S_MIN = 0.0 # dB
@@ -47,7 +46,6 @@ parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
@@ -55,8 +53,8 @@ parser.add_argument('--ref_rmax',default=REF_RMAX,type=float,help='Maximum dista
 parser.add_argument('--ref_nmax',default=REF_NMAX,type=int,help='Maximum number of reference (%(default)s)')
 parser.add_argument('--ref_dmax',default=REF_DMAX,type=float,help='Maximum difference from reference in day (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
-parser.add_argument('--ref_ncan',default=REF_NCAN,type=int,help='Candidate number of reference between 1 and 2 (%(default)s)')
-parser.add_argument('--inp_ncan',default=INP_NCAN,type=int,help='Candidate number of input between 1 and 3 (%(default)s)')
+parser.add_argument('--ref_ncan',default=REF_NCAN,type=int,help='Candidate number of reference between 1 and 2, or 0 (%(default)s)')
+parser.add_argument('-N','--inp_ncan',default=INP_NCAN,type=int,help='Candidate number of input between 1 and 3 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
 parser.add_argument('--sort_difference',default=False,action='store_true',help='Sort by difference between candidate and references (%(default)s)')
@@ -81,7 +79,6 @@ def all_close(a,b,rtol=0.01,atol=1.0):
 
 dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
-dref = datetime.strptime(args.tref,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
@@ -99,6 +96,12 @@ cnd = (ref_data > nmin-1.0e-4) & (ref_data < nmax+1.0e-4)
 sel_data = ref_data[cnd]
 sel_x = center_x[cnd]
 sel_y = center_y[cnd]
+if args.ref_ncan == 0:
+    ref_data = data['p1_2']
+    cnd = (ref_data > nmin-1.0e-4) & (ref_data < nmax+1.0e-4)
+    sel_data = np.append(sel_data,ref_data[cnd])
+    sel_x = np.append(sel_x,center_x[cnd])
+    sel_y = np.append(sel_y,center_y[cnd])
 
 # Read all
 tmins = []
@@ -155,7 +158,6 @@ ndat = len(src_data)
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
-dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
 dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
