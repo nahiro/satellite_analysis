@@ -81,7 +81,6 @@ dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
-trans_ref = date2num(dref)
 
 # Read reference
 data = gpd.read_file(args.ref_fnam)
