@@ -39,7 +39,8 @@ NCAN = 1
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
-parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
+parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
+parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--tref',default=TREF,help='Reference date in the format YYYYMMDD (%(default)s)')
@@ -53,8 +54,6 @@ parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.out_fnam is None:
-    raise ValueError('Error, args.out_fnam={}'.format(args.out_fnam))
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
@@ -98,11 +97,19 @@ for d in sorted(os.listdir(args.datdir)):
     data = gpd.read_file(fnams[0])
     with open(gnams[0],'r') as fp:
         data_info = json.load(fp)
+    columns = data.columns.str.strip()
     if nobject is None:
+        for param in OUT_PARAMS:
+            if not param in columns:
+                raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
+        out_data = data[OUT_PARAMS].copy()
         nobject = len(data)
+        if args.use_index:
+            object_ids = np.arange(nobject)+1
+        else:
+            object_ids = data['OBJECTID'].to_numpy()
     elif len(data) != nobject:
         raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
-    columns = data.columns.str.strip()
     for param in params:
         if not param in columns:
             raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
@@ -246,14 +253,28 @@ for iobj in range(nobject):
     #flag = True
     #if flag:
     #    break
-
-out_data = data[OUT_PARAMS].copy()
 for i,param in enumerate(dst_band):
     out_data[param] = dst_data[i]
-out_data.to_file(args.out_fnam)
-with open('{}.xml'.format(args.out_fnam),'w') as fp:
-    dst_meta.update({'@xml:lang':'en'})
-    fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
+
+# Output CSV
+if args.out_csv is not None:
+    with open(args.out_csv,'w') as fp:
+        fp.write('{:>8s}'.format('OBJECTID'))
+        for param in dst_band:
+            fp.write(', {:>13s}'.format(param))
+        fp.write('\n')
+        for iobj,object_id in enumerate(object_ids):
+            fp.write('{:8d}'.format(object_id))
+            for param in dst_band:
+                fp.write(', {:>13.6e}'.format(out_data[param][iobj]))
+            fp.write('\n')
+
+# Output Shapefile
+if args.out_shp is not None:
+    out_data.to_file(args.out_shp)
+    with open('{}.xml'.format(args.out_shp),'w') as fp:
+        dst_meta.update({'@xml:lang':'en'})
+        fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
 
 if args.debug:
     if not args.batch:
