@@ -57,6 +57,7 @@ parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting dat
 parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 2 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
+parser.add_argument('--sort_difference',default=False,action='store_true',help='Sort by difference between candidate and references (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -76,7 +77,6 @@ def all_close(a,b,rtol=0.01,atol=1.0):
         sys.stderr.write('{} {}\n'.format(dif/avg,dif))
         return False
 
-t1 = datetime.now()
 dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 dref = datetime.strptime(args.tref,'%Y%m%d')
@@ -161,10 +161,10 @@ dst_meta['ref_rmax'] = '{}'.format(args.ref_rmax)
 dst_meta['ref_nmax'] = '{}'.format(args.ref_nmax)
 dst_meta['ref_dmax'] = '{}'.format(args.ref_dmax)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
+dst_meta['sort'] = '{}'.format('difference' if args.sort_difference else 'distance')
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
 
-t2 = datetime.now()
 #flag = False
 for iobj in range(nobject):
     #if iobj%100 == 0:
@@ -282,7 +282,10 @@ for iobj in range(nobject):
             plot_number = plot_number[cnd]
             plot_dval = plot_dval[cnd]
             plot_rval = plot_rval[cnd]
-            indx = np.argsort(plot_rval)
+            if args.sort_difference:
+                indx = np.argsort(plot_dval)
+            else:
+                indx = np.argsort(plot_rval)
         else:
             indx = np.argsort(plot_number)[::-1]
         i1 = indx[0]
@@ -315,7 +318,6 @@ with open('{}.xml'.format(args.out_fnam),'w') as fp:
     dst_meta.update({'@xml:lang':'en'})
     fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
 
-t3 = datetime.now()
 if args.debug:
     if not args.batch:
         plt.interactive(True)
@@ -417,5 +419,3 @@ if args.debug:
             plt.draw()
             plt.pause(0.1)
     pdf.close()
-t4 = datetime.now()
-print('HERE, {:.1f}, {:.1f}, {:.1f}'.format((t2-t1).total_seconds(),(t3-t2).total_seconds(),(t4-t3).total_seconds()))
