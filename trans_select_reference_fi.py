@@ -270,7 +270,6 @@ if args.debug:
         else:
             param = 'trans_d'
         pnam = 'trans_d'
-        data = out_data[param]
         ax1 = plt.subplot(221)
         ax1.set_xticks([])
         ax1.set_yticks([])
