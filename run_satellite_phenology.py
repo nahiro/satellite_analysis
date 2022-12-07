@@ -53,7 +53,7 @@ class Phenology(Satellite_Process):
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference_fi.py'))
                 command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
-                command += ' --out_fnam "{}"'.format(planting_ref)
+                command += ' --out_shp "{}"'.format(planting_ref)
                 command += ' --tmin {:%Y%m%d}'.format(start_dtim)
                 command += ' --tmax {:%Y%m%d}'.format(end_dtim)
                 command += ' --tref {:%Y%m%d}'.format(pref_dtim)
@@ -61,6 +61,7 @@ class Phenology(Satellite_Process):
                     command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
                 if not np.isnan(self.values['trans_thr1'][3]):
                     command += ' --post_s_min {}'.format(self.values['trans_thr1'][3])
+                command += ' --use_index'
                 self.run_command(command,message='<<< Select reference for planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
