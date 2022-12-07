@@ -37,7 +37,8 @@ REF_RMAX = 500.0 # m
 REF_NMAX = 10
 REF_DMAX = 30.1 # day
 OFFSET = 0.0 # day
-NCAN = 1
+REF_NCAN = 1
+INP_NCAN = 1
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -54,7 +55,8 @@ parser.add_argument('--ref_rmax',default=REF_RMAX,type=float,help='Maximum dista
 parser.add_argument('--ref_nmax',default=REF_NMAX,type=int,help='Maximum number of reference (%(default)s)')
 parser.add_argument('--ref_dmax',default=REF_DMAX,type=float,help='Maximum difference from reference in day (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
-parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 2 (%(default)s)')
+parser.add_argument('--ref_ncan',default=REF_NCAN,type=int,help='Candidate number of reference between 1 and 2 (%(default)s)')
+parser.add_argument('--inp_ncan',default=INP_NCAN,type=int,help='Candidate number of input between 1 and 3 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
 parser.add_argument('--sort_difference',default=False,action='store_true',help='Sort by difference between candidate and references (%(default)s)')
@@ -89,7 +91,7 @@ data = gpd.read_file(args.ref_fnam)
 nobject = len(data)
 center_x = np.array(data.centroid.x)
 center_y = np.array(data.centroid.y)
-if args.ncan == 2:
+if args.ref_ncan == 2:
     ref_data = data['p1_2']
 else:
     ref_data = np.array(data['trans_d'])
@@ -103,7 +105,7 @@ tmins = []
 tmaxs = []
 dstrs = []
 src_data = []
-params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
+params = [param.replace('#','{}'.format(args.inp_ncan)) for param in PARAMS]
 nband = len(params)
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
