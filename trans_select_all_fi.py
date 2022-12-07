@@ -76,6 +76,7 @@ def all_close(a,b,rtol=0.01,atol=1.0):
         sys.stderr.write('{} {}\n'.format(dif/avg,dif))
         return False
 
+t1 = datetime.now()
 dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 dref = datetime.strptime(args.tref,'%Y%m%d')
@@ -103,6 +104,7 @@ tmaxs = []
 dstrs = []
 src_data = []
 params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
+nband = len(params)
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
     if not os.path.isdir(dnam):
@@ -139,11 +141,11 @@ for d in sorted(os.listdir(args.datdir)):
         tmaxs.append(tmax)
         dstrs.append(dstr)
         src_data.append(data[params].to_numpy())
-tmins = date2num(np.array(tmins))
-tmaxs = date2num(np.array(tmaxs))
-tvals = 0.5*(tmins+tmaxs)
-dstrs = np.array(dstrs)
-src_data = np.array(src_data)
+tmins = date2num(np.array(tmins)) # tmins[ndat]
+tmaxs = date2num(np.array(tmaxs)) # tmaxs[ndat]
+tvals = 0.5*(tmins+tmaxs) # tvals[ndat]
+dstrs = np.array(dstrs) # dstrs[ndat]
+src_data = np.array(src_data) # src_data[ndat][nobject][nband]
 cnd = (src_data[:,:,0] < nmin-1.0e-4) | (src_data[:,:,0] > nmax+1.0e-4)
 src_data[:,:,0][cnd] = np.nan
 ndat = len(src_data)
@@ -155,10 +157,14 @@ dst_meta['tref'] = '{:%Y%m%d}'.format(dref)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
 dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
+dst_meta['ref_rmax'] = '{}'.format(args.ref_rmax)
+dst_meta['ref_nmax'] = '{}'.format(args.ref_nmax)
+dst_meta['ref_dmax'] = '{}'.format(args.ref_dmax)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
 
+t2 = datetime.now()
 #flag = False
 for iobj in range(nobject):
     #if iobj%100 == 0:
@@ -198,6 +204,7 @@ for iobj in range(nobject):
     fp_offs = []
     post_s = []
     fpi = []
+    # Group candidates
     for ii in inds:
         if len(ii) < args.det_nmin:
             continue
@@ -218,8 +225,9 @@ for iobj in range(nobject):
     fp_offs = np.array(fp_offs)
     post_s = np.array(post_s)
     fpi = np.array(fpi)
-    cnd1 = bsc_min < args.bsc_min_max
-    cnd2 = post_s > args.post_s_min
+    # Remove bad candidates
+    cnd1 = (bsc_min < args.bsc_min_max)
+    cnd2 = (post_s > args.post_s_min)
     cnd = cnd1 & cnd2
     ncnd = cnd.sum()
     if ncnd < 1:
@@ -229,25 +237,56 @@ for iobj in range(nobject):
     fp_offs = fp_offs[cnd]
     post_s = post_s[cnd]
     fpi = fpi[cnd]
-    while ncnd > 2:
-        ind_max = np.argmax(np.abs(trans_d-trans_ref))
-        #if ncnd == 3:
-        #    sys.stderr.write('Warning, iobj={:6d}, delete index {} >>> {:%Y%m%d}, {:%Y%m%d}, {:%Y%m%d}\n'.format(iobj,ind_max,num2date(trans_d[0]),num2date(trans_d[1]),num2date(trans_d[2])))
-        #else:
-        #    sys.stderr.write('Warning, iobj={:6d}, delete index {} >>> {:%Y%m%d}\n'.format(iobj,ind_max,num2date(trans_d[ind_max])))
-        trans_d = np.delete(trans_d,ind_max)
-        bsc_min = np.delete(bsc_min,ind_max)
-        fp_offs = np.delete(fp_offs,ind_max)
-        post_s = np.delete(post_s,ind_max)
-        fpi = np.delete(fpi,ind_max)
-        ncnd = trans_d.size
+    # Select candidates close to the reference
+    rval2 = np.square(sel_x-center_x[iobj])+np.square(sel_y-center_y[iobj])
+    cnd = (rval2 < np.square(args.ref_rmax))
+    rcnd = np.sqrt(rval2[cnd])
+    indx = np.argsort(rcnd)[:min(args.ref_nmax,rcnd.size)]
+    rval = rcnd[indx] # distance between target and references
+    cnd_data = (sel_data[cnd])[indx] # trans_d of references
+    plot_number = []
+    plot_dval = []
+    plot_rval = []
+    for d in trans_d:
+        dval = np.abs(cnd_data-d) # difference between candidate and references
+        cnd = (dval < args.ref_dmax)
+        dcnd = dval[cnd]
+        rcnd = rval[cnd]
+        plot_number.append(dcnd.size)
+        plot_dval.append(dcnd.sum() if dcnd.size > 0 else np.nan)
+        plot_rval.append(rcnd.sum() if dcnd.size > 0 else np.nan)
+    plot_number = np.array(plot_number)
+    plot_dval = np.array(plot_dval)
+    plot_rval = np.array(plot_rval)
+    cnd = (plot_number > 0)
+    ncnd = cnd.sum()
+    if ncnd < 1:
+        continue
+    trans_d = trans_d[cnd]
+    bsc_min = bsc_min[cnd]
+    fp_offs = fp_offs[cnd]
+    post_s = post_s[cnd]
+    fpi = fpi[cnd]
+    plot_number = plot_number[cnd]
+    plot_dval = plot_dval[cnd]
+    plot_rval = plot_rval[cnd]
     if ncnd > 1:
-        if np.abs(trans_d[1]-trans_ref) < np.abs(trans_d[0]-trans_ref):
-            i1 = 1
-            i2 = 0
+        cnd = (plot_number == plot_number.max())
+        ncnd = cnd.sum()
+        if ncnd > 1:
+            trans_d = trans_d[cnd]
+            bsc_min = bsc_min[cnd]
+            fp_offs = fp_offs[cnd]
+            post_s = post_s[cnd]
+            fpi = fpi[cnd]
+            plot_number = plot_number[cnd]
+            plot_dval = plot_dval[cnd]
+            plot_rval = plot_rval[cnd]
+            indx = np.argsort(plot_rval)
         else:
-            i1 = 0
-            i2 = 1
+            indx = np.argsort(plot_number)[::-1]
+        i1 = indx[0]
+        i2 = indx[1]
         dst_data[0,iobj] = trans_d[i1]
         dst_data[1,iobj] = bsc_min[i1]
         dst_data[2,iobj] = fp_offs[i1]
@@ -276,6 +315,7 @@ with open('{}.xml'.format(args.out_fnam),'w') as fp:
     dst_meta.update({'@xml:lang':'en'})
     fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
 
+t3 = datetime.now()
 if args.debug:
     if not args.batch:
         plt.interactive(True)
@@ -377,3 +417,5 @@ if args.debug:
             plt.draw()
             plt.pause(0.1)
     pdf.close()
+t4 = datetime.now()
+print('HERE, {:.1f}, {:.1f}, {:.1f}'.format((t2-t1).total_seconds(),(t3-t2).total_seconds(),(t4-t3).total_seconds()))
