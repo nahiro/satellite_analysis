@@ -170,15 +170,15 @@ x1 = x0
 y1 = y0
 x2 = np.nan
 y2 = np.nan
-xs = [x1]
-ys = [y1]
+xs = np.array([x1])
+ys = np.array([y1])
 xxs = []
 yys = []
 while (x2,y2) != (x0,y0):
     dx = xcnd-x1
     dy = ycnd-y1
     r2 = np.square(dx)+np.square(dy)
-    cnd2 = (r2 > 0.0) & (r2 < ll) & fcnd
+    cnd2 = (r2 > EPSILON) & (r2 < ll) & fcnd
     xc = xcnd[cnd2]
     yc = ycnd[cnd2]
     if xc.size < 1:
@@ -187,24 +187,37 @@ while (x2,y2) != (x0,y0):
         dxcnd = dx[cnd2]
         dycnd = dy[cnd2]
         ang = getang(a1,b1,dxcnd,dycnd)
-        ang[ang < PI_2] = PI2
-        amin = ang.min()
-        cnd3 = (np.abs(ang-amin) < EPSILON)
-        xc2 = xc[cnd3]
-        yc2 = yc[cnd3]
-        if xc2.size > 1:
-            rc = r2[cnd2]
-            rc2 = rc[cnd3]
-            indx = np.argmin(rc2)
-            x2 = xc2[indx]
-            y2 = yc2[indx]
-        else:
-            x2 = xc2[0]
-            y2 = yc2[0]
+        #ang[ang < PI_2] = PI2
+        ang[ang < EPSILON] = PI2
+        flag = False
+        for a_indx in np.argsort(ang):
+            amin = ang[a_indx]
+            cnd3 = (np.abs(ang-amin) < EPSILON)
+            xc2 = xc[cnd3]
+            yc2 = yc[cnd3]
+            if xc2.size > 1:
+                rc = r2[cnd2]
+                rc2 = rc[cnd3]
+                r_indx = np.argmin(rc2)
+                x2 = xc2[r_indx]
+                y2 = yc2[r_indx]
+            else:
+                x2 = xc2[0]
+                y2 = yc2[0]
+            if len(xs) < 3:
+                flag = True
+                break
+            elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)):
+                flag = True
+                break
+            else:
+                ang[a_indx] = PI2
+        if not flag:
+            raise ValueError('Error in finding end point.')
     else:
         x2 = xc[0]
         y2 = yc[0]
-    #if len(xs) > 5:
+    #if len(xs) > 38:
     #    break
     xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/PI_4-EPSILON)+1,8))
     if xy is None:
@@ -219,5 +232,5 @@ while (x2,y2) != (x0,y0):
     b1 = y1-y2
     x1 = x2
     y1 = y2
-    xs.append(x2)
-    ys.append(y2)
+    xs = np.append(xs,x2)
+    ys = np.append(ys,y2)
