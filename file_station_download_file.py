@@ -124,7 +124,7 @@ def download_file(src_path,dst_path):
             raise ValueError('Error, status={}'.format(resp.status_code))
     except Exception as e:
         sys.stderr.write(str(e)+'\n')
-        sys.stderr.write('Error in downloading file >>> {}\n'.format(path))
+        sys.stderr.write('Error in downloading file >>> {}\n'.format(src_path))
         sys.stderr.flush()
         return None
     with open(dst_path,'wb') as fp:
