@@ -21,6 +21,78 @@ def getang(x1,y1,x2,y2):
             ang = pi2-ang
     return ang
 
+def is_cross(x_a,y_a,x_b,y_b,x_c,y_c,x_d,y_d):
+    if np.iterable(x_a): # x_a, y_a, x_b, y_b ... array-like
+        x1 = x_a.copy()
+        x2 = x_b.copy()
+        cnd = (x_a > x_b)
+        x1[cnd] = x_b[cnd]
+        x2[cnd] = x_a[cnd]
+        y1 = y_a.copy()
+        y2 = y_b.copy()
+        cnd = (y_a > y_b)
+        y1[cnd] = y_b[cnd]
+        y2[cnd] = y_a[cnd]
+    else: # x_a, y_a, x_b, y_b ... scalar
+        x1,x2 = (x_b,x_a) if x_a > x_b else (x_a,x_b)
+        y1,y2 = (y_b,y_a) if y_a > y_b else (y_a,y_b)
+    if np.iterable(x_c): # x_c, y_c, x_d, y_d ... array-like
+        x3 = x_c.copy()
+        x4 = x_d.copy()
+        cnd = (x_c > x_d)
+        x3[cnd] = x_d[cnd]
+        x4[cnd] = x_c[cnd]
+        y3 = y_c.copy()
+        y4 = y_d.copy()
+        cnd = (y_c > y_d)
+        y3[cnd] = y_d[cnd]
+        y4[cnd] = y_c[cnd]
+    else:
+        x3,x4 = (x_d,x_c) if x_c > x_d else (x_c,x_d)
+        y3,y4 = (y_d,y_c) if y_c > y_d else (y_c,y_d)
+    if np.iterable(x_a) or np.iterable(x_c):
+        flag = ~((x3 > x2) | (x4 < x1) | (y3 > y2) | (y4 < y1))
+        if np.iterable(x_a):
+            x_a_f = x_a[flag]
+            x_b_f = x_b[flag]
+            y_a_f = y_a[flag]
+            y_b_f = y_b[flag]
+        else:
+            x_a_f = x_a
+            x_b_f = x_b
+            y_a_f = y_a
+            y_b_f = y_b
+        if np.iterable(x_c):
+            x_c_f = x_c[flag]
+            x_d_f = x_d[flag]
+            y_c_f = y_c[flag]
+            y_d_f = y_d[flag]
+        else:
+            x_c_f = x_c
+            x_d_f = x_d
+            y_c_f = y_c
+            y_d_f = y_d
+        s = (x_a_f-x_b_f)*(y_c_f-y_a_f)-(y_a_f-y_b_f)*(x_c_f-x_a_f)
+        t = (x_a_f-x_b_f)*(y_d_f-y_a_f)-(y_a_f-y_b_f)*(x_d_f-x_a_f)
+        cnd = ~(s*t > EPSILON)
+        s = (x_c_f-x_d_f)*(y_a_f-y_c_f)-(y_c_f-y_d_f)*(x_a_f-x_c_f)
+        t = (x_c_f-x_d_f)*(y_b_f-y_c_f)-(y_c_f-y_d_f)*(x_b_f-x_c_f)
+        cnd &= (~(s*t > EPSILON))
+        flag[flag] = cnd
+        return flag
+    else:
+        if (x3 > x2) or (x4 < x1) or (y3 > y2) or (y4 < y1):
+            return False
+        s = (x_a-x_b)*(y_c-y_a)-(y_a-y_b)*(x_c-x_a)
+        t = (x_a-x_b)*(y_d-y_a)-(y_a-y_b)*(x_d-x_a)
+        if (s*t > EPSILON):
+            return False
+        s = (x_c-x_d)*(y_a-y_c)-(y_c-y_d)*(x_a-x_c)
+        t = (x_c-x_d)*(y_b-y_c)-(y_c-y_d)*(x_b-x_c)
+        if (s*t > EPSILON):
+            return False
+        return True
+
 def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
     c_code = [(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1),(1,1),
               (1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1),(1,1)] # dx,dy
