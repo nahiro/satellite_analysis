@@ -4,10 +4,11 @@ import numpy as np
 # todo
 # remove line segments that intersect other line segments
 
-pi2 = 2.0*np.pi
-pi_2 = np.pi/2
-pi_4 = np.pi/4
-sqr2 = np.sqrt(2.0)
+PI2 = 2.0*np.pi
+PI_2 = np.pi/2
+PI_4 = np.pi/4
+SQRT2 = np.sqrt(2.0)
+EPSILON = 1.0e-6
 
 def getang(x1,y1,x2,y2):
     ang = np.arccos(np.clip((x1*x2+y1*y2)/(np.sqrt(x1*x1+y1*y1)*np.sqrt(x2*x2+y2*y2)),-1.0,1.0))
@@ -15,10 +16,10 @@ def getang(x1,y1,x2,y2):
     if np.iterable(x1) or np.iterable(x2):
         cnd = (zp < 0.0) # clockwise
         ang[cnd] *= -1.0
-        ang[cnd] += pi2
+        ang[cnd] += PI2
     else:
         if zp < 0.0: # clockwise
-            ang = pi2-ang
+            ang = PI2-ang
     return ang
 
 def is_cross(x_a,y_a,x_b,y_b,x_c,y_c,x_d,y_d):
@@ -125,8 +126,6 @@ def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
             i_code = next_code[i]
     return xy
 
-EPSILON = 1.0e-6
-
 ds = gdal.Open('parcel_mask.tif')
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
@@ -188,7 +187,7 @@ while (x2,y2) != (x0,y0):
         dxcnd = dx[cnd2]
         dycnd = dy[cnd2]
         ang = getang(a1,b1,dxcnd,dycnd)
-        ang[ang < pi_2] = pi2
+        ang[ang < PI_2] = PI2
         amin = ang.min()
         cnd3 = (np.abs(ang-amin) < EPSILON)
         xc2 = xc[cnd3]
@@ -207,7 +206,7 @@ while (x2,y2) != (x0,y0):
         y2 = yc[0]
     #if len(xs) > 5:
     #    break
-    xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/pi_4-EPSILON)+1,8))
+    xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/PI_4-EPSILON)+1,8))
     if xy is None:
         xxs.append(x1)
         yys.append(y1)
