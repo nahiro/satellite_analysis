@@ -5,6 +5,7 @@ import numpy as np
 # remove line segments that intersect other line segments
 
 PI2 = 2.0*np.pi
+AMAX = 3.0*np.pi
 PI_2 = np.pi/2
 PI_4 = np.pi/4
 SQRT2 = np.sqrt(2.0)
@@ -104,6 +105,8 @@ def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
     iy_1 = iy1
     xy = [(ix1,iy1)]
     i_code = ic
+    lmax = np.sqrt(np.square(ix2-ix1)+np.square(iy2-iy1))*2.0
+    lsum = 0.0
     while True:
         flag = False
         for i in range(i_code,i_code+8):
@@ -111,9 +114,12 @@ def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
             iy_2 = iy_1+c_code[i][1]
             if im[iy_2,ix_2]:
                 flag = True
+                lsum += l_code[i]
                 break
         if not flag:
             #raise ValueError('Error in freeman chain')
+            return None
+        elif lsum > lmax:
             return None
         elif (ix_2,iy_2) == (ix2,iy2):
             break
@@ -162,8 +168,10 @@ else:
     x0 = xc[0]
     y0 = yc[0]
 
-l = 100.0 # m
-ll = l*l
+lmin = 50.0 # m
+lmax = 500.0 # m
+lstp = 50.0 # m
+ang0 = 3.0*np.pi/4.0
 a1 = -1.0
 b1 = 1.0
 x1 = x0
@@ -178,46 +186,83 @@ while (x2,y2) != (x0,y0):
     dx = xcnd-x1
     dy = ycnd-y1
     r2 = np.square(dx)+np.square(dy)
-    cnd2 = (r2 > EPSILON) & (r2 < ll) & fcnd
-    xc = xcnd[cnd2]
-    yc = ycnd[cnd2]
-    if xc.size < 1:
-        raise ValueError('Error in finding adjacent pixels.')
-    elif xc.size > 1:
-        dxcnd = dx[cnd2]
-        dycnd = dy[cnd2]
-        ang = getang(a1,b1,dxcnd,dycnd)
-        #ang[ang < PI_2] = PI2
-        ang[ang < EPSILON] = PI2
-        flag = False
-        for a_indx in np.argsort(ang):
-            amin = ang[a_indx]
-            cnd3 = (np.abs(ang-amin) < EPSILON)
-            xc2 = xc[cnd3]
-            yc2 = yc[cnd3]
-            if xc2.size > 1:
-                rc = r2[cnd2]
-                rc2 = rc[cnd3]
-                r_indx = np.argmin(rc2)
-                x2 = xc2[r_indx]
-                y2 = yc2[r_indx]
+    flag = False
+    for l in np.arange(lmin,lmax+0.1*lstp,lstp):
+        ll = l*l
+        cnd2 = (r2 > EPSILON) & (r2 < ll)# & fcnd
+        xc = xcnd[cnd2]
+        yc = ycnd[cnd2]
+        if xc.size < 1:
+            continue
+        elif xc.size > 1:
+            dxcnd = dx[cnd2]
+            dycnd = dy[cnd2]
+            ang = getang(a1,b1,dxcnd,dycnd)
+            #ang[ang < PI_2] = PI2
+            ang1 = ang-np.pi
+            #cnd5 = (ang0+ang1 > 0.7*np.pi) | (ang < EPSILON)
+            cnd5 = (ang < EPSILON)
+            if np.all(cnd5):
+                continue
+            ang[cnd5] = PI2
+            a_inds = np.argsort(ang)
+            amin = ang[a_inds[0]]
+            if amin > np.pi*0.08:
+                search_mode = 'outside'
+                cnd3 = (np.abs(ang-amin) < EPSILON)
+                xc2 = xc[cnd3]
+                yc2 = yc[cnd3]
+                if xc2.size > 1:
+                    rc = r2[cnd2]
+                    rc2 = rc[cnd3]
+                    r_indx = np.argmin(rc2)
+                    x2 = xc2[r_indx]
+                    y2 = yc2[r_indx]
+                else:
+                    x2 = xc2[0]
+                    y2 = yc2[0]
+                if len(xs) < 3:
+                    flag = True
+                elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)) or (x2,y2) == (x0,y0):
+                    flag = True
             else:
-                x2 = xc2[0]
-                y2 = yc2[0]
+                search_mode = 'inside'
+                for a_indx in a_inds:
+                    amin = ang[a_indx]
+                    cnd3 = (np.abs(ang-amin) < EPSILON)
+                    xc2 = xc[cnd3]
+                    yc2 = yc[cnd3]
+                    if xc2.size > 1:
+                        rc = r2[cnd2]
+                        rc2 = rc[cnd3]
+                        r_indx = np.argmin(rc2)
+                        x2 = xc2[r_indx]
+                        y2 = yc2[r_indx]
+                    else:
+                        x2 = xc2[0]
+                        y2 = yc2[0]
+                    if len(xs) < 3:
+                        flag = True
+                        break
+                    elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)) or (x2,y2) == (x0,y0):
+                        flag = True
+                        break
+                    else:
+                        ang[a_indx] = PI2
+        else:
+            x2 = xc[0]
+            y2 = yc[0]
             if len(xs) < 3:
                 flag = True
-                break
             elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)):
                 flag = True
-                break
-            else:
-                ang[a_indx] = PI2
-        if not flag:
-            raise ValueError('Error in finding end point.')
-    else:
-        x2 = xc[0]
-        y2 = yc[0]
-    #if len(xs) > 38:
+        if flag:
+            break
+    if not flag:
+        raise ValueError('Error in finding end point.')
+    #if len(xs) > 995:
+    #if len(xs) > 999:
+    #if len(xs) > 4426:
     #    break
     xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/PI_4-EPSILON)+1,8))
     if xy is None:
@@ -228,6 +273,14 @@ while (x2,y2) != (x0,y0):
         yys.extend([src_yp[iy,ix] for ix,iy in xy[:-1]])
     cnd4 = (xcnd == x1) & (ycnd == y1) & (xcnd != x0)
     fcnd[cnd4] = False
+    if xy is not None:
+        for ix,iy in xy:
+            cnd4 = (xcnd == src_xp[iy,ix]) & (ycnd == src_yp[iy,ix])
+            fcnd[cnd4] = False
+    ang0 = getang(-a1,-b1,x2-x1,y2-y1)
+    if ang0 > np.pi:
+        ang0 -= PI2
+    #print(-a1,-b1,x2-x1,y2-y1,np.degrees(ang0))
     a1 = x1-x2
     b1 = y1-y2
     x1 = x2
