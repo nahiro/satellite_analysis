@@ -171,7 +171,6 @@ else:
 lmin = 50.0 # m
 lmax = 500.0 # m
 lstp = 50.0 # m
-ang0 = 3.0*np.pi/4.0
 a1 = -1.0
 b1 = 1.0
 x1 = x0
@@ -198,13 +197,7 @@ while (x2,y2) != (x0,y0):
             dxcnd = dx[cnd2]
             dycnd = dy[cnd2]
             ang = getang(a1,b1,dxcnd,dycnd)
-            #ang[ang < PI_2] = PI2
-            ang1 = ang-np.pi
-            #cnd5 = (ang0+ang1 > 0.7*np.pi) | (ang < EPSILON)
-            cnd5 = (ang < EPSILON)
-            if np.all(cnd5):
-                continue
-            ang[cnd5] = PI2
+            ang[ang < EPSILON] = PI2
             a_inds = np.argsort(ang)
             amin = ang[a_inds[0]]
             if amin > np.pi*0.08:
@@ -277,10 +270,6 @@ while (x2,y2) != (x0,y0):
         for ix,iy in xy:
             cnd4 = (xcnd == src_xp[iy,ix]) & (ycnd == src_yp[iy,ix])
             fcnd[cnd4] = False
-    ang0 = getang(-a1,-b1,x2-x1,y2-y1)
-    if ang0 > np.pi:
-        ang0 -= PI2
-    #print(-a1,-b1,x2-x1,y2-y1,np.degrees(ang0))
     a1 = x1-x2
     b1 = y1-y2
     x1 = x2
