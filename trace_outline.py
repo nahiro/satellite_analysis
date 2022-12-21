@@ -2,7 +2,9 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
+from shapely.geometry import Polygon
 import numpy as np
+import geopandas as gpd
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
@@ -11,6 +13,7 @@ PI_4 = np.pi/4
 EPSILON = 1.0e-6
 
 # Default values
+EPSG = 32748 # UTM zone 48S
 LMIN = 50.0 # m
 LMAX = 500.0 # m
 LSTP = 50.0 # m
@@ -19,6 +22,7 @@ LSTP = 50.0 # m
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
+parser.add_argument('-E','--epsg',default=EPSG,help='Output EPSG (%(default)s)')
 parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm length in m (%(default)s)')
 parser.add_argument('-L','--lmax',default=LMAX,type=float,help='Maximum arm length in m (%(default)s)')
 parser.add_argument('-s','--lstp',default=LSTP,type=float,help='Step arm length in m (%(default)s)')
@@ -278,3 +282,7 @@ while (x2,y2) != (x0,y0):
     y1 = y2
     xs = np.append(xs,x2)
     ys = np.append(ys,y2)
+
+polygon_geom = Polygon(zip(xs,ys))
+polygon = gpd.GeoDataFrame(index=[0],crs='epsg:{}'.format(args.epsg),geometry=[polygon_geom])
+polygon.to_file(filename=args.out_shp,driver="ESRI Shapefile")
