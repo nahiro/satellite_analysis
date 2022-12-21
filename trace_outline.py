@@ -1,15 +1,31 @@
-from osgeo import gdal
+try:
+    import gdal
+except Exception:
+    from osgeo import gdal
 import numpy as np
+from argparse import ArgumentParser,RawTextHelpFormatter
 
-# todo
-# remove line segments that intersect other line segments
-
+# Constants
 PI2 = 2.0*np.pi
-AMAX = 3.0*np.pi
-PI_2 = np.pi/2
 PI_4 = np.pi/4
-SQRT2 = np.sqrt(2.0)
 EPSILON = 1.0e-6
+
+# Default values
+LMIN = 50.0 # m
+LMAX = 500.0 # m
+LSTP = 50.0 # m
+
+# Read options
+parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
+parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm length in m (%(default)s)')
+parser.add_argument('-L','--lmax',default=LMAX,type=float,help='Maximum arm length in m (%(default)s)')
+parser.add_argument('-s','--lstp',default=LSTP,type=float,help='Step arm length in m (%(default)s)')
+parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
+parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
+args = parser.parse_args()
 
 def getang(x1,y1,x2,y2):
     ang = np.arccos(np.clip((x1*x2+y1*y2)/(np.sqrt(x1*x1+y1*y1)*np.sqrt(x2*x2+y2*y2)),-1.0,1.0))
@@ -132,7 +148,7 @@ def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
             i_code = next_code[i]
     return xy
 
-ds = gdal.Open('parcel_mask.tif')
+ds = gdal.Open(args.src_geotiff)
 src_nx = ds.RasterXSize
 src_ny = ds.RasterYSize
 src_nb = ds.RasterCount
@@ -167,9 +183,6 @@ else:
     x0 = xc[0]
     y0 = yc[0]
 
-lmin = 50.0 # m
-lmax = 500.0 # m
-lstp = 50.0 # m
 a1 = -1.0
 b1 = 1.0
 x1 = x0
@@ -185,7 +198,7 @@ while (x2,y2) != (x0,y0):
     dy = ycnd-y1
     r2 = np.square(dx)+np.square(dy)
     flag = False
-    for l in np.arange(lmin,lmax+0.1*lstp,lstp):
+    for l in np.arange(args.lmin,args.lmax+0.1*args.lstp,args.lstp):
         ll = l*l
         cnd2 = (r2 > EPSILON) & (r2 < ll)
         xc = xcnd[cnd2]
