@@ -154,7 +154,6 @@ ds = None
 img = (src_data > 0.5)
 xcnd = src_xp[img]
 ycnd = src_yp[img]
-fcnd = np.full(xcnd.shape,True)
 
 ymax = ycnd.max()
 cnd2 = (np.abs(ycnd-ymax) < EPSILON)
@@ -188,7 +187,7 @@ while (x2,y2) != (x0,y0):
     flag = False
     for l in np.arange(lmin,lmax+0.1*lstp,lstp):
         ll = l*l
-        cnd2 = (r2 > EPSILON) & (r2 < ll)# & fcnd
+        cnd2 = (r2 > EPSILON) & (r2 < ll)
         xc = xcnd[cnd2]
         yc = ycnd[cnd2]
         if xc.size < 1:
@@ -200,8 +199,7 @@ while (x2,y2) != (x0,y0):
             ang[ang < EPSILON] = PI2
             a_inds = np.argsort(ang)
             amin = ang[a_inds[0]]
-            if amin > np.pi*0.08:
-                search_mode = 'outside'
+            if amin > np.pi*0.08: # Outside
                 cnd3 = (np.abs(ang-amin) < EPSILON)
                 xc2 = xc[cnd3]
                 yc2 = yc[cnd3]
@@ -218,8 +216,7 @@ while (x2,y2) != (x0,y0):
                     flag = True
                 elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)) or (x2,y2) == (x0,y0):
                     flag = True
-            else:
-                search_mode = 'inside'
+            else: # Inside
                 for a_indx in a_inds:
                     amin = ang[a_indx]
                     cnd3 = (np.abs(ang-amin) < EPSILON)
@@ -253,8 +250,6 @@ while (x2,y2) != (x0,y0):
             break
     if not flag:
         raise ValueError('Error in finding end point.')
-    #if len(xs) > 995:
-    #if len(xs) > 999:
     #if len(xs) > 4426:
     #    break
     xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/PI_4-EPSILON)+1,8))
@@ -264,12 +259,6 @@ while (x2,y2) != (x0,y0):
     else:
         xxs.extend([src_xp[iy,ix] for ix,iy in xy[:-1]])
         yys.extend([src_yp[iy,ix] for ix,iy in xy[:-1]])
-    cnd4 = (xcnd == x1) & (ycnd == y1) & (xcnd != x0)
-    fcnd[cnd4] = False
-    if xy is not None:
-        for ix,iy in xy:
-            cnd4 = (xcnd == src_xp[iy,ix]) & (ycnd == src_yp[iy,ix])
-            fcnd[cnd4] = False
     a1 = x1-x2
     b1 = y1-y2
     x1 = x2
