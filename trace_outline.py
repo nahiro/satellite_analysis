@@ -25,6 +25,8 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-E','--epsg',default=EPSG,help='Output EPSG (%(default)s)')
+parser.add_argument('-x','--x0',default=None,type=float,help='Initial x coordinate in m (%(default)s)')
+parser.add_argument('-y','--y0',default=None,type=float,help='Initial y coordinate in m (%(default)s)')
 parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm length in m (%(default)s)')
 parser.add_argument('-L','--lmax',default=LMAX,type=float,help='Maximum arm length in m (%(default)s)')
 parser.add_argument('-s','--lstp',default=LSTP,type=float,help='Step arm length in m (%(default)s)')
@@ -181,17 +183,33 @@ img = (src_data > 0.5)
 xcnd = src_xp[img]
 ycnd = src_yp[img]
 
-ymax = ycnd.max()
-cnd2 = (np.abs(ycnd-ymax) < EPSILON)
-xc = xcnd[cnd2]
-yc = ycnd[cnd2]
-if xc.size > 1:
-    indx = np.argmin(xc)
-    x0 = xc[indx]
-    y0 = yc[indx]
+if args.x0 is not None and args.y0 is not None:
+    dx = xcnd-args.x0
+    dy = ycnd-args.y0
+    r2 = np.square(dx)+np.square(dy)
+    cnd2 = (r2 < np.square(args.lmax))
+    xc = xcnd[cnd2]
+    yc = ycnd[cnd2]
+    rc = r2[cnd2]
+    if xc.size > 1:
+        indx = np.argmin(rc)
+        x0 = xc[indx]
+        y0 = yc[indx]
+    else:
+        x0 = xc[0]
+        y0 = yc[0]
 else:
-    x0 = xc[0]
-    y0 = yc[0]
+    ymax = ycnd.max()
+    cnd2 = (np.abs(ycnd-ymax) < EPSILON)
+    xc = xcnd[cnd2]
+    yc = ycnd[cnd2]
+    if xc.size > 1:
+        indx = np.argmin(xc)
+        x0 = xc[indx]
+        y0 = yc[indx]
+    else:
+        x0 = xc[0]
+        y0 = yc[0]
 
 a1 = -1.0
 b1 = 1.0
