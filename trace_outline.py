@@ -2,6 +2,7 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
+from skimage.measure import points_in_poly
 from shapely.geometry import Polygon
 import numpy as np
 import geopandas as gpd
@@ -14,6 +15,8 @@ EPSILON = 1.0e-6
 
 # Default values
 EPSG = 32748 # UTM zone 48S
+BUFFER = 0.1
+NODATA_VALUE = -1
 LMIN = 50.0 # m
 LMAX = 500.0 # m
 LSTP = 50.0 # m
@@ -23,8 +26,11 @@ ATHR = 15.0 # deg
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
 parser.add_argument('-I','--src_geotiff',default=None,help='Source GeoTIFF name (%(default)s)')
+parser.add_argument('-O','--dst_geotiff',default=None,help='Output GeoTIFF name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-E','--epsg',default=EPSG,help='Output EPSG (%(default)s)')
+parser.add_argument('-B','--buffer',default=BUFFER,type=float,help='Buffer distance in m (%(default)s)')
+parser.add_argument('-n','--nodata_value',default=NODATA_VALUE,type=int,help='No-data value (%(default)s)')
 parser.add_argument('-x','--x0',default=None,type=float,help='Initial x coordinate in m (%(default)s)')
 parser.add_argument('-y','--y0',default=None,type=float,help='Initial y coordinate in m (%(default)s)')
 parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm length in m (%(default)s)')
@@ -319,6 +325,49 @@ if args.fcc:
     xxs = np.array(xxs)
     yys = np.array(yys)
 
-polygon_geom = Polygon(zip(xs,ys))
-polygon = gpd.GeoDataFrame(index=[0],crs='epsg:{}'.format(args.epsg),geometry=[polygon_geom])
-polygon.to_file(filename=args.out_shp,driver="ESRI Shapefile")
+if args.dst_geotiff is not None:
+    src_points = np.hstack((src_xp.reshape(-1,1),src_yp.reshape(-1,1)))
+    dst_nx = src_nx
+    dst_ny = src_ny
+    dst_nb = 1
+    dst_shape = (dst_ny,dst_nx)
+    dst_prj = src_prj
+    dst_trans = src_trans
+    dst_meta = src_meta
+    dst_data = np.full(dst_shape,fill_value=args.nodata_value,dtype=np.int32)
+    dst_band = 'mask'
+    dst_nodata = args.nodata_value
+    if args.fcc:
+        poly_buffer = Polygon(zip(xxs,yys)).buffer(args.buffer)
+    else:
+        poly_buffer = Polygon(zip(xs,ys)).buffer(args.buffer)
+    if poly_buffer.area <= 0.0:
+        raise ValueError('Error, poly_buffer.area={}'.format(poly_buffer.area))
+    flags = np.full(dst_shape,False)
+    if poly_buffer.type == 'MultiPolygon':
+        for p in poly_buffer.geoms:
+            path_search = np.array(p.exterior.coords.xy).swapaxes(0,1)
+            flags |= points_in_poly(src_points,path_search).reshape(dst_shape)
+    else:
+        path_search = np.array(poly_buffer.exterior.coords.xy).swapaxes(0,1)
+        flags = points_in_poly(src_points,path_search).reshape(dst_shape)
+    dst_data[flags] = 1
+    drv = gdal.GetDriverByName('GTiff')
+    ds = drv.Create(args.dst_geotiff,dst_nx,dst_ny,dst_nb,gdal.GDT_Int32)
+    ds.SetProjection(dst_prj)
+    ds.SetGeoTransform(dst_trans)
+    ds.SetMetadata(dst_meta)
+    band = ds.GetRasterBand(1)
+    band.WriteArray(dst_data)
+    band.SetDescription(dst_band)
+    band.SetNoDataValue(dst_nodata) # The TIFFTAG_GDAL_NODATA only support one value per dataset
+    ds.FlushCache()
+    ds = None # close dataset
+
+if args.out_shp is not None:
+    if args.fcc:
+        polygon_geom = Polygon(zip(xxs,yys))
+    else:
+        polygon_geom = Polygon(zip(xs,ys))
+    polygon = gpd.GeoDataFrame(index=[0],crs='epsg:{}'.format(args.epsg),geometry=[polygon_geom])
+    polygon.to_file(filename=args.out_shp,driver="ESRI Shapefile")
