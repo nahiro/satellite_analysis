@@ -10,6 +10,8 @@ proc_atcor.pnams.append('gis_fnam')
 proc_atcor.pnams.append('mask_parcel')
 proc_atcor.pnams.append('mask_studyarea')
 proc_atcor.pnams.append('buffer_parcel')
+proc_atcor.pnams.append('p1_studyarea')
+proc_atcor.pnams.append('p2_studyarea')
 proc_atcor.pnams.append('out_refs')
 proc_atcor.pnams.append('atcor_refs')
 proc_atcor.pnams.append('out_nrefs')
@@ -37,6 +39,8 @@ proc_atcor.params['gis_fnam'] = 'Polygon File'
 proc_atcor.params['mask_parcel'] = 'Mask File for Parcellate'
 proc_atcor.params['mask_studyarea'] = 'Mask File for Reference Select'
 proc_atcor.params['buffer_parcel'] = 'Buffer for Parcellate (m)'
+proc_atcor.params['p1_studyarea'] = 'Param. for Reference Select (m)'
+proc_atcor.params['p2_studyarea'] = 'Param. for Reference Select'
 proc_atcor.params['out_refs'] = 'Output Reflectance'
 proc_atcor.params['atcor_refs'] = 'Correct Reflectance'
 proc_atcor.params['out_nrefs'] = 'Output Norm. Reflectance'
@@ -64,6 +68,8 @@ proc_atcor.param_types['gis_fnam'] = 'string'
 proc_atcor.param_types['mask_parcel'] = 'string'
 proc_atcor.param_types['mask_studyarea'] = 'string'
 proc_atcor.param_types['buffer_parcel'] = 'float'
+proc_atcor.param_types['p1_studyarea'] = 'float_list'
+proc_atcor.param_types['p2_studyarea'] = 'float_list'
 proc_atcor.param_types['out_refs'] = 'boolean_list'
 proc_atcor.param_types['atcor_refs'] = 'boolean_list'
 proc_atcor.param_types['out_nrefs'] = 'boolean_list'
@@ -86,6 +92,8 @@ proc_atcor.param_types['fit_thr'] = 'float'
 proc_atcor.param_types['csv_flag'] = 'boolean'
 proc_atcor.param_types['oflag'] = 'boolean_list'
 proc_atcor.param_range['buffer_parcel'] = (0.0,10.0e3)
+proc_atcor.param_range['p1_studyarea'] = (0.0,10.0e3)
+proc_atcor.param_range['p2_studyarea'] = (0.0,180.0)
 proc_atcor.param_range['stat_period'] = (10,1000000)
 proc_atcor.param_range['stat_nmin'] = (1,1000000)
 proc_atcor.param_range['n_ref'] = (10,1000000)
@@ -102,6 +110,8 @@ proc_atcor.defaults['gis_fnam'] = 'All_area_polygon_20210914.shp'
 proc_atcor.defaults['mask_parcel'] = 'parcel_mask.tif'
 proc_atcor.defaults['mask_studyarea'] = 'studyarea_mask.tif'
 proc_atcor.defaults['buffer_parcel'] = 0.0
+proc_atcor.defaults['p1_studyarea'] = [np.nan,np.nan,300.0,600.0,100.0,0.1]
+proc_atcor.defaults['p2_studyarea'] = [15.0,4.0]
 proc_atcor.defaults['out_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['atcor_refs'] = [True,True,True,True,True,True,True,True,True,True]
 proc_atcor.defaults['out_nrefs'] = [True,True,True,True,True,True,True,True,True,True]
@@ -123,6 +133,8 @@ proc_atcor.defaults['rel_thr'] = 2.0
 proc_atcor.defaults['fit_thr'] = 0.3
 proc_atcor.defaults['csv_flag'] = True
 proc_atcor.defaults['oflag'] = [False,False,False,False,False]
+proc_atcor.list_sizes['p1_studyarea'] = 6
+proc_atcor.list_sizes['p2_studyarea'] = 2
 proc_atcor.list_sizes['out_refs'] = 10
 proc_atcor.list_sizes['atcor_refs'] = 10
 proc_atcor.list_sizes['out_nrefs'] = 10
@@ -134,6 +146,8 @@ proc_atcor.list_sizes['clean_band'] = 10
 proc_atcor.list_sizes['clean_thr'] = 3
 proc_atcor.list_sizes['cloud_band'] = 10
 proc_atcor.list_sizes['oflag'] = 5
+proc_atcor.list_labels['p1_studyarea'] = ['X0 :',' Y0 :',' Lmin :',' Lmax :',' Lstp :',' Buffer :']
+proc_atcor.list_labels['p2_studyarea'] = ['Dmax (deg) :',' Athr :']
 proc_atcor.list_labels['out_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['atcor_refs'] = ['b  ','g  ','r  ','e1  ','e2  ','e3  ','n1  ','n2  ','s1  ','s2']
 proc_atcor.list_labels['out_nrefs'] = ['Nb  ','Ng  ','Nr  ','Ne1  ','Ne2  ','Ne3  ','Nn1  ','Nn2  ','Ns1  ','Ns2']
@@ -151,6 +165,8 @@ proc_atcor.input_types['gis_fnam'] = 'ask_file'
 proc_atcor.input_types['mask_parcel'] = 'ask_file'
 proc_atcor.input_types['mask_studyarea'] = 'ask_file'
 proc_atcor.input_types['buffer_parcel'] = 'box'
+proc_atcor.input_types['p1_studyarea'] = 'float_list'
+proc_atcor.input_types['p2_studyarea'] = 'float_list'
 proc_atcor.input_types['out_refs'] = 'boolean_list'
 proc_atcor.input_types['atcor_refs'] = 'boolean_list'
 proc_atcor.input_types['out_nrefs'] = 'boolean_list'

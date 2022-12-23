@@ -189,6 +189,8 @@ config_defaults.update({
 'atcor.mask_parcel'                   : mask_parcel,
 'atcor.mask_studyarea'                : mask_studyarea,
 'atcor.buffer_parcel'                 : 0.0,
+'atcor.p1_studyarea'                  : [np.nan,np.nan,300.0,600.0,100.0,0.1],
+'atcor.p2_studyarea'                  : [15.0,4.0],
 'atcor.out_refs'                      : [True,True,True,True,True,True,True,True,True,True],
 'atcor.atcor_refs'                    : [True,True,True,True,True,True,True,True,True,True],
 'atcor.out_nrefs'                     : [True,True,True,True,True,True,True,True,True,True],
