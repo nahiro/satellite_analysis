@@ -41,11 +41,9 @@ class Atcor(Satellite_Process):
             os.makedirs(wrk_dir)
         if not os.path.isdir(wrk_dir):
             raise ValueError('{}: error, no such folder >>> {}'.format(self.proc_name,wrk_dir))
-        mask_studyarea = self.values['mask_studyarea']
-        if not os.path.exists(mask_studyarea):
-            raise IOError('{}: error, no such file >>> {}'.format(self.proc_name,mask_studyarea))
         iflag = self.list_labels['oflag'].index('mask')
         flag_parcel = self.values['oflag'][iflag]
+        flag_studyarea = self.values['oflag'][iflag]
 
         # Check Indices
         indices_fnams = []
@@ -118,6 +116,47 @@ class Atcor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
+                # Make mask
+                mask_studyarea = self.values['mask_studyarea']
+                if os.path.exists(mask_studyarea) and flag_studyarea:
+                    os.remove(mask_studyarea)
+                if not os.path.exists(mask_studyarea):
+                    mask_dnam = os.path.dirname(mask_studyarea)
+                    if not os.path.exists(mask_dnam):
+                        os.makedirs(mask_dnam)
+                    if not os.path.isdir(mask_dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                    list_labels = [s.split()[0] for s in self.list_labels['p1_studyarea']]
+                    x0 = self.values['p1_studyarea'][list_labels.index('X0')]
+                    y0 = self.values['p1_studyarea'][list_labels.index('Y0')]
+                    lmin = self.values['p1_studyarea'][list_labels.index('Lmin')]
+                    lmax = self.values['p1_studyarea'][list_labels.index('Lmax')]
+                    lstp = self.values['p1_studyarea'][list_labels.index('Lstp')]
+                    buff = self.values['p1_studyarea'][list_labels.index('Buffer')]
+                    list_labels = [s.split()[0] for s in self.list_labels['p2_studyarea']]
+                    dmax = self.values['p2_studyarea'][list_labels.index('Dmax')]
+                    athr = self.values['p2_studyarea'][list_labels.index('Athr')]
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'trace_outline.py'))
+                    command += ' --src_geotiff "{}"'.format(fnam)
+                    command += ' --dst_geotiff "{}"'.format(mask_studyarea)
+                    command += ' --buffer="{}"'.format(buff)
+                    if not np.isnan(x0) and not np.isnan(y0):
+                        command += ' --x0 {}'.format(x0)
+                        command += ' --y0 {}'.format(y0)
+                    command += ' --lmin {}'.format(lmin)
+                    command += ' --lmax {}'.format(lmax)
+                    command += ' --lmstp{}'.format(lstp)
+                    command += ' --dmax {}'.format(dmax)
+                    if not np.isnan(athr):
+                        command += ' --athr {}'.format(athr)
+                        command += ' --fcc'
+                    self.run_command(command,message='<<< Make mask >>>')
+                if not os.path.exists(mask_studyarea):
+                    raise ValueError('Error, no such file >>> {}'.format(mask_studyarea))
+                else:
+                    flag_studyarea = False
+                # Stats
                 d2 = datetime(year,1,1)-timedelta(days=1)
                 d1 = d2-timedelta(days=self.values['stat_period'])
                 command = self.python_path
