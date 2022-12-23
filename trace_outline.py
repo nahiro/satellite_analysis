@@ -17,6 +17,8 @@ EPSG = 32748 # UTM zone 48S
 LMIN = 50.0 # m
 LMAX = 500.0 # m
 LSTP = 50.0 # m
+DMAX = 2.0
+ATHR = 15.0 # deg
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -26,11 +28,14 @@ parser.add_argument('-E','--epsg',default=EPSG,help='Output EPSG (%(default)s)')
 parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm length in m (%(default)s)')
 parser.add_argument('-L','--lmax',default=LMAX,type=float,help='Maximum arm length in m (%(default)s)')
 parser.add_argument('-s','--lstp',default=LSTP,type=float,help='Step arm length in m (%(default)s)')
+parser.add_argument('-D','--dmax',default=DMAX,type=float,help='Maximum difference between fcc and segment trace methods (%(default)s)')
+parser.add_argument('-A','--athr',default=ATHR,type=float,help='Threshold for deciding inside mode or outside mode in degree (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-f','--fcc',default=False,action='store_true',help='Use Freeman chain code (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
+athr = np.radians(args.athr)
 
 def getang(x1,y1,x2,y2):
     ang = np.arccos(np.clip((x1*x2+y1*y2)/(np.sqrt(x1*x1+y1*y1)*np.sqrt(x2*x2+y2*y2)),-1.0,1.0))
@@ -116,7 +121,7 @@ def is_cross(x_a,y_a,x_b,y_b,x_c,y_c,x_d,y_d):
             return False
         return True
 
-def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
+def freeman_chain(im,ix1,iy1,ix2,iy2,ic,dmax=2.0):
     c_code = [(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1),(1,1),
               (1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1),(1,1)] # dx,dy
     l_code = [np.sqrt(dx*dx+dy*dy) for dx,dy in c_code]
@@ -126,7 +131,7 @@ def freeman_chain(im,ix1,iy1,ix2,iy2,ic):
     iy_1 = iy1
     xy = [(ix1,iy1)]
     i_code = ic
-    lmax = np.sqrt(np.square(ix2-ix1)+np.square(iy2-iy1))*2.0
+    lmax = np.sqrt(np.square(ix2-ix1)+np.square(iy2-iy1))*dmax
     lsum = 0.0
     while True:
         flag = False
@@ -218,7 +223,7 @@ while (x2,y2) != (x0,y0):
             ang[ang < EPSILON] = PI2
             a_inds = np.argsort(ang)
             amin = ang[a_inds[0]]
-            if amin > np.pi*0.08: # Outside
+            if amin > athr: # Outside
                 cnd3 = (np.abs(ang-amin) < EPSILON)
                 xc2 = xc[cnd3]
                 yc2 = yc[cnd3]
@@ -263,7 +268,7 @@ while (x2,y2) != (x0,y0):
             y2 = yc[0]
             if len(xs) < 3:
                 flag = True
-            elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)):
+            elif not np.any(is_cross(xs[:-2],ys[:-2],xs[1:-1],ys[1:-1],x1,y1,x2,y2)) or (x2,y2) == (x0,y0):
                 flag = True
         if flag:
             break
@@ -271,11 +276,15 @@ while (x2,y2) != (x0,y0):
         raise ValueError('Error in finding end point.')
     #if len(xs) > 10:
     #    break
+    xs = np.append(xs,x2)
+    ys = np.append(ys,y2)
     if args.fcc:
         fang = np.arctan2(y2-y1,x2-x1)
         if fang < 0.0:
             fang += PI2
-        xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(fang/PI_4-EPSILON)+1,8))
+        xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),
+                               int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),
+                               np.mod(int(fang/PI_4-EPSILON)+1,8),args.dmax)
         if xy is None:
             xxs.append(x1)
             yys.append(y1)
@@ -286,8 +295,6 @@ while (x2,y2) != (x0,y0):
     b1 = y1-y2
     x1 = x2
     y1 = y2
-    xs = np.append(xs,x2)
-    ys = np.append(ys,y2)
 if args.fcc:
     xxs.append(x0)
     yys.append(y0)
