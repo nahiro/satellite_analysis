@@ -27,6 +27,7 @@ parser.add_argument('-l','--lmin',default=LMIN,type=float,help='Minimum arm leng
 parser.add_argument('-L','--lmax',default=LMAX,type=float,help='Maximum arm length in m (%(default)s)')
 parser.add_argument('-s','--lstp',default=LSTP,type=float,help='Step arm length in m (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
+parser.add_argument('-f','--fcc',default=False,action='store_true',help='Use Freeman chain code (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -195,8 +196,9 @@ x2 = np.nan
 y2 = np.nan
 xs = np.array([x1])
 ys = np.array([y1])
-xxs = []
-yys = []
+if args.fcc:
+    xxs = []
+    yys = []
 while (x2,y2) != (x0,y0):
     dx = xcnd-x1
     dy = ycnd-y1
@@ -267,21 +269,30 @@ while (x2,y2) != (x0,y0):
             break
     if not flag:
         raise ValueError('Error in finding end point.')
-    #if len(xs) > 4426:
+    #if len(xs) > 10:
     #    break
-    xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(np.arctan2(y2-y1,x2-x1)/PI_4-EPSILON)+1,8))
-    if xy is None:
-        xxs.append(x1)
-        yys.append(y1)
-    else:
-        xxs.extend([src_xp[iy,ix] for ix,iy in xy[:-1]])
-        yys.extend([src_yp[iy,ix] for ix,iy in xy[:-1]])
+    if args.fcc:
+        fang = np.arctan2(y2-y1,x2-x1)
+        if fang < 0.0:
+            fang += PI2
+        xy = freeman_chain(img,int((x1-src_xmin)/src_xstp),int((y1-src_ymax)/src_ystp),int((x2-src_xmin)/src_xstp),int((y2-src_ymax)/src_ystp),np.mod(int(fang/PI_4-EPSILON)+1,8))
+        if xy is None:
+            xxs.append(x1)
+            yys.append(y1)
+        else:
+            xxs.extend([src_xp[iy,ix] for ix,iy in xy])
+            yys.extend([src_yp[iy,ix] for ix,iy in xy])
     a1 = x1-x2
     b1 = y1-y2
     x1 = x2
     y1 = y2
     xs = np.append(xs,x2)
     ys = np.append(ys,y2)
+if args.fcc:
+    xxs.append(x0)
+    yys.append(y0)
+    xxs = np.array(xxs)
+    yys = np.array(yys)
 
 polygon_geom = Polygon(zip(xs,ys))
 polygon = gpd.GeoDataFrame(index=[0],crs='epsg:{}'.format(args.epsg),geometry=[polygon_geom])
