@@ -126,6 +126,30 @@ class Atcor(Satellite_Process):
                         os.makedirs(mask_dnam)
                     if not os.path.isdir(mask_dnam):
                         raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                    mask_parcel = self.values['mask_parcel']
+                    if os.path.exists(mask_parcel) and flag_parcel:
+                        os.remove(mask_parcel)
+                    if not os.path.exists(mask_parcel):
+                        mask_dnam = os.path.dirname(mask_parcel)
+                        if not os.path.exists(mask_dnam):
+                            os.makedirs(mask_dnam)
+                        if not os.path.isdir(mask_dnam):
+                            raise IOError('Error, no such folder >>> {}'.format(mask_dnam))
+                        command = self.python_path
+                        command += ' "{}"'.format(os.path.join(self.scr_dir,'make_mask.py'))
+                        command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
+                        command += ' --src_geotiff "{}"'.format(fnam)
+                        command += ' --dst_geotiff "{}"'.format(mask_parcel)
+                        if abs(self.values['buffer_parcel']) < 1.0e-6:
+                            command += ' --buffer 0.0'
+                        else:
+                            command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
+                        command += ' --use_index'
+                        self.run_command(command,message='<<< Make parcel mask >>>')
+                    if not os.path.exists(mask_parcel):
+                        raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
+                    else:
+                        flag_parcel = False
                     list_labels = [s.split()[0] for s in self.list_labels['p1_studyarea']]
                     x0 = self.values['p1_studyarea'][list_labels.index('X0')]
                     y0 = self.values['p1_studyarea'][list_labels.index('Y0')]
@@ -138,7 +162,7 @@ class Atcor(Satellite_Process):
                     athr = self.values['p2_studyarea'][list_labels.index('Athr')]
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'trace_outline.py'))
-                    command += ' --src_geotiff "{}"'.format(fnam)
+                    command += ' --src_geotiff "{}"'.format(mask_parcel)
                     command += ' --dst_geotiff "{}"'.format(mask_studyarea)
                     command += ' --buffer="{}"'.format(buff)
                     if not np.isnan(x0) and not np.isnan(y0):
@@ -151,7 +175,7 @@ class Atcor(Satellite_Process):
                     if not np.isnan(athr):
                         command += ' --athr {}'.format(athr)
                         command += ' --fcc'
-                    self.run_command(command,message='<<< Make mask >>>')
+                    self.run_command(command,message='<<< Make studyarea mask >>>')
                 if not os.path.exists(mask_studyarea):
                     raise ValueError('Error, no such file >>> {}'.format(mask_studyarea))
                 else:
@@ -291,7 +315,7 @@ class Atcor(Satellite_Process):
                     else:
                         command += ' --buffer="{}"'.format(-abs(self.values['buffer_parcel']))
                     command += ' --use_index'
-                    self.run_command(command,message='<<< Make mask >>>')
+                    self.run_command(command,message='<<< Make parcel mask >>>')
                 if not os.path.exists(mask_parcel):
                     raise ValueError('Error, no such file >>> {}'.format(mask_parcel))
                 else:
