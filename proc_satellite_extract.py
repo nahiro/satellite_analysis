@@ -12,6 +12,8 @@ proc_extract.pnams.append('major_flag')
 proc_extract.pnams.append('data_select')
 proc_extract.pnams.append('spec_date')
 proc_extract.pnams.append('atcor_flag')
+proc_extract.pnams.append('cloud_band')
+proc_extract.pnams.append('cloud_thr')
 proc_extract.pnams.append('event_fnam')
 proc_extract.pnams.append('event_dates')
 proc_extract.pnams.append('event_flag')
@@ -24,6 +26,8 @@ proc_extract.params['major_flag'] = 'Use Major Plot'
 proc_extract.params['data_select'] = 'Data Selection Criteria'
 proc_extract.params['spec_date'] = 'Specific Date'
 proc_extract.params['atcor_flag'] = 'Atmospheric Correction'
+proc_extract.params['cloud_band'] = 'Band for Cloud Removal'
+proc_extract.params['cloud_thr'] = 'Thres. for Cloud Removal'
 proc_extract.params['event_fnam'] = 'Event Date File'
 proc_extract.params['event_dates'] = 'Event Dates'
 proc_extract.params['event_flag'] = 'Disable Event Date File'
@@ -36,6 +40,8 @@ proc_extract.param_types['major_flag'] = 'boolean'
 proc_extract.param_types['data_select'] = 'string_select'
 proc_extract.param_types['spec_date'] = 'date'
 proc_extract.param_types['atcor_flag'] = 'boolean'
+proc_extract.param_types['cloud_band'] = 'string_select'
+proc_extract.param_types['cloud_thr'] = 'float_list'
 proc_extract.param_types['event_fnam'] = 'string'
 proc_extract.param_types['event_dates'] = 'date_list'
 proc_extract.param_types['event_flag'] = 'boolean'
@@ -50,14 +56,20 @@ proc_extract.defaults['major_flag'] = True
 proc_extract.defaults['data_select'] = 'Specific Interpolated Data'
 proc_extract.defaults['spec_date'] = ''
 proc_extract.defaults['atcor_flag'] = True
+proc_extract.defaults['cloud_band'] = 'r'
+proc_extract.defaults['cloud_thr'] = [0.35,0.8]
 proc_extract.defaults['event_fnam'] = 'phenology.csv'
 proc_extract.defaults['event_dates'] = ['','','','','']
 proc_extract.defaults['event_flag'] = False
 proc_extract.list_sizes['obs_src'] = 2
 proc_extract.list_sizes['data_select'] = 2
+proc_extract.list_sizes['cloud_band'] = 10
+proc_extract.list_sizes['cloud_thr'] = 2
 proc_extract.list_sizes['event_dates'] = 5
 proc_extract.list_labels['obs_src'] = ['Field Data','Drone Analysis']
 proc_extract.list_labels['data_select'] = ['Specific Non-interpolated Data','Specific Interpolated Data']
+proc_extract.list_labels['cloud_band'] = ['b','g','r','e1','e2','e3','n1','n2','s1','s2']
+proc_extract.list_labels['cloud_thr'] = ['Reflectance','Correlation']
 proc_extract.list_labels['event_dates'] = ['Planting :',' Peak :',' Heading :',' Assessment :',' Harvesting :']
 proc_extract.input_types['gis_fnam'] = 'ask_file'
 proc_extract.input_types['obs_src'] = 'string_select'
@@ -68,6 +80,8 @@ proc_extract.input_types['major_flag'] = 'boolean'
 proc_extract.input_types['data_select'] = 'string_select'
 proc_extract.input_types['spec_date'] = 'date'
 proc_extract.input_types['atcor_flag'] = 'boolean'
+proc_extract.input_types['cloud_band'] = 'string_select'
+proc_extract.input_types['cloud_thr'] = 'float_list'
 proc_extract.input_types['event_fnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
 proc_extract.input_types['event_flag'] = 'boolean'
