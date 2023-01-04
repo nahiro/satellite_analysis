@@ -185,19 +185,21 @@ else:
     ext = '.npz'
 dtim = datetime.strptime(args.tobs,'%Y%m%d')
 ystr = '{}'.format(dtim.year)
+params = None
 if args.no_interp:
     if args.no_atcor:
         fnam = os.path.join(args.inpdir,ystr,'{}_parcel{}'.format(args.tobs,ext))
     else:
         fnam = os.path.join(args.inpdir,ystr,'{}_atcor{}'.format(args.tobs,ext))
-        if args.rthr is not None:
+        if args.rthr is not None and not np.isnan(args.rthr):
             gnam = os.path.join(args.inpdir,ystr,'{}_factor.npz'.format(args.tobs))
             if not os.path.exists(gnam):
                 raise IOError('Error, no such file >>> {}'.format(gnam))
             data = np.load(gnam)
             if not np.array_equal(data['object_ids'],object_ids):
                 raise ValueError('Error, different OBJECTID >>> {}'.format(gnam))
-            inp_rval.append(data['corcoef'].swapaxes(0,1)) # (NOBJECT,NBAND)
+            inp_rval = data['corcoef'].swapaxes(0,1) # (NOBJECT,NBAND)
+            params = data['params']
     if not os.path.exists(fnam):
         raise IOError('Error, no such file >>> {}'.format(fnam))
 else:
@@ -216,14 +218,20 @@ if args.inp_csv:
         raise ValueError('Error columns[0]={} (!= OBJECTID) >>> {}'.format(columns[0],fnam))
     if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    if params is None:
+        params = columns[1:]
+    elif not np.array_equal(columns[1:],params):
+        raise ValueError('Error, different parameters >>> {}'.format(fnam))
     inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
-    params = columns[1:]
 else:
     data = np.load(fnam)
     if not np.array_equal(data['object_ids'],object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
+    if params is None:
+        params = data['params']
+    elif not np.array_equal(data['params'],params):
+        raise ValueError('Error, different parameters >>> {}'.format(fnam))
     inp_data = data['data'] # (NOBJECT,NBAND)
-    params = data['params']
 
 # Extract data
 out_plot = {}
