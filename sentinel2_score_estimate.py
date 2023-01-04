@@ -22,6 +22,7 @@ EPSILON = 1.0e-6
 # Default values
 Y_PARAM = ['BLB']
 Y_NUMBER = [1]
+CR_BAND = 'r'
 AX1_VMIN = 0.0
 AX1_VMAX = 1.0
 

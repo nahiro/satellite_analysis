@@ -50,6 +50,7 @@ class Estimate(Satellite_Process):
             if 'Non-interpolated' in self.values['data_select']:
                 if self.values['atcor_flag']:
                     spec_fnam = os.path.join(self.s2_data,'atcor',ystr,'{:%Y%m%d}_atcor.npz'.format(spec_dtim))
+                    spec_gnam = os.path.join(self.s2_data,'atcor',ystr,'{:%Y%m%d}_factor.npz'.format(spec_dtim))
                 else:
                     spec_fnam = os.path.join(self.s2_data,'parcel',ystr,'{:%Y%m%d}_parcel.npz'.format(spec_dtim))
             else:
@@ -130,6 +131,15 @@ class Estimate(Satellite_Process):
         command += ' --inp_shp "{}"'.format(self.values['gis_fnam'])
         if 'Specific' in self.values['data_select']:
             command += ' --inp_fnam "{}"'.format(spec_fnam)
+            if 'Non-interpolated' in self.values['data_select']:
+                command += ' --cr_band {}'.format(self.values['cloud_band'])
+                list_labels = [s.split()[0] for s in self.list_labels['cloud_thr']]
+                ithr = list_labels.index('Reflectance')
+                command += ' --cthr {}'.format(self.values['cloud_thr'][ithr])
+                if self.values['atcor_flag']:
+                    command += ' --fact_fnam "{}"'.format(spec_gnam)
+                    ithr = list_labels.index('Correlation')
+                    command += ' --rthr {}'.format(self.values['cloud_thr'][ithr])
         else:
             command += ' --inp_csv "{}"'.format(select_csv)
         command += ' --out_shp "{}"'.format(estimate_shp)
