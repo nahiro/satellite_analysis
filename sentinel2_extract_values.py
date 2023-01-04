@@ -27,6 +27,7 @@ Y_MAX = ['BLB:9.0','Blast:9.0','Drought:9.0']
 OBS_FNAM = 'observation.csv'
 NCHECK = 10
 RMAX = 50.0 # m
+CR_BAND = 'r'
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -45,6 +46,9 @@ parser.add_argument('-y','--y_param',default=None,action='append',help='Objectiv
 parser.add_argument('--y_max',default=None,action='append',help='Max score ({})'.format(Y_MAX))
 parser.add_argument('-n','--ncheck',default=NCHECK,type=int,help='Number of plots to check (%(default)s)')
 parser.add_argument('-R','--rmax',default=RMAX,type=float,help='Maximum distance between bunch and plot center in m (%(default)s)')
+parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
+parser.add_argument('-c','--cthr',default=None,type=float,help='Threshold for cloud removal (%(default)s)')
+parser.add_argument('-r','--rthr',default=None,type=float,help='R threshold (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-P','--phenology',default=None,help='Phenology CSV name (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
@@ -52,8 +56,8 @@ parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug 
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--use_major_plot',default=False,action='store_true',help='Use major plot (%(default)s)')
 parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CSV (%(default)s)')
-parser.add_argument('--no_interp',default=None,help='Use non-interpolated data (%(default)s)')
-parser.add_argument('--no_atcor',default=None,help='Use non-atcor data (%(default)s)')
+parser.add_argument('--no_interp',default=False,action='store_true',help='Use non-interpolated data (%(default)s)')
+parser.add_argument('--no_atcor',default=False,action='store_true',help='Use non-atcor data (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -186,8 +190,16 @@ if args.no_interp:
         fnam = os.path.join(args.inpdir,ystr,'{}_parcel{}'.format(args.tobs,ext))
     else:
         fnam = os.path.join(args.inpdir,ystr,'{}_atcor{}'.format(args.tobs,ext))
+        if args.rthr is not None:
+            gnam = os.path.join(args.inpdir,ystr,'{}_factor.npz'.format(args.tobs))
+            if not os.path.exists(gnam):
+                raise IOError('Error, no such file >>> {}'.format(gnam))
+            data = np.load(gnam)
+            if not np.array_equal(data['object_ids'],object_ids):
+                raise ValueError('Error, different OBJECTID >>> {}'.format(gnam))
+            inp_rval.append(data['corcoef'].swapaxes(0,1)) # (NOBJECT,NBAND)
     if not os.path.exists(fnam):
-        raise IOError('Error, no such file >>> {}\n{}'.format(fnam))
+        raise IOError('Error, no such file >>> {}'.format(fnam))
 else:
     fnam = os.path.join(args.inpdir,ystr,'{}_interp{}'.format(args.tobs,ext))
     if not os.path.exists(fnam):
