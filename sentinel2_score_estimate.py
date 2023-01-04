@@ -31,6 +31,7 @@ parser.add_argument('-f','--form_fnam',default=None,help='Input formula file nam
 parser.add_argument('-i','--inp_shp',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('-I','--inp_fnam',default=None,help='Input NPZ name (%(default)s)')
 parser.add_argument('--inp_csv',default=None,help='Input CSV name (%(default)s)')
+parser.add_argument('--fact_fnam',default=None,help='Input factor file name (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
@@ -121,6 +122,14 @@ if args.cthr is not None and not np.isnan(args.cthr):
     cnd = (inp_data[:,iband] > args.cthr)
     inp_data[cnd,:] = np.nan
 if args.rthr is not None and not np.isnan(args.rthr):
+    if not os.path.exists(args.fact_fnam):
+        raise IOError('Error, no such file >>> {}'.format(args.fact_fnam))
+    data = np.load(args.fact_fnam)
+    if not np.array_equal(data['object_ids'],object_ids):
+        raise ValueError('Error, different OBJECTID >>> {}'.format(args.fact_fnam))
+    elif not np.array_equal(data['params'],params):
+        raise ValueError('Error, different parameters >>> {}'.format(args.fact_fnam))
+    inp_rval = data['corcoef'].swapaxes(0,1) # (NOBJECT,NBAND)
     cnd = (inp_rval < args.rthr)
     inp_data[cnd] = np.nan
 
