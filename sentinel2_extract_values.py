@@ -198,8 +198,8 @@ if args.no_interp:
             data = np.load(gnam)
             if not np.array_equal(data['object_ids'],object_ids):
                 raise ValueError('Error, different OBJECTID >>> {}'.format(gnam))
-            inp_rval = data['corcoef'].swapaxes(0,1) # (NOBJECT,NBAND)
             params = data['params'].tolist()
+            inp_rval = data['corcoef'].swapaxes(0,1) # (NOBJECT,NBAND)
     if not os.path.exists(fnam):
         raise IOError('Error, no such file >>> {}'.format(fnam))
 else:
