@@ -321,6 +321,8 @@ config_defaults.update({
 'estimate.age_value'                  : 95.0,
 'estimate.spec_date'                  : '',
 'estimate.atcor_flag'                 : True,
+'estimate.cloud_band'                 : 'r',
+'estimate.cloud_thr'                  : [0.35,0.8],
 'estimate.pm_fnam'                    : os.path.join(main_s2_analysis,'formula','pm_formula_age_90_110.csv'),
 'estimate.pm_number'                  : 1,
 'estimate.y_params'                   : [True,False,False,False,False,False],
