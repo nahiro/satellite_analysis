@@ -87,8 +87,14 @@ class Extract(Satellite_Process):
             command += ' --harvest {:%Y%m%d}'.format(dtim)
         if 'Non-interpolated' in self.values['data_select']:
             command += ' --no_interp'
+            command += ' --cr_band {}'.format(self.values['cloud_band'])
+            list_labels = [s.split()[0] for s in self.list_labels['cloud_thr']]
+            ithr = list_labels.index('Reflectance')
+            command += ' --cthr {}'.format(self.values['cloud_thr'][ithr])
             if self.values['atcor_flag']:
                 command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'atcor'))
+                ithr = list_labels.index('Correlation')
+                command += ' --rthr {}'.format(self.values['cloud_thr'][ithr])
             else:
                 command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
                 command += ' --no_atcor'
