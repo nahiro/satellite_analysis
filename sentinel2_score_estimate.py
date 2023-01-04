@@ -76,11 +76,12 @@ if args.ax1_zstp is not None:
     ax1_zstp = {}
     for i,param in enumerate(args.y_param):
         ax1_zstp[param] = args.ax1_zstp[i]
+if args.inp_csv is not None:
+    fnam = args.inp_csv
+else:
+    fnam = args.inp_fnam
 if args.out_csv is None or args.out_shp is None or args.fignam is None:
-    if args.inp_csv is not None:
-        bnam,enam = os.path.splitext(args.inp_csv)
-    else:
-        bnam,enam = os.path.splitext(args.inp_fnam)
+    bnam,enam = os.path.splitext(fnam)
     if args.out_csv is None:
         args.out_csv = bnam+'_estimate.csv'
     if args.out_shp is None:
@@ -90,10 +91,10 @@ if args.out_csv is None or args.out_shp is None or args.fignam is None:
 
 # Read indices
 if args.inp_csv is not None:
-    src_df = pd.read_csv(args.inp_csv,comment='#')
+    src_df = pd.read_csv(fnam,comment='#')
     src_df.columns = src_df.columns.str.strip()
     if not 'OBJECTID' in src_df.columns:
-        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(fnam))
     object_ids = src_df['OBJECTID'].astype(int)
     nobject = len(object_ids)
     params = []
@@ -104,11 +105,21 @@ if args.inp_csv is not None:
             inp_data.append(src_df[param].astype(float).values)
     inp_data = np.array(inp_data).swapaxes(0,1) # (NOBJECT,NBAND)
 else:
-    data = np.load(args.inp_fnam)
+    data = np.load(fnam)
     object_ids = data['object_ids']
     nobject = len(object_ids)
     params = data['params'].tolist()
     inp_data = data['data']
+if args.cthr is not None and not np.isnan(args.cthr):
+    param = 'S'+args.cr_band
+    if not param in params:
+        raise ValueError('Error in finding {} in {}'.format(param,fnam))
+    iband = params.index(param)
+    cnd = (inp_data[:,iband] > args.cthr)
+    inp_data[cnd,:] = np.nan
+if args.rthr is not None and not np.isnan(args.rthr):
+    cnd = (inp_rval[:,iband] < args.rthr)
+    inp_data[cnd] = np.nan
 
 # Read Shapefile
 if args.inp_shp is not None:
@@ -159,10 +170,7 @@ for iband,y_param in enumerate(args.y_param):
         elif param_low == 'const':
             out_data[:,iband] += coef
         elif not param in params:
-            if args.inp_csv is not None:
-                raise ValueError('Error in finding {} in {}'.format(param,args.inp_csv))
-            else:
-                raise ValueError('Error in finding {} in {}'.format(param,args.inp_fnam))
+            raise ValueError('Error in finding {} in {}'.format(param,fnam))
         indx = params.index(param)
         out_data[:,iband] += coef*inp_data[:,indx]
 
