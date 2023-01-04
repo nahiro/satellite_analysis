@@ -112,7 +112,7 @@ else:
     object_ids = data['object_ids']
     nobject = len(object_ids)
     params = data['params'].tolist()
-    inp_data = data['data']
+    inp_data = data['data'] # (NOBJECT,NBAND)
 if args.cthr is not None and not np.isnan(args.cthr):
     param = 'S'+args.cr_band
     if not param in params:
@@ -172,10 +172,11 @@ for iband,y_param in enumerate(args.y_param):
             continue
         elif param_low == 'const':
             out_data[:,iband] += coef
-        elif not param in params:
-            raise ValueError('Error in finding {} in {}'.format(param,fnam))
-        indx = params.index(param)
-        out_data[:,iband] += coef*inp_data[:,indx]
+        else:
+            if not param in params:
+                raise ValueError('Error in finding {} in {}'.format(param,fnam))
+            indx = params.index(param)
+            out_data[:,iband] += coef*inp_data[:,indx]
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
