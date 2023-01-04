@@ -96,9 +96,13 @@ if args.inp_csv is not None:
         raise ValueError('Error in finding OBJECTID >>> {}'.format(args.inp_csv))
     object_ids = src_df['OBJECTID'].astype(int)
     nobject = len(object_ids)
+    params = []
+    inp_data = []
     for param in src_df.columns:
         if param in PARAMS:
-            src_df[param] = src_df[param].astype(float)
+            params.append(param)
+            inp_data.append(src_df[param].astype(float).values)
+    inp_data = np.array(inp_data).swapaxes(0,1) # (NOBJECT,NBAND)
 else:
     data = np.load(args.inp_fnam)
     object_ids = data['object_ids']
@@ -154,15 +158,13 @@ for iband,y_param in enumerate(args.y_param):
             continue
         elif param_low == 'const':
             out_data[:,iband] += coef
-        elif args.inp_csv is not None:
-            if not param in src_df.columns:
+        elif not param in params:
+            if args.inp_csv is not None:
                 raise ValueError('Error in finding {} in {}'.format(param,args.inp_csv))
-            out_data[:,iband] += coef*src_df[param]
-        else:
-            if not param in params:
+            else:
                 raise ValueError('Error in finding {} in {}'.format(param,args.inp_fnam))
-            indx = params.index(param)
-            out_data[:,iband] += coef*inp_data[:,indx]
+        indx = params.index(param)
+        out_data[:,iband] += coef*inp_data[:,indx]
 
 # Output CSV
 with open(args.out_csv,'w') as fp:
