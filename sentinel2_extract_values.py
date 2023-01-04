@@ -199,7 +199,7 @@ if args.no_interp:
             if not np.array_equal(data['object_ids'],object_ids):
                 raise ValueError('Error, different OBJECTID >>> {}'.format(gnam))
             inp_rval = data['corcoef'].swapaxes(0,1) # (NOBJECT,NBAND)
-            params = data['params']
+            params = data['params'].tolist()
     if not os.path.exists(fnam):
         raise IOError('Error, no such file >>> {}'.format(fnam))
 else:
@@ -219,7 +219,7 @@ if args.inp_csv:
     if not np.array_equal(df.iloc[:,0].astype(int),object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
     if params is None:
-        params = columns[1:]
+        params = columns[1:].to_list()
     elif not np.array_equal(columns[1:],params):
         raise ValueError('Error, different parameters >>> {}'.format(fnam))
     inp_data = df.iloc[:,1:].astype(float).values # (NOBJECT,NBAND)
@@ -228,10 +228,20 @@ else:
     if not np.array_equal(data['object_ids'],object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(fnam))
     if params is None:
-        params = data['params']
+        params = data['params'].tolist()
     elif not np.array_equal(data['params'],params):
         raise ValueError('Error, different parameters >>> {}'.format(fnam))
     inp_data = data['data'] # (NOBJECT,NBAND)
+if args.cthr is not None and not np.isnan(args.cthr):
+    param = 'S'+args.cr_band
+    if not param in params:
+        raise ValueError('Error in finding {} in {}'.format(param,fnam))
+    iband = params.index(param)
+    cnd = (inp_data[:,iband] > args.cthr)
+    inp_data[cnd,:] = np.nan
+if args.rthr is not None and not np.isnan(args.rthr):
+    cnd = (inp_rval[:,iband] < args.rthr)
+    inp_data[cnd] = np.nan
 
 # Extract data
 out_plot = {}
