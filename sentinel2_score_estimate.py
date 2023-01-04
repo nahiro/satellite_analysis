@@ -35,6 +35,9 @@ parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(defau
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-y','--y_param',default=None,action='append',help='Objective variable ({})'.format(Y_PARAM))
 parser.add_argument('--y_number',default=None,type=int,action='append',help='Formula number ({})'.format(Y_NUMBER))
+parser.add_argument('-C','--cr_band',default=CR_BAND,help='Wavelength band for cloud removal (%(default)s)')
+parser.add_argument('-c','--cthr',default=None,type=float,help='Threshold for cloud removal (%(default)s)')
+parser.add_argument('-r','--rthr',default=None,type=float,help='R threshold (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--ax1_vmin',default=AX1_VMIN,type=float,action='append',help='Axis1 V min for debug (%(default)s)')
 parser.add_argument('--ax1_vmax',default=AX1_VMAX,type=float,action='append',help='Axis1 V max for debug (%(default)s)')
@@ -118,7 +121,7 @@ if args.cthr is not None and not np.isnan(args.cthr):
     cnd = (inp_data[:,iband] > args.cthr)
     inp_data[cnd,:] = np.nan
 if args.rthr is not None and not np.isnan(args.rthr):
-    cnd = (inp_rval[:,iband] < args.rthr)
+    cnd = (inp_rval < args.rthr)
     inp_data[cnd] = np.nan
 
 # Read Shapefile

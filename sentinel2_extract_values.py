@@ -240,7 +240,7 @@ if args.cthr is not None and not np.isnan(args.cthr):
     cnd = (inp_data[:,iband] > args.cthr)
     inp_data[cnd,:] = np.nan
 if args.rthr is not None and not np.isnan(args.rthr):
-    cnd = (inp_rval[:,iband] < args.rthr)
+    cnd = (inp_rval < args.rthr)
     inp_data[cnd] = np.nan
 
 # Extract data
