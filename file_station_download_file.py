@@ -265,7 +265,7 @@ for index,row in df.iterrows():
                 flag = True
                 break
     if not flag:
-        sys.stderr.write('Warning, faild in downloading >>> {}\n'.format(dst_fnam))
+        sys.stderr.write('Warning, failed in downloading >>> {}\n'.format(dst_fnam))
         sys.stderr.flush()
 for dnam in folders.keys():
     src_time = folders[dnam].timestamp()
