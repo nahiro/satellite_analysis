@@ -459,7 +459,7 @@ for proc in pnams:
                 elif modules[proc].param_types[pnam] in ['float_list','float_select_list']:
                     modules[proc].values[pnam][j] = float(ts[j])
                 elif modules[proc].param_types[pnam] in ['boolean_list']:
-                    modules[proc].values[pnam][j] = bool(ts[j])
+                    modules[proc].values[pnam][j] = eval(ts[j])
                 else:
                     raise ValueError('{}: Error, unsupported parameter type ({}) >>> {}'.format(modules[proc].proc_name,pnam,modules[proc].param_types[pnam]))
         else:
@@ -473,7 +473,7 @@ for proc in pnams:
             elif modules[proc].param_types[pnam] in ['float','float_select']:
                 modules[proc].values[pnam] = float(t)
             elif modules[proc].param_types[pnam] in ['boolean']:
-                modules[proc].values[pnam] = bool(t)
+                modules[proc].values[pnam] = eval(t)
             else:
                 raise ValueError('{}: Error, unsupported parameter type ({}) >>> {}'.format(modules[proc].proc_name,pnam,modules[proc].param_types[pnam]))
     modules[proc].python_path = config[proc].get('{}.python_path'.format(proc))
