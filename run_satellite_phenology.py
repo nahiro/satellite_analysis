@@ -35,6 +35,13 @@ class Phenology(Satellite_Process):
         iflag = self.list_labels['oflag'].index('mask')
         flag_paddy = self.values['oflag'][iflag]
         flag_parcel = self.values['oflag'][iflag]
+        list_labels = [s.split()[0] for s in self.list_labels['trans_source']]
+        product = self.values['trans_source'][list_labels.index('Product')]
+        version = self.values['trans_source'][list_labels.index('Version')]
+        if version == '':
+            s1_data = os.path.join(self.s1_data,product)
+        else:
+            s1_data = os.path.join(self.s1_data,product,version)
 
         if 'bojongsoang' in self.values['trans_select'].lower():
             # Select reference for planting
@@ -52,7 +59,7 @@ class Phenology(Satellite_Process):
                 # Select
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference_fi.py'))
-                command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+                command += ' --datdir "{}"'.format(s1_data)
                 command += ' --out_shp "{}"'.format(planting_ref)
                 command += ' --tmin {:%Y%m%d}'.format(start_dtim)
                 command += ' --tmax {:%Y%m%d}'.format(end_dtim)
@@ -81,7 +88,7 @@ class Phenology(Satellite_Process):
                 # Select
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
-                command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+                command += ' --datdir "{}"'.format(s1_data)
                 command += ' --ref_fnam "{}"'.format(planting_ref)
                 command += ' --out_csv "{}"'.format(planting_csv)
                 command += ' --out_shp "{}"'.format(planting_shp)
@@ -128,7 +135,7 @@ class Phenology(Satellite_Process):
                         years = np.arange(start_dtim.year,end_dtim.year+2,1)
                         for year in years:
                             ystr = '{}'.format(year)
-                            dnam = os.path.join(self.s1_data,'planting',ystr)
+                            dnam = os.path.join(s1_data,ystr)
                             if not os.path.isdir(dnam):
                                 continue
                             for f in sorted(os.listdir(dnam)):
@@ -168,7 +175,7 @@ class Phenology(Satellite_Process):
                 # Select
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference.py'))
-                command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+                command += ' --datdir "{}"'.format(s1_data)
                 command += ' --dst_fnam "{}"'.format(planting_ref)
                 command += ' --mask_fnam "{}"'.format(mask_paddy)
                 command += ' --tmin {:%Y%m%d}'.format(start_dtim)
@@ -240,7 +247,7 @@ class Phenology(Satellite_Process):
                 # Select
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
-                command += ' --datdir "{}"'.format(os.path.join(self.s1_data,'planting'))
+                command += ' --datdir "{}"'.format(s1_data)
                 command += ' --stat_fnam "{}"'.format(planting_avg)
                 command += ' --dst_fnam "{}"'.format(planting_sel)
                 command += ' --mask_fnam "{}"'.format(mask_paddy)

@@ -33,6 +33,7 @@ class Process:
         self.list_labels = {}
         self.values = {}
         self.input_types = {}
+        self.select_types = {}
         self.flag_check = {}
         self.flag_fix = {}
         self.flag_fill = {}
@@ -800,8 +801,12 @@ class Process:
                     if self.list_labels[pnam][j] != '':
                         self.center_lbl[pnam].append(ttk.Label(self.center_cnv[pnam],text=self.list_labels[pnam][j][0]))
                         self.center_lbl[pnam][-1].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
-                    self.center_inp[pnam].append(ttk.Combobox(self.center_cnv[pnam],width=1,background=bgs[i%2],values=self.list_labels[pnam][j][1],state='readonly',textvariable=self.center_var[pnam][j]))
-                    self.center_inp[pnam][j].current(self.list_labels[pnam][j][1].index(self.values[pnam][j]))
+                    if pnam in self.select_types and self.select_types[pnam][j] == 'rw':
+                        self.center_inp[pnam].append(ttk.Combobox(self.center_cnv[pnam],width=1,background=bgs[i%2],values=self.list_labels[pnam][j][1],textvariable=self.center_var[pnam][j]))
+                    else:
+                        self.center_inp[pnam].append(ttk.Combobox(self.center_cnv[pnam],width=1,background=bgs[i%2],values=self.list_labels[pnam][j][1],state='readonly',textvariable=self.center_var[pnam][j]))
+                    if self.values[pnam][j] in self.list_labels[pnam][j][1]:
+                        self.center_inp[pnam][j].current(self.list_labels[pnam][j][1].index(self.values[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             elif '_list' in self.input_types[pnam]:
                 self.center_inp[pnam] = []
@@ -813,7 +818,10 @@ class Process:
                     self.center_inp[pnam].append(tk.Entry(self.center_cnv[pnam],width=1,background=bgs[i%2],textvariable=self.center_var[pnam][j]))
                     self.center_inp[pnam][j].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             elif '_select' in self.input_types[pnam]:
-                self.center_inp[pnam] = ttk.Combobox(self.center_cnv[pnam],background=bgs[i%2],values=self.list_labels[pnam],state='readonly',textvariable=self.center_var[pnam])
+                if pnam in self.select_types and self.select_types[pnam] == 'rw':
+                    self.center_inp[pnam] = ttk.Combobox(self.center_cnv[pnam],background=bgs[i%2],values=self.list_labels[pnam],textvariable=self.center_var[pnam])
+                else:
+                    self.center_inp[pnam] = ttk.Combobox(self.center_cnv[pnam],background=bgs[i%2],values=self.list_labels[pnam],state='readonly',textvariable=self.center_var[pnam])
                 if re.search(r'\\u',self.values[pnam]):
                     v = re.sub(r'\\u(\S\S\S\S)',lambda m:chr(int('0x'+m.group(1),16)),self.values[pnam])
                 else:
@@ -823,9 +831,11 @@ class Process:
                 else:
                     v = self.values[pnam]
                 if v in self.center_inp[pnam]['values']:
-                    self.center_inp[pnam].current(self.list_labels[pnam].index(v))
+                    if v in self.list_labels[pnam]:
+                        self.center_inp[pnam].current(self.list_labels[pnam].index(v))
                 else:
-                    self.center_inp[pnam].current(self.list_labels[pnam].index(self.values[pnam]))
+                    if self.values[pnam] in self.list_labels[pnam]:
+                        self.center_inp[pnam].current(self.list_labels[pnam].index(self.values[pnam]))
                 self.center_inp[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,fill=tk.X,side=tk.LEFT,expand=True)
             else:
                 raise ValueError('{}: Error, unsupported input type ({}) >>> {}'.format(self.proc_name,pnam,self.input_types[pnam]))
