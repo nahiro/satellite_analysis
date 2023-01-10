@@ -243,6 +243,7 @@ config_defaults.update({
 'phenology.head_fnam'                 : '',
 'phenology.harvest_fnam'              : '',
 'phenology.assess_fnam'               : '',
+'phenology.trans_source'              : ['final','v1.4'],
 'phenology.trans_select'              : 'Around Probable Planting',
 'phenology.trans_indicator'           : '\u03C3 Min',
 'phenology.trans_pref'                : '',

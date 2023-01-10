@@ -418,6 +418,8 @@ class Process:
             return check_int(self.params[pnam],t,self.param_range[pnam][0],self.param_range[pnam][1])
         elif 'float_list' in self.input_types[pnam]:
             return check_float(self.params[pnam],t,self.param_range[pnam][0],self.param_range[pnam][1])
+        elif 'string_list' in self.input_types[pnam]:
+            return True
         elif '_select' in self.input_types[pnam]:
             return True
         elif '_select_list' in self.input_types[pnam]:

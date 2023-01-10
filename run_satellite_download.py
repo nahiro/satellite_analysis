@@ -23,7 +23,7 @@ class Download(Satellite_Process):
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
         d1 = start_dtim
-        d2 = end_dtim+timedelta(years=1)
+        d2 = end_dtim+timedelta(days=400)
         if not os.path.exists(self.s2_data):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):

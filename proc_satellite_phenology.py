@@ -13,6 +13,7 @@ proc_phenology.pnams.append('trans_fnam')
 proc_phenology.pnams.append('head_fnam')
 proc_phenology.pnams.append('harvest_fnam')
 proc_phenology.pnams.append('assess_fnam')
+proc_phenology.pnams.append('trans_source')
 proc_phenology.pnams.append('trans_select')
 proc_phenology.pnams.append('trans_indicator')
 proc_phenology.pnams.append('trans_pref')
@@ -35,6 +36,7 @@ proc_phenology.params['trans_fnam'] = 'Planting Date File'
 proc_phenology.params['head_fnam'] = 'Heading Date File'
 proc_phenology.params['harvest_fnam'] = 'Harvesting Date File'
 proc_phenology.params['assess_fnam'] = 'Assessment Date File'
+proc_phenology.params['trans_source'] = 'Planting Data Source'
 proc_phenology.params['trans_select'] = 'Planting Date Selection'
 proc_phenology.params['trans_indicator'] = 'Probable Planting Indicator'
 proc_phenology.params['trans_pref'] = 'Preferable Planting Date'
@@ -57,6 +59,7 @@ proc_phenology.param_types['trans_fnam'] = 'string'
 proc_phenology.param_types['head_fnam'] = 'string'
 proc_phenology.param_types['harvest_fnam'] = 'string'
 proc_phenology.param_types['assess_fnam'] = 'string'
+proc_phenology.param_types['trans_source'] = 'string_list'
 proc_phenology.param_types['trans_select'] = 'string'
 proc_phenology.param_types['trans_indicator'] = 'string'
 proc_phenology.param_types['trans_pref'] = 'date'
@@ -90,6 +93,7 @@ proc_phenology.defaults['trans_fnam'] = ''
 proc_phenology.defaults['head_fnam'] = ''
 proc_phenology.defaults['harvest_fnam'] = ''
 proc_phenology.defaults['assess_fnam'] = ''
+proc_phenology.defaults['trans_source'] = ['final','v1.4']
 proc_phenology.defaults['trans_select'] = 'Around Probable Planting'
 proc_phenology.defaults['trans_indicator'] = '\u03C3 Min'
 proc_phenology.defaults['trans_pref'] = ''
@@ -103,6 +107,7 @@ proc_phenology.defaults['assess_dthrs'] = [120,10,10]
 proc_phenology.defaults['y1_smooth'] = 0.02
 proc_phenology.defaults['y1_thr'] = 0.0
 proc_phenology.defaults['oflag'] = [False,False,False]
+proc_phenology.list_sizes['trans_source'] = 2
 proc_phenology.list_sizes['trans_select'] = 3
 proc_phenology.list_sizes['trans_indicator'] = 4
 proc_phenology.list_sizes['trans_thr1'] = 5
@@ -113,6 +118,7 @@ proc_phenology.list_sizes['trans_thr5'] = 2
 proc_phenology.list_sizes['atc_params'] = 2
 proc_phenology.list_sizes['assess_dthrs'] = 3
 proc_phenology.list_sizes['oflag'] = 3
+proc_phenology.list_labels['trans_source'] = ['Product :',' Version :']
 proc_phenology.list_labels['trans_select'] = ['Around Probable Planting','Probable Planting Indicator','Around Probable Planting (Bojongsoang)']
 proc_phenology.list_labels['trans_indicator'] = ['\u03C3 Min','\u03C3 Sig','\U0001D6E5\u03C3 Avg','\U0001D6E5\u03C3 Max']
 proc_phenology.list_labels['trans_thr1'] = ['Min :',' Sig :',' \U0001D6E5 Min :',' \U0001D6E5 Avg :',' \U0001D6E5 Max :']
@@ -132,6 +138,7 @@ proc_phenology.input_types['trans_fnam'] = 'ask_file'
 proc_phenology.input_types['head_fnam'] = 'ask_file'
 proc_phenology.input_types['harvest_fnam'] = 'ask_file'
 proc_phenology.input_types['assess_fnam'] = 'ask_file'
+proc_phenology.input_types['trans_source'] = 'string_list'
 proc_phenology.input_types['trans_select'] = 'string_select'
 proc_phenology.input_types['trans_indicator'] = 'string_select'
 proc_phenology.input_types['trans_pref'] = 'date'
