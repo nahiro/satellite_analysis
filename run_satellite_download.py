@@ -22,8 +22,8 @@ class Download(Satellite_Process):
         end_dtim = datetime.strptime(self.end_date,self.date_fmt)
         first_dtim = datetime.strptime(self.first_date,self.date_fmt)
         last_dtim = datetime.strptime(self.last_date,self.date_fmt)
-        d1 = start_dtim+timedelta(days=60)
-        d2 = end_dtim+timedelta(days=240)
+        d1 = start_dtim
+        d2 = end_dtim+timedelta(years=1)
         if not os.path.exists(self.s2_data):
             os.makedirs(self.s2_data)
         if not os.path.isdir(self.s2_data):
@@ -36,7 +36,20 @@ class Download(Satellite_Process):
         itarg = self.list_labels['dflag'].index('planting')
         iflag = self.list_labels['oflag'].index('planting')
         if self.values['dflag'][itarg]:
-            if 'bojongsoang' in self.values['trans_path'].lower():
+            path_low = self.values['trans_path'].lower()
+            m = re.search('/(final|preliminary|test)/([^/]+)$',path_low)
+            if m:
+                product = m.group(1)
+                version = m.group(2)
+            else:
+                m = re.search('/(final|preliminary|test)',path_low)
+                if m:
+                    product = m.group(1)
+                    version = None
+                else:
+                    product = 'planting'
+                    version = None
+            if 'bojongsoang' in path_low:
                 enam_list = ['.json','.dbf','.prj','.shp','.shx']
             else:
                 enam_list = ['.tif','.json']
@@ -69,22 +82,19 @@ class Download(Satellite_Process):
                     items = row['fileName'].strip().split('/')
                     if len(items) != 2:
                         continue
-                    src_dnam = items[0]
                     src_fnam = items[1]
-                    m = re.search('_('+'\d'*8+')_final(\.\S+)$',src_fnam)
+                    m = re.search('_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_\d\d\d\d\d\d\d\d_\S+(\.\S+)$',src_fnam)
                     if not m:
                         continue
-                    dstr = m.group(1)
-                    enam = m.group(2)
+                    tmin = m.group(1)
+                    tmax = m.group(2)
+                    enam = m.group(3)
                     if not enam in enam_list:
                         continue
-                    d = datetime.strptime(dstr,'%Y%m%d')
-                    if d < d1 or d > d2:
+                    dmin = datetime.strptime(tmin,'%Y%m%d')
+                    dmax = datetime.strptime(tmax,'%Y%m%d')
+                    if dmax < start_dtim or dmin > end_dtim:
                         continue
-                    src_pnam = row['folderName'].strip()
-                    df.loc[index,'fileName'] = src_fnam
-                    df.loc[index,'folderName'] = '{}/{}'.format(src_pnam,src_dnam)
-                    df.loc[index,'nLayer'] = 0
                     inds.append(index)
                 if len(inds) < 1:
                     self.print_message('No planting data for download ({})'.format(ystr),print_time=False)
@@ -98,7 +108,10 @@ class Download(Satellite_Process):
                 command += ' --port "{}"'.format(self.values['port'])
                 command += ' --rcdir "{}"'.format(netrc_dir)
                 command += ' --inp_list "{}"'.format(tmp_fnam)
-                command += ' --dstdir "{}"'.format(os.path.join(self.s1_data,'planting',ystr))
+                if version is None:
+                    command += ' --dstdir "{}"'.format(os.path.join(self.s1_data,product,ystr))
+                else:
+                    command += ' --dstdir "{}"'.format(os.path.join(self.s1_data,product,version,ystr))
                 command += ' --verbose'
                 if self.values['oflag'][iflag]:
                     command += ' --overwrite'
