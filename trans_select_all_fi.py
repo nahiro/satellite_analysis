@@ -81,6 +81,7 @@ dmin = datetime.strptime(args.tmin,'%Y%m%d')
 dmax = datetime.strptime(args.tmax,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
+years = np.arange(dmin.year,dmax.year+2,1)
 
 # Read reference
 data = gpd.read_file(args.ref_fnam)
@@ -118,52 +119,57 @@ dstrs = []
 src_data = []
 params = [param.replace('#','{}'.format(args.inp_ncan)) for param in PARAMS]
 #nband = len(params)
-for d in sorted(os.listdir(args.datdir)):
-    dnam = os.path.join(args.datdir,d)
-    if not os.path.isdir(dnam):
+for year in years:
+    ystr = '{}'.format(year)
+    ynam = os.path.join(args.datdir,ystr)
+    if not os.path.isdir(ynam):
         continue
-    m = re.search('^('+'\d'*8+')$',d)
-    if not m:
-        continue
-    dstr = m.group(1)
-    fnams = glob(os.path.join(dnam,'*_{}_*.shp'.format(dstr)))
-    gnams = glob(os.path.join(dnam,'*_{}_*.json'.format(dstr)))
-    if len(fnams) < 1 or len(gnams) < 1:
-        continue
-    if len(fnams) != 1 or len(gnams) != 1:
-        raise ValueError('Error, len(fnams)={}, len(gnams)={} >>> {}'.format(len(fnams),len(gnams),dstr))
-    f = os.path.basename(fnams[0])
-    m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.shp$',f)
-    if not m:
-        raise ValueError('Error in file name >>> {}'.format(fnams[0]))
-    t1 = datetime.strptime(m.group(1),'%Y%m%d')
-    t2 = datetime.strptime(m.group(2),'%Y%m%d')
-    if m.group(3) != dstr:
-        raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
-    #print(dstr)
-    data = gpd.read_file(fnams[0])
-    with open(gnams[0],'r') as fp:
-        data_info = json.load(fp)
-    if len(data) != nobject:
-        raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
-    columns = data.columns.str.strip()
-    for param in params:
-        if not param in columns:
-            raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
-    #t = datetime.strptime(dstr,'%Y%m%d')
-    tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
-    tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
-    tofs = data_info['offset']
-    if tmin != t1 or tmax != t2:
-        raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnams[0]))
-    elif np.abs(tofs-args.offset) > 1.0e-6:
-        raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
-    if tmin < dmax and tmax > dmin:
-        sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
-        tmins.append(tmin)
-        tmaxs.append(tmax)
-        dstrs.append(dstr)
-        src_data.append(data[params].to_numpy())
+    for d in sorted(os.listdir(ynam)):
+        dnam = os.path.join(ynam,d)
+        if not os.path.isdir(dnam):
+            continue
+        m = re.search('^('+'\d'*8+')$',d)
+        if not m:
+            continue
+        dstr = m.group(1)
+        fnams = glob(os.path.join(dnam,'*_{}_*.shp'.format(dstr)))
+        gnams = glob(os.path.join(dnam,'*_{}_*.json'.format(dstr)))
+        if len(fnams) < 1 or len(gnams) < 1:
+            continue
+        if len(fnams) != 1 or len(gnams) != 1:
+            raise ValueError('Error, len(fnams)={}, len(gnams)={} >>> {}'.format(len(fnams),len(gnams),dstr))
+        f = os.path.basename(fnams[0])
+        m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.shp$',f)
+        if not m:
+            raise ValueError('Error in file name >>> {}'.format(fnams[0]))
+        t1 = datetime.strptime(m.group(1),'%Y%m%d')
+        t2 = datetime.strptime(m.group(2),'%Y%m%d')
+        if m.group(3) != dstr:
+            raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
+        #print(dstr)
+        data = gpd.read_file(fnams[0])
+        with open(gnams[0],'r') as fp:
+            data_info = json.load(fp)
+        if len(data) != nobject:
+            raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
+        columns = data.columns.str.strip()
+        for param in params:
+            if not param in columns:
+                raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
+        #t = datetime.strptime(dstr,'%Y%m%d')
+        tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
+        tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+        tofs = data_info['offset']
+        if tmin != t1 or tmax != t2:
+            raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnams[0]))
+        elif np.abs(tofs-args.offset) > 1.0e-6:
+            raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
+        if tmin < dmax and tmax > dmin:
+            sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
+            tmins.append(tmin)
+            tmaxs.append(tmax)
+            dstrs.append(dstr)
+            src_data.append(data[params].to_numpy())
 tmins = date2num(np.array(tmins)) # tmins[ndat]
 tmaxs = date2num(np.array(tmaxs)) # tmaxs[ndat]
 tvals = 0.5*(tmins+tmaxs) # tvals[ndat]
