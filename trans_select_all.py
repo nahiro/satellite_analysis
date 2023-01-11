@@ -100,13 +100,15 @@ for year in years:
     if not os.path.isdir(dnam):
         continue
     for f in sorted(os.listdir(dnam)):
-        m = re.search('^(\S+)_('+'\d'*8+')_final.tif$',f)
+        m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.tif$',f)
         if not m:
             continue
-        bnam = m.group(1)
-        dstr = m.group(2)
+        t1 = datetime.strptime(m.group(1),'%Y%m%d')
+        t2 = datetime.strptime(m.group(2),'%Y%m%d')
+        dstr = m.group(3)
+        bnam,enam = os.path.splitext(f)
         fnam = os.path.join(dnam,f)
-        gnam = os.path.join(dnam,'{}_{}_final.json'.format(bnam,dstr))
+        gnam = os.path.join(dnam,'{}.json'.format(bnam))
         if not os.path.exists(gnam):
             continue
         #print(dstr)
@@ -116,8 +118,10 @@ for year in years:
         tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
         tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
         tofs = data_info['offset']
-        if np.abs(tofs-args.offset) > 1.0e-6:
-            raise ValueError('Error, tofs={}, args.offset={}'.format(tofs,args.offset))
+        if tmin != t1 or tmax != t2:
+            raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnam))
+        elif np.abs(tofs-args.offset) > 1.0e-6:
+            raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnam))
         if tmin < dmax and tmax > dmin:
             sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(f,tmin,tmax))
             fnams.append(fnam)
