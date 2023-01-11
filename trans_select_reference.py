@@ -159,9 +159,9 @@ for fnam in fnams:
         src_nb = tmp_nb
     elif tmp_nb != src_nb:
         raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
-    if src_prj is None:
+    if src_prj is None and tmp_prj != '':
         src_prj = tmp_prj
-    elif tmp_prj != src_prj:
+    elif tmp_prj != src_prj and tmp_prj != '':
         raise ValueError('Error, tmp_prj={}, src_prj={}'.format(tmp_prj,src_prj))
     if src_trans is None:
         src_trans = tmp_trans
@@ -232,11 +232,11 @@ for iy in range(src_ny):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different trans_n >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,2],dtmp[inds[-1][0],2],stmp[idat],stmp[inds[-1][0]]))
                 if not all_close(dtmp[idat,3],dtmp[inds[-1][0],3],rtol=0.01,atol=0.02):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different bsc_min >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,3],dtmp[inds[-1][0],3],stmp[idat],stmp[inds[-1][0]]))
-                if not all_close(dtmp[idat,4],dtmp[inds[-1][0],4],rtol=0.01,atol=0.02):
+                if not all_close(dtmp[idat,4],dtmp[inds[-1][0],4],rtol=0.2,atol=2.0):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different post_avg >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,4],dtmp[inds[-1][0],4],stmp[idat],stmp[inds[-1][0]]))
-                if not all_close(dtmp[idat,5],dtmp[inds[-1][0],5],rtol=0.01,atol=0.02):
+                if not all_close(dtmp[idat,5],dtmp[inds[-1][0],5],rtol=0.2,atol=2.0):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different post_min >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,5],dtmp[inds[-1][0],5],stmp[idat],stmp[inds[-1][0]]))
-                if not all_close(dtmp[idat,6],dtmp[inds[-1][0],6],rtol=0.01,atol=0.02):
+                if not all_close(dtmp[idat,6],dtmp[inds[-1][0],6],rtol=0.2,atol=2.0):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different post_max >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,6],dtmp[inds[-1][0],6],stmp[idat],stmp[inds[-1][0]]))
                 #if not all_close(dtmp[idat,7],dtmp[inds[-1][0],7],rtol=0.1,atol=31.0):
                 #    sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different risetime >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,7],dtmp[inds[-1][0],7],stmp[idat],stmp[inds[-1][0]]))
