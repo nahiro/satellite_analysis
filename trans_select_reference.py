@@ -7,10 +7,7 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
-try:
-    import osr
-except Exception:
-    from osgeo import osr
+from glob import glob
 from datetime import datetime
 import numpy as np
 from matplotlib.dates import date2num,num2date
@@ -87,35 +84,45 @@ tmaxs = []
 dstrs = []
 for year in years:
     ystr = '{}'.format(year)
-    dnam = os.path.join(args.datdir,ystr)
-    if not os.path.isdir(dnam):
+    ynam = os.path.join(args.datdir,ystr)
+    if not os.path.isdir(ynam):
         continue
-    for f in sorted(os.listdir(dnam)):
-        m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.tif$',f)
+    for d in sorted(os.listdir(ynam)):
+        dnam = os.path.join(ynam,d)
+        if not os.path.isdir(dnam):
+            continue
+        m = re.search('^('+'\d'*8+')$',d)
         if not m:
             continue
+        dstr = m.group(1)
+        tnams = glob(os.path.join(dnam,'*_{}_*.tif'.format(dstr)))
+        gnams = glob(os.path.join(dnam,'*_{}_*.json'.format(dstr)))
+        if len(tnams) < 1 or len(gnams) < 1:
+            continue
+        if len(tnams) != 1 or len(gnams) != 1:
+            raise ValueError('Error, len(tnams)={}, len(gnams)={} >>> {}'.format(len(tnams),len(gnams),dstr))
+        f = os.path.basename(tnams[0])
+        m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.tif$',f)
+        if not m:
+            raise ValueError('Error in file name >>> {}'.format(tnams[0]))
         t1 = datetime.strptime(m.group(1),'%Y%m%d')
         t2 = datetime.strptime(m.group(2),'%Y%m%d')
-        dstr = m.group(3)
-        bnam,enam = os.path.splitext(f)
-        fnam = os.path.join(dnam,f)
-        gnam = os.path.join(dnam,'{}.json'.format(bnam))
-        if not os.path.exists(gnam):
-            continue
+        if m.group(3) != dstr:
+            raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,tnams[0]))
         #print(dstr)
-        with open(gnam,'r') as fp:
+        with open(gnams[0],'r') as fp:
             data_info = json.load(fp)
         #t = datetime.strptime(dstr,'%Y%m%d')
         tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
         tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
         tofs = data_info['offset']
         if tmin != t1 or tmax != t2:
-            raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnam))
+            raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,tnams[0]))
         elif np.abs(tofs-args.offset) > 1.0e-6:
-            raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnam))
+            raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,tnams[0]))
         if tmin < dmax and tmax > dmin:
             sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(f,tmin,tmax))
-            fnams.append(fnam)
+            fnams.append(tnams[0])
             tmins.append(tmin)
             tmaxs.append(tmax)
             dstrs.append(dstr)
