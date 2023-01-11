@@ -117,7 +117,7 @@ tmaxs = []
 dstrs = []
 src_data = []
 params = [param.replace('#','{}'.format(args.inp_ncan)) for param in PARAMS]
-nband = len(params)
+#nband = len(params)
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
     if not os.path.isdir(dnam):

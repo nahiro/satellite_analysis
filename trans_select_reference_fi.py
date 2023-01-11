@@ -73,12 +73,14 @@ nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
 
+# Read all
 tmins = []
 tmaxs = []
 dstrs = []
 src_data = []
 nobject = None
 params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
+#nband = len(params)
 for d in sorted(os.listdir(args.datdir)):
     dnam = os.path.join(args.datdir,d)
     if not os.path.isdir(dnam):
@@ -135,11 +137,11 @@ for d in sorted(os.listdir(args.datdir)):
         tmaxs.append(tmax)
         dstrs.append(dstr)
         src_data.append(data[params].to_numpy())
-tmins = date2num(np.array(tmins))
-tmaxs = date2num(np.array(tmaxs))
-tvals = 0.5*(tmins+tmaxs)
-dstrs = np.array(dstrs)
-src_data = np.array(src_data)
+tmins = date2num(np.array(tmins)) # tmins[ndat]
+tmaxs = date2num(np.array(tmaxs)) # tmaxs[ndat]
+tvals = 0.5*(tmins+tmaxs) # tvals[ndat]
+dstrs = np.array(dstrs) # dstrs[ndat]
+src_data = np.array(src_data) # src_data[ndat][nobject][nband]
 cnd = (src_data[:,:,0] < nmin-1.0e-4) | (src_data[:,:,0] > nmax+1.0e-4)
 src_data[:,:,0][cnd] = np.nan
 ndat = len(src_data)
