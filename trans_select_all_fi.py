@@ -132,6 +132,14 @@ for d in sorted(os.listdir(args.datdir)):
         continue
     if len(fnams) != 1 or len(gnams) != 1:
         raise ValueError('Error, len(fnams)={}, len(gnams)={} >>> {}'.format(len(fnams),len(gnams),dstr))
+    f = os.path.basename(fnams[0])
+    m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.shp$',f)
+    if not m:
+        raise ValueError('Error in file name >>> {}'.format(fnams[0]))
+    t1 = datetime.strptime(m.group(1),'%Y%m%d')
+    t2 = datetime.strptime(m.group(2),'%Y%m%d')
+    if m.group(3) != dstr:
+        raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
     #print(dstr)
     data = gpd.read_file(fnams[0])
     with open(gnams[0],'r') as fp:
@@ -146,8 +154,10 @@ for d in sorted(os.listdir(args.datdir)):
     tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
     tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
     tofs = data_info['offset']
-    if np.abs(tofs-args.offset) > 1.0e-6:
-        raise ValueError('Error, tofs={}, args.offset={}'.format(tofs,args.offset))
+    if tmin != t1 or tmax != t2:
+        raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnams[0]))
+    elif np.abs(tofs-args.offset) > 1.0e-6:
+        raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
     if tmin < dmax and tmax > dmin:
         sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
         tmins.append(tmin)
