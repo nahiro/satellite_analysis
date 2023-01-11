@@ -386,18 +386,19 @@ class Geocor(Satellite_Process):
                 command += ' --ymax {}'.format(self.values['trg_resample'][3])
                 command += ' --read_comments'
                 self.run_command(command,message='<<< Resampling for {} >>>'.format(dstr))
+                # Draw figure
+                if os.path.exists(gnam):
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_geocor.py'))
+                    command += ' --img_fnam "{}"'.format(gnam)
+                    command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_geocor.pdf'.format(dstr)))
+                    command += ' --ax1_title "{}"'.format(dstr)
+                    command += ' --batch'
+                    self.run_command(command,message='<<< Draw figure for {} >>>'.format(dstr))
             #if os.path.exists(se2_fnam):
             #    os.rename(se2_fnam,dat_fnam)
             if os.path.exists(tmp_gnam):
                 os.remove(tmp_gnam)
-            if os.path.exists(gnam):
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'draw_geocor.py'))
-                command += ' --img_fnam "{}"'.format(gnam)
-                command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_geocor.pdf'.format(dstr)))
-                command += ' --ax1_title "{}"'.format(dstr)
-                command += ' --batch'
-                self.run_command(command,message='<<< Draw figure for {} >>>'.format(dstr))
 
         # Finish process
         super().finish()
