@@ -51,6 +51,7 @@ parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting dat
 parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 3 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
+parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -72,6 +73,7 @@ dref = datetime.strptime(args.tref,'%Y%m%d')
 nmin = date2num(dmin)
 nmax = date2num(dmax)
 trans_ref = date2num(dref)
+years = np.arange(dmin.year,dmax.year+2,1)
 
 # Read all
 tmins = []
@@ -81,62 +83,67 @@ src_data = []
 nobject = None
 params = [param.replace('#','{}'.format(args.ncan)) for param in PARAMS]
 #nband = len(params)
-for d in sorted(os.listdir(args.datdir)):
-    dnam = os.path.join(args.datdir,d)
-    if not os.path.isdir(dnam):
+for year in years:
+    ystr = '{}'.format(year)
+    ynam = os.path.join(args.datdir,ystr)
+    if not os.path.isdir(ynam):
         continue
-    m = re.search('^('+'\d'*8+')$',d)
-    if not m:
-        continue
-    dstr = m.group(1)
-    fnams = glob(os.path.join(dnam,'*_{}_*.shp'.format(dstr)))
-    gnams = glob(os.path.join(dnam,'*_{}_*.json'.format(dstr)))
-    if len(fnams) < 1 or len(gnams) < 1:
-        continue
-    if len(fnams) != 1 or len(gnams) != 1:
-        raise ValueError('Error, len(fnams)={}, len(gnams)={} >>> {}'.format(len(fnams),len(gnams),dstr))
-    f = os.path.basename(fnams[0])
-    m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.shp$',f)
-    if not m:
-        raise ValueError('Error in file name >>> {}'.format(fnams[0]))
-    t1 = datetime.strptime(m.group(1),'%Y%m%d')
-    t2 = datetime.strptime(m.group(2),'%Y%m%d')
-    if m.group(3) != dstr:
-        raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
-    #print(dstr)
-    data = gpd.read_file(fnams[0])
-    with open(gnams[0],'r') as fp:
-        data_info = json.load(fp)
-    columns = data.columns.str.strip()
-    if nobject is None:
-        for param in OUT_PARAMS:
+    for d in sorted(os.listdir(ynam)):
+        dnam = os.path.join(ynam,d)
+        if not os.path.isdir(dnam):
+            continue
+        m = re.search('^('+'\d'*8+')$',d)
+        if not m:
+            continue
+        dstr = m.group(1)
+        fnams = glob(os.path.join(dnam,'*_{}_*.shp'.format(dstr)))
+        gnams = glob(os.path.join(dnam,'*_{}_*.json'.format(dstr)))
+        if len(fnams) < 1 or len(gnams) < 1:
+            continue
+        if len(fnams) != 1 or len(gnams) != 1:
+            raise ValueError('Error, len(fnams)={}, len(gnams)={} >>> {}'.format(len(fnams),len(gnams),dstr))
+        f = os.path.basename(fnams[0])
+        m = re.search('^planting_\D+_(\d\d\d\d\d\d\d\d)_(\d\d\d\d\d\d\d\d)_\d\d\d\d\d\d\d\d_(\d\d\d\d\d\d\d\d)_\D+\.shp$',f)
+        if not m:
+            raise ValueError('Error in file name >>> {}'.format(fnams[0]))
+        t1 = datetime.strptime(m.group(1),'%Y%m%d')
+        t2 = datetime.strptime(m.group(2),'%Y%m%d')
+        if m.group(3) != dstr:
+            raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
+        #print(dstr)
+        data = gpd.read_file(fnams[0])
+        with open(gnams[0],'r') as fp:
+            data_info = json.load(fp)
+        columns = data.columns.str.strip()
+        if nobject is None:
+            for param in OUT_PARAMS:
+                if not param in columns:
+                    raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
+            out_data = data[OUT_PARAMS].copy()
+            nobject = len(data)
+            if args.use_index:
+                object_ids = np.arange(nobject)+1
+            else:
+                object_ids = data['OBJECTID'].to_numpy()
+        elif len(data) != nobject:
+            raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
+        for param in params:
             if not param in columns:
                 raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
-        out_data = data[OUT_PARAMS].copy()
-        nobject = len(data)
-        if args.use_index:
-            object_ids = np.arange(nobject)+1
-        else:
-            object_ids = data['OBJECTID'].to_numpy()
-    elif len(data) != nobject:
-        raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
-    for param in params:
-        if not param in columns:
-            raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
-    #t = datetime.strptime(dstr,'%Y%m%d')
-    tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
-    tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
-    tofs = data_info['offset']
-    if tmin != t1 or tmax != t2:
-        raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnams[0]))
-    elif np.abs(tofs-args.offset) > 1.0e-6:
-        raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
-    if tmin < dmax and tmax > dmin:
-        sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
-        tmins.append(tmin)
-        tmaxs.append(tmax)
-        dstrs.append(dstr)
-        src_data.append(data[params].to_numpy())
+        #t = datetime.strptime(dstr,'%Y%m%d')
+        tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
+        tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+        tofs = data_info['offset']
+        if tmin != t1 or tmax != t2:
+            raise ValueError('Error, tmin={:%Y%m%d}, tmax={:%Y%m%d}, t1={:%Y%m%d}, t2={:%Y%m%d} >>> {}'.format(tmin,tmax,t1,t2,fnams[0]))
+        elif np.abs(tofs-args.offset) > 1.0e-6:
+            raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
+        if tmin < dmax and tmax > dmin:
+            sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
+            tmins.append(tmin)
+            tmaxs.append(tmax)
+            dstrs.append(dstr)
+            src_data.append(data[params].to_numpy())
 tmins = date2num(np.array(tmins)) # tmins[ndat]
 tmaxs = date2num(np.array(tmaxs)) # tmaxs[ndat]
 tvals = 0.5*(tmins+tmaxs) # tvals[ndat]
