@@ -159,9 +159,11 @@ for fnam in fnams:
         src_nb = tmp_nb
     elif tmp_nb != src_nb:
         raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
-    if src_prj is None and tmp_prj != '':
+    if tmp_prj == '':
+        sys.stderr.write('Warning, empty projection >>> {}'.format(fnam))
+    elif src_prj is None:
         src_prj = tmp_prj
-    elif tmp_prj != src_prj and tmp_prj != '':
+    elif tmp_prj != src_prj:
         raise ValueError('Error, tmp_prj={}, src_prj={}'.format(tmp_prj,src_prj))
     if src_trans is None:
         src_trans = tmp_trans
