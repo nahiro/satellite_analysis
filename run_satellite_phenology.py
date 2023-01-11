@@ -35,7 +35,7 @@ class Phenology(Satellite_Process):
         iflag = self.list_labels['oflag'].index('mask')
         flag_paddy = self.values['oflag'][iflag]
         flag_parcel = self.values['oflag'][iflag]
-        list_labels = [s.split()[0] for s in self.list_labels['trans_source']]
+        list_labels = [s[0].split()[0] for s in self.list_labels['trans_source']]
         product = self.values['trans_source'][list_labels.index('Product')]
         version = self.values['trans_source'][list_labels.index('Version')]
         if version == '':
