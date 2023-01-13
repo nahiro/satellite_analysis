@@ -87,7 +87,7 @@ class Phenology(Satellite_Process):
             if not os.path.exists(planting_csv):
                 # Select
                 command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all.py'))
+                command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all_fi.py'))
                 command += ' --datdir "{}"'.format(s1_data)
                 command += ' --ref_fnam "{}"'.format(planting_ref)
                 command += ' --out_csv "{}"'.format(planting_csv)
