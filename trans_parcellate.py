@@ -243,12 +243,14 @@ if args.debug:
         tmax = date2num(datetime.strptime(opts.tmax,'%Y%m%d'))
     else:
         tmax = np.nanmax(src_data[date_indx])
+    dmin = num2date(tmin)
+    dmax = num2date(tmax)
     tdif = tmax-tmin
     values = []
     labels = []
     ticks = []
     ds = tdif/365
-    for y in range(num2date(tmin).year,num2date(tmax).year+1):
+    for y in range(dmin.year,dmax.year+1):
         if ds > 2.0:
             for m in range(1,13,3):
                 d = datetime(y,m,1)
@@ -275,32 +277,32 @@ if args.debug:
                     d = datetime(y,m,day)
                     ticks.append(date2num(d))
     if args.add_tmin:
-        vmin = values[np.flatnonzero(np.array(values) > nmin-0.1)[0]]
+        vmin = values[np.flatnonzero(np.array(values) > tmin-0.1)[0]]
         if ds > 2.0:
-            if vmin-nmin > 44.0: # (28+31+30)//2
-                values.append(nmin)
+            if vmin-tmin > 44.0: # (28+31+30)//2
+                values.append(tmin)
                 labels.append(dmin.strftime('%Y-%m'))
         elif ds > 1.0:
-            if vmin-nmin > 27.0: # 28-1
-                values.append(nmin)
+            if vmin-tmin > 27.0: # 28-1
+                values.append(tmin)
                 labels.append(dmin.strftime('%Y-%m'))
         else:
-            if vmin-nmin > 13.0: # 15-1-1
-                values.append(nmin)
+            if vmin-tmin > 13.0: # 15-1-1
+                values.append(tmin)
                 labels.append(dmin.strftime('%m/%d'))
     if args.add_tmax:
-        vmax = values[np.flatnonzero(np.array(values) < nmax+0.1)[-1]]
+        vmax = values[np.flatnonzero(np.array(values) < tmax+0.1)[-1]]
         if ds > 2.0:
-            if nmax-vmax > 44.0: # (28+31+30)//2
-                values.append(nmax)
+            if tmax-vmax > 44.0: # (28+31+30)//2
+                values.append(tmax)
                 labels.append(dmax.strftime('%Y-%m'))
         elif ds > 1.0:
-            if nmax-vmax > 27.0: # 28-1
-                values.append(nmax)
+            if tmax-vmax > 27.0: # 28-1
+                values.append(tmax)
                 labels.append(dmax.strftime('%Y-%m'))
         else:
-            if nmax-vmax > 12.0: # 28-15-1
-                values.append(nmax)
+            if tmax-vmax > 12.0: # 28-15-1
+                values.append(tmax)
                 labels.append(dmax.strftime('%m/%d'))
     fig_xmin = None
     fig_xmax = None

@@ -323,6 +323,8 @@ class Phenology(Satellite_Process):
                 command += ' --tmax {:%Y%m%d}'.format(end_dtim)
                 command += ' --use_index'
                 command += ' --remove_nan'
+                command += ' --add_tmin'
+                command += ' --add_tmax'
                 command += ' --debug'
                 command += ' --batch'
                 self.run_command(command,message='<<< Parcellate planting >>>')
