@@ -314,13 +314,17 @@ if args.debug:
         ax1.set_xticks([])
         ax1.set_yticks([])
         if args.shp_fnam is not None:
-            if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+            if param in DATE_PARAMS:
+                zmin = nmin
+            elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
                 zmin = ax1_zmin[param]
             else:
                 zmin = np.nanmin(data)
                 if np.isnan(zmin):
                     zmin = 0.0
-            if args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+            if param in DATE_PARAMS:
+                zmax = nmax
+            elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
                 zmax = ax1_zmax[param]
             else:
                 zmax = np.nanmax(data)
@@ -335,7 +339,9 @@ if args.debug:
                     ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
             im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
         else:
-            if args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
+            if param in DATE_PARAMS:
+                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=nmin,vmax=nmax,cmap=cm.jet,interpolation='none')
+            elif args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
                 im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],vmax=ax1_zmax[param],cmap=cm.jet,interpolation='none')
             elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
                 im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],cmap=cm.jet,interpolation='none')
@@ -345,7 +351,9 @@ if args.debug:
                 im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet,interpolation='none')
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right',size='5%',pad=0.05)
-        if args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
+        if param in DATE_PARAMS:
+            ax2 = plt.colorbar(im,cax=cax).ax
+        elif args.ax1_zstp is not None and not np.isnan(ax1_zstp[param]):
             if args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
                 zmin = (np.floor(ax1_zmin[param]/ax1_zstp[param])-1.0)*ax1_zstp[param]
             else:
