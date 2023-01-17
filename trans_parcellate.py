@@ -54,7 +54,6 @@ parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug 
 parser.add_argument('--tmin',default=None,help='Min date in the format YYYYMMDD for debug (%(default)s)')
 parser.add_argument('--tmax',default=None,help='Max date in the format YYYYMMDD for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
-parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
 parser.add_argument('--add_tmin',default=False,action='store_true',help='Add tmin in colorbar (%(default)s)')
 parser.add_argument('--add_tmax',default=False,action='store_true',help='Add tmax in colorbar (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
@@ -183,17 +182,6 @@ else:
 for iband,param in enumerate(PARAMS):
     out_data[param] = all_data[:,iband]
 
-if args.debug:
-    dst_nx = src_nx
-    dst_ny = src_ny
-    dst_nb = len(PARAMS)
-    dst_shape = (dst_ny,dst_nx)
-    dst_data = np.full((dst_nb,ngrd),np.nan)
-    dst_band = PARAMS
-    for i,inds in enumerate(object_inds):
-        dst_data[:,inds] = avg_data[i,:].reshape(-1,1)
-    dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
-
 # Output CSV
 if args.out_csv is not None:
     with open(args.out_csv,'w') as fp:
@@ -213,8 +201,6 @@ if args.out_shp is not None:
 
 # For debug
 if args.debug:
-    if args.shp_fnam is not None:
-        r = shapefile.Reader(args.out_shp)
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(5,5))
@@ -293,52 +279,31 @@ if args.debug:
             if nmax-vmax > 6.0: # 15//2-1
                 values.append(nmax)
                 labels.append(dmax.strftime('%m/%d'))
-    fig_xmin = None
-    fig_xmax = None
-    fig_ymin = None
-    fig_ymax = None
+    fig_xmin,fig_ymin,fig_xmax,fig_ymax = out_data.total_bounds
     for iband,param in enumerate(PARAMS):
-        data = dst_data[iband]
+        data = out_data[param]
         fig.clear()
         ax1 = plt.subplot(111)
         ax1.set_xticks([])
         ax1.set_yticks([])
-        if args.shp_fnam is not None:
-            if param in DATE_PARAMS:
-                zmin = nmin
-            elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
-                zmin = ax1_zmin[param]
-            else:
-                zmin = np.nanmin(data)
-                if np.isnan(zmin):
-                    zmin = 0.0
-            if param in DATE_PARAMS:
-                zmax = nmax
-            elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
-                zmax = ax1_zmax[param]
-            else:
-                zmax = np.nanmax(data)
-                if np.isnan(zmax):
-                    zmax = 1.0
-            zdif = zmax-zmin
-            for iobj,shaperec in enumerate(r.iterShapeRecords()):
-                rec = shaperec.record
-                shp = shaperec.shape
-                z = getattr(rec,param)
-                if not np.isnan(z):
-                    ax1.add_patch(plt.Polygon(shp.points,edgecolor='none',facecolor=cm.jet((z-zmin)/zdif),linewidth=0.02))
-            im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
+        if param in DATE_PARAMS:
+            zmin = nmin
+        elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
+            zmin = ax1_zmin[param]
         else:
-            if param in DATE_PARAMS:
-                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=nmin,vmax=nmax,cmap=cm.jet,interpolation='none')
-            elif args.ax1_zmin is not None and args.ax1_zmax is not None and not np.isnan(ax1_zmin[param]) and not np.isnan(ax1_zmax[param]):
-                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],vmax=ax1_zmax[param],cmap=cm.jet,interpolation='none')
-            elif args.ax1_zmin is not None and not np.isnan(ax1_zmin[param]):
-                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmin=ax1_zmin[param],cmap=cm.jet,interpolation='none')
-            elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
-                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),vmax=ax1_zmax[param],cmap=cm.jet,interpolation='none')
-            else:
-                im = ax1.imshow(data,extent=(src_xmin,src_xmax,src_ymin,src_ymax),cmap=cm.jet,interpolation='none')
+            zmin = np.nanmin(data)
+            if np.isnan(zmin):
+                zmin = 0.0
+        if param in DATE_PARAMS:
+            zmax = nmax
+        elif args.ax1_zmax is not None and not np.isnan(ax1_zmax[param]):
+            zmax = ax1_zmax[param]
+        else:
+            zmax = np.nanmax(data)
+            if np.isnan(zmax):
+                zmax = 1.0
+        out_data.plot(column=param,ax=ax1,vmin=zmin,vmax=zmax,cmap=cm.jet)
+        im = ax1.imshow(np.arange(4).reshape(2,2),extent=(-2,-1,-2,-1),vmin=zmin,vmax=zmax,cmap=cm.jet)
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right',size='5%',pad=0.05)
         if param in DATE_PARAMS:
@@ -365,29 +330,6 @@ if args.debug:
             ax2.minorticks_on()
         ax2.set_ylabel('{}'.format(PARAM_LABELS[param]))
         ax2.yaxis.set_label_coords(5.5,0.5)
-        if fig_xmin is None:
-            if args.remove_nan:
-                src_indy,src_indx = np.indices(src_shape)
-                src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
-                src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
-                cnd = ~np.isnan(data)
-                if cnd.sum() < 1:
-                    fig_xmin = src_xmin
-                    fig_xmax = src_xmax
-                    fig_ymin = src_ymin
-                    fig_ymax = src_ymax
-                else:
-                    xp = src_xp[cnd]
-                    yp = src_yp[cnd]
-                    fig_xmin = xp.min()
-                    fig_xmax = xp.max()
-                    fig_ymin = yp.min()
-                    fig_ymax = yp.max()
-            else:
-                fig_xmin = src_xmin
-                fig_xmax = src_xmax
-                fig_ymin = src_ymin
-                fig_ymax = src_ymax
         ax1.set_xlim(fig_xmin,fig_xmax)
         ax1.set_ylim(fig_ymin,fig_ymax)
         if args.ax1_title is not None:
