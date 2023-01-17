@@ -101,6 +101,8 @@ class Phenology(Satellite_Process):
                 command += ' --fignam "{}"'.format(planting_pdf)
                 command += ' --fig_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
                 command += ' --use_index'
+                command += ' --add_tmin'
+                command += ' --add_tmax'
                 command += ' --debug'
                 command += ' --batch'
                 self.run_command(command,message='<<< Select planting >>>')
