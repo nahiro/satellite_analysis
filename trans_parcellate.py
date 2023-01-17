@@ -55,6 +55,8 @@ parser.add_option('--tmin',default=None,help='Min date in the format YYYYMMDD fo
 parser.add_option('--tmax',default=None,help='Max date in the format YYYYMMDD for debug (%default)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
+parser.add_argument('--add_tmin',default=False,action='store_true',help='Add tmin in colorbar (%(default)s)')
+parser.add_argument('--add_tmax',default=False,action='store_true',help='Add tmax in colorbar (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -272,6 +274,34 @@ if args.debug:
                 for day in [5,10,20,25]:
                     d = datetime(y,m,day)
                     ticks.append(date2num(d))
+    if args.add_tmin:
+        vmin = values[np.flatnonzero(np.array(values) > nmin-0.1)[0]]
+        if ds > 2.0:
+            if vmin-nmin > 44.0: # (28+31+30)//2
+                values.append(nmin)
+                labels.append(dmin.strftime('%Y-%m'))
+        elif ds > 1.0:
+            if vmin-nmin > 27.0: # 28-1
+                values.append(nmin)
+                labels.append(dmin.strftime('%Y-%m'))
+        else:
+            if vmin-nmin > 13.0: # 15-1-1
+                values.append(nmin)
+                labels.append(dmin.strftime('%m/%d'))
+    if args.add_tmax:
+        vmax = values[np.flatnonzero(np.array(values) < nmax+0.1)[-1]]
+        if ds > 2.0:
+            if nmax-vmax > 44.0: # (28+31+30)//2
+                values.append(nmax)
+                labels.append(dmax.strftime('%Y-%m'))
+        elif ds > 1.0:
+            if nmax-vmax > 27.0: # 28-1
+                values.append(nmax)
+                labels.append(dmax.strftime('%Y-%m'))
+        else:
+            if nmax-vmax > 12.0: # 28-15-1
+                values.append(nmax)
+                labels.append(dmax.strftime('%m/%d'))
     fig_xmin = None
     fig_xmax = None
     fig_ymin = None
