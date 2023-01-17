@@ -7,7 +7,7 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
-import shapefile
+import geopandas as gpd
 import numpy as np
 from datetime import datetime
 from matplotlib.dates import num2date,date2num
@@ -148,40 +148,40 @@ for object_id in object_ids:
     cnd = (mask_data == object_id)
     object_inds.append(indp[cnd])
 object_inds = np.array(object_inds,dtype='object')
-out_data = np.full((ndat,src_nb),np.nan)
+avg_data = np.full((ndat,src_nb),np.nan)
 
 # Read Shapefile
-r = shapefile.Reader(args.shp_fnam)
-nobject = len(r)
+out_data = gpd.read_file(args.shp_fnam)
+nobject = len(out_data)
 
 # Calculate weighted mean values
 for iband,param in enumerate(PARAMS):
     data = src_data[iband]
-    out_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
+    avg_data[:,iband] = [np.nanmean(data[inds]) for inds in object_inds]
 
 if args.use_index:
     all_ids = np.arange(nobject)+1
     if np.array_equal(object_ids,all_ids):
-        all_data = out_data
+        all_data = avg_data
     else:
         if (object_ids[0] < 1) or (object_ids[-1] > nobject):
             raise ValueError('Error, object_ids[0]={}, object_ids[-1]={}, nobject={} >>> {}'.format(object_ids[0],object_ids[-1],nobject,args.mask_geotiff))
         indx = object_ids-1
         all_data = np.full((nobject,src_nb),np.nan)
-        all_data[indx] = out_data
+        all_data[indx] = avg_data
 else:
-    all_ids = []
-    for rec in r.iterRecords():
-        all_ids.append(rec.OBJECTID)
+    all_ids = out_data['OBJECTID'].tolist()
     if np.array_equal(object_ids,np.array(all_ids)):
-        all_data = out_data
+        all_data = avg_data
     else:
         try:
             indx = np.array([all_ids.index(object_id) for object_id in object_ids])
         except Exception:
             raise ValueError('Error in finding OBJECTID in {}'.format(args.shp_fnam))
         all_data = np.full((nobject,src_nb),np.nan)
-        all_data[indx] = out_data
+        all_data[indx] = avg_data
+for iband,param in enumerate(PARAMS):
+    out_data[param] = all_data[:,iband]
 
 if args.debug:
     dst_nx = src_nx
@@ -191,35 +191,25 @@ if args.debug:
     dst_data = np.full((dst_nb,ngrd),np.nan)
     dst_band = PARAMS
     for i,inds in enumerate(object_inds):
-        dst_data[:,inds] = out_data[i,:].reshape(-1,1)
+        dst_data[:,inds] = avg_data[i,:].reshape(-1,1)
     dst_data = dst_data.reshape((dst_nb,dst_ny,dst_nx))
 
 # Output CSV
-with open(args.out_csv,'w') as fp:
-    fp.write('{:>8s}'.format('OBJECTID'))
-    for param in PARAMS:
-        fp.write(', {:>13s}'.format(param))
-    fp.write('\n')
-    for iobj,object_id in enumerate(all_ids):
-        fp.write('{:8d}'.format(object_id))
-        for iband,param in enumerate(PARAMS):
-            fp.write(', {:>13.6e}'.format(all_data[iobj,iband]))
+if args.out_csv is not None:
+    with open(args.out_csv,'w') as fp:
+        fp.write('{:>8s}'.format('OBJECTID'))
+        for param in PARAMS:
+            fp.write(', {:>13s}'.format(param))
         fp.write('\n')
+        for iobj,object_id in enumerate(all_ids):
+            fp.write('{:8d}'.format(object_id))
+            for param in PARAMS:
+                fp.write(', {:>13.6e}'.format(out_data[param][iobj]))
+            fp.write('\n')
 
 # Output Shapefile
-w = shapefile.Writer(args.out_shp)
-w.shapeType = shapefile.POLYGON
-w.fields = r.fields[1:] # skip first deletion field
-for param in PARAMS:
-    w.field(param,'F',13,6)
-for iobj,shaperec in enumerate(r.iterShapeRecords()):
-    rec = shaperec.record
-    shp = shaperec.shape
-    rec.extend(list(all_data[iobj]))
-    w.shape(shp)
-    w.record(*rec)
-w.close()
-shutil.copy2(os.path.splitext(args.shp_fnam)[0]+'.prj',os.path.splitext(args.out_shp)[0]+'.prj')
+if args.out_shp is not None:
+    out_data.to_file(args.out_shp)
 
 # For debug
 if args.debug:
