@@ -322,7 +322,6 @@ class Phenology(Satellite_Process):
                 command += ' --tmin {:%Y%m%d}'.format(start_dtim)
                 command += ' --tmax {:%Y%m%d}'.format(end_dtim)
                 command += ' --use_index'
-                command += ' --remove_nan'
                 command += ' --add_tmin'
                 command += ' --add_tmax'
                 command += ' --debug'
