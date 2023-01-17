@@ -236,11 +236,11 @@ if args.debug:
             raise ValueError('Error in finding {} >>> {}'.format(param,args.src_geotiff))
         date_indx.append(src_band.index(param))
     if args.tmin is not None:
-        nmin = date2num(datetime.strptime(opts.tmin,'%Y%m%d'))
+        nmin = date2num(datetime.strptime(args.tmin,'%Y%m%d'))
     else:
         nmin = np.nanmin(src_data[date_indx])
     if args.tmax is not None:
-        nmax = date2num(datetime.strptime(opts.tmax,'%Y%m%d'))
+        nmax = date2num(datetime.strptime(args.tmax,'%Y%m%d'))
     else:
         nmax = np.nanmax(src_data[date_indx])
     dmin = num2date(nmin)
