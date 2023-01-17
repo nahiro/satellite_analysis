@@ -170,7 +170,7 @@ class Atcor(Satellite_Process):
                         command += ' --y0 {}'.format(y0)
                     command += ' --lmin {}'.format(lmin)
                     command += ' --lmax {}'.format(lmax)
-                    command += ' --lmstp{}'.format(lstp)
+                    command += ' --lstp {}'.format(lstp)
                     command += ' --dmax {}'.format(dmax)
                     if not np.isnan(athr):
                         command += ' --athr {}'.format(athr)
