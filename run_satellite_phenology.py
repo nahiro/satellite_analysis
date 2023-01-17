@@ -317,6 +317,8 @@ class Phenology(Satellite_Process):
                 command += ' --out_shp "{}"'.format(planting_shp)
                 command += ' --fignam "{}"'.format(planting_pdf)
                 command += ' --ax1_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
+                command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+                command += ' --tmax {:%Y%m%d}'.format(end_dtim)
                 command += ' --use_index'
                 command += ' --remove_nan'
                 command += ' --debug'

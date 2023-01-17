@@ -51,6 +51,8 @@ parser.add_argument('-z','--ax1_zmin',default=None,type=float,action='append',he
 parser.add_argument('-Z','--ax1_zmax',default=None,type=float,action='append',help='Axis1 Z max for debug (%(default)s)')
 parser.add_argument('-s','--ax1_zstp',default=None,type=float,action='append',help='Axis1 Z stp for debug (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
+parser.add_option('--tmin',default=None,help='Min date in the format YYYYMMDD for debug (%default)')
+parser.add_option('--tmax',default=None,help='Max date in the format YYYYMMDD for debug (%default)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('-n','--remove_nan',default=False,action='store_true',help='Remove nan for debug (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
@@ -231,8 +233,14 @@ if args.debug:
         if not param in src_band:
             raise ValueError('Error in finding {} >>> {}'.format(param,args.src_geotiff))
         date_indx.append(src_band.index(param))
-    tmin = np.nanmin(src_data[date_indx])
-    tmax = np.nanmax(src_data[date_indx])
+    if args.tmin is not None:
+        tmin = date2num(datetime.strptime(opts.tmin,'%Y%m%d'))
+    else:
+        tmin = np.nanmin(src_data[date_indx])
+    if args.tmax is not None:
+        tmax = date2num(datetime.strptime(opts.tmax,'%Y%m%d'))
+    else:
+        tmax = np.nanmax(src_data[date_indx])
     tdif = tmax-tmin
     values = []
     labels = []
