@@ -60,6 +60,8 @@ parser.add_argument('-F','--fignam',default=None,help='Output figure name for de
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
 parser.add_argument('--sort_difference',default=False,action='store_true',help='Sort by difference between candidate and references (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('--add_tmin',default=False,action='store_true',help='Add tmin in colorbar (%(default)s)')
+parser.add_argument('--add_tmax',default=False,action='store_true',help='Add tmax in colorbar (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -361,6 +363,37 @@ if args.out_shp is not None:
         fp.write(xmltodict.unparse({'metadata':dst_meta},pretty=True))
 
 if args.debug:
+    tdif = nmax-nmin
+    values = []
+    labels = []
+    ticks = []
+    ds = tdif/365
+    for y in range(dmin.year,dmax.year+1):
+        if ds > 2.0:
+            for m in range(1,13,3):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        elif ds > 1.0:
+            for m in range(1,13,2):
+                d = datetime(y,m,1)
+                values.append(date2num(d))
+                labels.append(d.strftime('%Y-%m'))
+            for m in range(1,13,1):
+                d = datetime(y,m,1)
+                ticks.append(date2num(d))
+        else:
+            for m in range(1,13,1):
+                for day in [1,15]:
+                    d = datetime(y,m,day)
+                    values.append(date2num(d))
+                    labels.append(d.strftime('%m/%d'))
+                for day in [5,10,20,25]:
+                    d = datetime(y,m,day)
+                    ticks.append(date2num(d))
     if not args.batch:
         plt.interactive(True)
     fig = plt.figure(1,facecolor='w',figsize=(7.6,6.0))
@@ -383,10 +416,9 @@ if args.debug:
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('bottom',size='10%',pad=0.02)
         ax12 = plt.colorbar(im,cax=cax,orientation='horizontal').ax
-        ax12.minorticks_on()
-        ax12.xaxis.set_major_locator(MonthLocator(bymonth=[1,4,7,10]))
-        ax12.xaxis.set_minor_locator(MonthLocator())
-        ax12.xaxis.set_major_formatter(DateFormatter('%m/%d'))
+        ax12.xaxis.set_major_locator(plt.FixedLocator(values))
+        ax12.xaxis.set_major_formatter(plt.FixedFormatter(labels))
+        ax12.xaxis.set_minor_locator(plt.FixedLocator(ticks))
         for l in ax12.xaxis.get_ticklabels():
             l.set_rotation(30)
         ax12.set_xlabel('{}'.format(PARAM_NAMES[pnam]))
