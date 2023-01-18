@@ -41,6 +41,7 @@ parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting i
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
+parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 parser.add_argument('--rthr',default=RTHR,type=float,help='Min reference density (%(default)s)')
 args = parser.parse_args()
@@ -141,6 +142,9 @@ tmins = date2num(np.array(tmins))
 tmaxs = date2num(np.array(tmaxs))
 tvals = 0.5*(tmins+tmaxs)
 dstrs = np.array(dstrs)
+ndat = len(fnams)
+if args.det_rmin is not None:
+    args.det_nmin = int(np.ceil(ndat/(tmaxs[-1]-tmaxs[0])*(tmaxs-tmins).mean()*args.det_rmin)+0.1)
 
 src_nx = None
 src_ny = None
@@ -184,7 +188,8 @@ for fnam in fnams:
 src_data = np.array(src_data)
 cnd = (src_data[:,0,:,:] < nmin-1.0e-4) | (src_data[:,0,:,:] > nmax+1.0e-4)
 src_data[:,0,:,:][cnd] = np.nan
-ndat = len(src_data)
+if len(src_data) != ndat:
+    raise ValueError('Error, len(src_data)={}, ndat={}'.format(len(src_data),ndat))
 
 dst_nx = src_nx
 dst_ny = src_ny
@@ -342,7 +347,6 @@ for iy in range(src_ny):
             dst_data[14,iy,ix] = post_max[i2]
             dst_data[15,iy,ix] = risetime[i2]
         else:
-            i1 = isrt[0]
             dst_data[0,iy,ix] = trans_d[0]
             dst_data[1,iy,ix] = trans_s[0]
             dst_data[2,iy,ix] = trans_n[0]
