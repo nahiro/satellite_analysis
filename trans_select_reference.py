@@ -29,6 +29,7 @@ BSC_MIN_MAX = -18.0 # dB
 POST_MIN_MIN = -0.6 # dB
 POST_AVG_MIN = 2.2  # dB
 RISETIME_MAX = 30.0 # day
+DET_NMIN = 3
 OFFSET = -9.0       # day
 
 # Read options
@@ -44,6 +45,7 @@ parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc
 parser.add_argument('--post_min_min',default=POST_MIN_MIN,type=float,help='Min post_min in dB (%(default)s)')
 parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
 parser.add_argument('--risetime_max',default=RISETIME_MAX,type=float,help='Max risetime in day (%(default)s)')
+parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 args = parser.parse_args()
 if args.dst_fnam is None:
@@ -189,6 +191,7 @@ dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_min_min'] = '{:.1f}'.format(args.post_min_min)
 dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
 dst_meta['risetime_max'] = '{:.1f}'.format(args.risetime_max)
+dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
@@ -252,6 +255,8 @@ for iy in range(src_ny):
         post_max = []
         risetime = []
         for ii in inds:
+            if len(ii) < args.det_nmin:
+                continue
             d = dtmp[ii]
             t = ttmp[ii]
             trans_d_tmp = np.nanmean(d[:,0])

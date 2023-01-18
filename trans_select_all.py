@@ -26,6 +26,7 @@ MASK_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','paddy_mask.tif')
 STAT_FNAM = os.path.join(HOME,'Work','Sentinel-1_Analysis','stat.tif')
 BSC_MIN_MAX = -13.0 # dB
 POST_AVG_MIN = 0.0 # dB
+DET_NMIN = 1
 OFFSET = -9.0 # day
 RTHR = 0.02
 
@@ -39,6 +40,7 @@ parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting i
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
+parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 parser.add_argument('--rthr',default=RTHR,type=float,help='Min reference density (%(default)s)')
 args = parser.parse_args()
@@ -194,6 +196,7 @@ dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
+dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
 dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
@@ -254,6 +257,8 @@ for iy in range(src_ny):
         post_max = []
         risetime = []
         for ii in inds:
+            if len(ii) < args.det_nmin:
+                continue
             d = dtmp[ii]
             t = ttmp[ii]
             trans_d_tmp = np.nanmean(d[:,0])
