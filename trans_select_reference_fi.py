@@ -189,8 +189,8 @@ for iobj in range(nobject):
         elif np.abs(dtmp[idat,0]-dtmp[inds[-1][0],0]) > 2.0:
             inds.append([idat])
         else:
-            if not all_close(dtmp[idat,1],dtmp[inds[-1][0],1],rtol=0.01,atol=0.02):
-                sys.stderr.write('Warning, iobj={:6d}, different bsc_min >>> {}, {} ({}, {})\n'.format(iobj,dtmp[idat,1],dtmp[inds[-1][0],1],stmp[idat],stmp[inds[-1][0]]))
+            #if not all_close(dtmp[idat,1],dtmp[inds[-1][0],1],rtol=0.01,atol=0.02):
+            #    sys.stderr.write('Warning, iobj={:6d}, different bsc_min >>> {}, {} ({}, {})\n'.format(iobj,dtmp[idat,1],dtmp[inds[-1][0],1],stmp[idat],stmp[inds[-1][0]]))
             #if not all_close(dtmp[idat,2],dtmp[inds[-1][0],2],rtol=0.1,atol=5.0):
             #    sys.stderr.write('Warning, iobj={:6d}, different fp_offs >>> {}, {} ({}, {})\n'.format(iobj,dtmp[idat,2],dtmp[inds[-1][0],2],stmp[idat],stmp[inds[-1][0]]))
             #if not all_close(dtmp[idat,3],dtmp[inds[-1][0],3],rtol=0.2,atol=1.0):
