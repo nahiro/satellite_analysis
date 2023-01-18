@@ -236,6 +236,7 @@ for iy in range(src_ny):
             elif np.abs(dtmp[idat,0]-dtmp[inds[-1][0],0]) > 2.0:
                 inds.append([idat])
             else:
+                """
                 if not all_close(dtmp[idat,1],dtmp[inds[-1][0],1],rtol=0.1,atol=1.0):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different trans_s >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,1],dtmp[inds[-1][0],1],stmp[idat],stmp[inds[-1][0]]))
                 if not all_close(dtmp[idat,2],dtmp[inds[-1][0],2],rtol=0.1,atol=1.0):
@@ -250,6 +251,7 @@ for iy in range(src_ny):
                     sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different post_max >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,6],dtmp[inds[-1][0],6],stmp[idat],stmp[inds[-1][0]]))
                 #if not all_close(dtmp[idat,7],dtmp[inds[-1][0],7],rtol=0.1,atol=31.0):
                 #    sys.stderr.write('Warning, ix={:6d}, iy={:6d}, different risetime >>> {}, {} ({}, {})\n'.format(ix,iy,dtmp[idat,7],dtmp[inds[-1][0],7],stmp[idat],stmp[inds[-1][0]]))
+                """
                 inds[-1].append(idat)
         trans_d = []
         trans_s = []
