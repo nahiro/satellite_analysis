@@ -68,6 +68,7 @@ class Phenology(Satellite_Process):
                     command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
                 if not np.isnan(self.values['trans_thr1'][3]):
                     command += ' --post_s_min {}'.format(self.values['trans_thr1'][3])
+                command += ' --det_rmin 0.5'
                 command += ' --use_index'
                 self.run_command(command,message='<<< Select reference for planting >>>')
             else:
@@ -193,6 +194,7 @@ class Phenology(Satellite_Process):
                     command += ' --post_avg_min {}'.format(self.values['trans_thr1'][3])
                 if not np.isnan(self.values['trans_thr3'][1]):
                     command += ' --risetime_max {}'.format(self.values['trans_thr3'][1])
+                command += ' --det_rmin 0.5'
                 self.run_command(command,message='<<< Select reference for planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)

@@ -47,6 +47,7 @@ parser.add_argument('--tref',default=TREF,help='Reference date in the format YYY
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
+parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
 parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number between 1 and 3 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
@@ -152,6 +153,8 @@ src_data = np.array(src_data) # src_data[ndat][nobject][nband]
 cnd = (src_data[:,:,0] < nmin-1.0e-4) | (src_data[:,:,0] > nmax+1.0e-4)
 src_data[:,:,0][cnd] = np.nan
 ndat = len(src_data)
+if args.det_rmin is not None:
+    args.det_nmin = int(np.ceil(ndat/(tmaxs[-1]-tmaxs[0])*(tmaxs-tmins).mean()*args.det_rmin)+0.1)
 
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
