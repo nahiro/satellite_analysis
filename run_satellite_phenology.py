@@ -70,6 +70,8 @@ class Phenology(Satellite_Process):
                     command += ' --post_s_min {}'.format(self.values['trans_thr1'][3])
                 command += ' --det_rmin 0.5'
                 command += ' --use_index'
+                if product == 'preliminary':
+                    command += ' --early'
                 self.run_command(command,message='<<< Select reference for planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
@@ -104,6 +106,8 @@ class Phenology(Satellite_Process):
                 command += ' --use_index'
                 command += ' --add_tmin'
                 command += ' --add_tmax'
+                if product == 'preliminary':
+                    command += ' --early'
                 command += ' --debug'
                 command += ' --batch'
                 self.run_command(command,message='<<< Select planting >>>')
@@ -195,6 +199,8 @@ class Phenology(Satellite_Process):
                 if not np.isnan(self.values['trans_thr3'][1]):
                     command += ' --risetime_max {}'.format(self.values['trans_thr3'][1])
                 command += ' --det_rmin 0.5'
+                if product == 'preliminary':
+                    command += ' --early'
                 self.run_command(command,message='<<< Select reference for planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
@@ -268,6 +274,8 @@ class Phenology(Satellite_Process):
                     command += ' --post_avg_min {}'.format(self.values['trans_thr2'][3])
                 if not np.isnan(self.values['trans_thr4'][1]):
                     command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
+                if product == 'preliminary':
+                    command += ' --early'
                 self.run_command(command,message='<<< Select planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_sel),print_time=False)
