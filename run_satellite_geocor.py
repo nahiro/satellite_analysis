@@ -137,12 +137,12 @@ class Geocor(Satellite_Process):
             dnam = os.path.join(wrk_dir,ystr)
             gnam = os.path.join(dnam,'{}_subset.tif'.format(dstr))
             tmp_gnam = os.path.join(dnam,'{}_subset_tmp.tif'.format(dstr))
+            if os.path.exists(tmp_gnam):
+                os.remove(tmp_gnam)
             iflag = self.list_labels['oflag'].index('subset')
             if self.values['oflag'][iflag]:
                 if os.path.exists(gnam):
                     os.remove(gnam)
-                if os.path.exists(tmp_gnam):
-                    os.remove(tmp_gnam)
             if not os.path.exists(gnam):
                 if not os.path.exists(dnam):
                     os.makedirs(dnam)
@@ -183,12 +183,13 @@ class Geocor(Satellite_Process):
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
                 self.run_command(command,print_command=False,print_time=False)
-                # Append bandname
-                command = self.python_path
-                command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_bandname.py'))
-                command += ' --inp_fnam "{}"'.format(tmp_gnam)
-                command += ' --out_fnam "{}"'.format(gnam)
-                self.run_command(command,message='<<< Append bandname for {} >>>'.format(dstr))
+                if os.path.exists(tmp_gnam):
+                    # Append bandname
+                    command = self.python_path
+                    command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_bandname.py'))
+                    command += ' --inp_fnam "{}"'.format(tmp_gnam)
+                    command += ' --out_fnam "{}"'.format(gnam)
+                    self.run_command(command,message='<<< Append bandname for {} >>>'.format(dstr))
             if os.path.exists(tmp_gnam):
                 os.remove(tmp_gnam)
             if os.path.exists(gnam):
