@@ -53,6 +53,7 @@ parser.add_argument('-N','--ncan',default=NCAN,type=int,help='Candidate number b
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
+parser.add_argument('--early',default=False,action='store_true',help='Early estimation mode (%(default)s)')
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
@@ -141,12 +142,15 @@ for year in years:
             raise ValueError('Error, tofs={}, args.offset={} >>> {}'.format(tofs,args.offset,fnams[0]))
         if tmin < dmax and tmax > dmin:
             sys.stderr.write('{} : {:%Y%m%d} -- {:%Y%m%d}\n'.format(dstr,tmin,tmax))
-            tmins.append(tmin)
-            tmaxs.append(tmax)
+            tmins.append(date2num(tmin))
+            tmaxs.append(date2num(tmax))
             dstrs.append(dstr)
+            if args.early:
+                cnd = (np.abs(data['trans_d1']-tmaxs[-1]) < 0.1).to_numpy()
+                data[cnd] = np.nan
             src_data.append(data[params].to_numpy())
-tmins = date2num(np.array(tmins)) # tmins[ndat]
-tmaxs = date2num(np.array(tmaxs)) # tmaxs[ndat]
+tmins = np.array(tmins) # tmins[ndat]
+tmaxs = np.array(tmaxs) # tmaxs[ndat]
 tvals = 0.5*(tmins+tmaxs) # tvals[ndat]
 dstrs = np.array(dstrs) # dstrs[ndat]
 src_data = np.array(src_data) # src_data[ndat][nobject][nband]
