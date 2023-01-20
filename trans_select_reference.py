@@ -48,6 +48,7 @@ parser.add_argument('--risetime_max',default=RISETIME_MAX,type=float,help='Max r
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
+parser.add_argument('--early',default=False,action='store_true',help='Early estimation mode (%(default)s)')
 args = parser.parse_args()
 if args.dst_fnam is None:
     raise ValueError('Error, args.dst_fnam={}'.format(args.dst_fnam))
@@ -144,7 +145,7 @@ src_shape = None
 src_prj = None
 src_trans = None
 src_data = []
-for fnam in fnams:
+for idat,fnam in enumerate(fnams):
     ds = gdal.Open(fnam)
     tmp_nx = ds.RasterXSize
     tmp_ny = ds.RasterYSize
@@ -166,7 +167,7 @@ for fnam in fnams:
     elif tmp_nb != src_nb:
         raise ValueError('Error, tmp_nb={}, src_nb={}'.format(tmp_nb,src_nb))
     if tmp_prj == '':
-        sys.stderr.write('Warning, empty projection >>> {}'.format(fnam))
+        sys.stderr.write('Warning, empty projection >>> {}\n'.format(fnam))
     elif src_prj is None:
         src_prj = tmp_prj
     elif tmp_prj != src_prj:
@@ -175,6 +176,9 @@ for fnam in fnams:
         src_trans = tmp_trans
     elif tmp_trans != src_trans:
         raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
+    if args.early:
+        cnd = np.abs(tmp_data[0]-tmaxs[idat]) < 0.1
+        tmp_data[:,cnd] = np.nan
     src_data.append(tmp_data)
 src_data = np.array(src_data)
 cnd = (src_data[:,0,:,:] < nmin-1.0e-4) | (src_data[:,0,:,:] > nmax+1.0e-4)
