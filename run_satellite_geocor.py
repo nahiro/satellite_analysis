@@ -232,8 +232,6 @@ class Geocor(Satellite_Process):
                 os.remove(tmp_gnam)
             iflag = self.list_labels['oflag'].index('geocor')
             if self.values['oflag'][iflag]:
-                if os.path.exists(gnam):
-                    os.remove(gnam)
                 if os.path.exists(dat_fnam):
                     os.remove(dat_fnam)
             if not os.path.exists(dat_fnam):
@@ -241,6 +239,8 @@ class Geocor(Satellite_Process):
                     os.makedirs(dnam)
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
+                if os.path.exists(gnam):
+                    os.remove(gnam)
                 se1_fnam = os.path.join(dnam,'{}_geocor_selected1.dat'.format(dstr))
                 se2_fnam = os.path.join(dnam,'{}_geocor_selected2.dat'.format(dstr))
                 tmp_fnam = os.path.join(dnam,'{}_geocor_temp.dat'.format(dstr))
