@@ -104,7 +104,6 @@ for year in data_years:
         tmp_shape = (tmp_ny,tmp_nx)
         tmp_prj = ds.GetProjection()
         tmp_trans = ds.GetGeoTransform()
-        tmp_data = ds.ReadAsArray().reshape(tmp_nb,tmp_ny,tmp_nx)
         tmp_band = []
         for iband in range(tmp_nb):
             band = ds.GetRasterBand(iband+1)
@@ -123,12 +122,14 @@ for year in data_years:
             src_trans = tmp_trans
         elif tmp_trans != src_trans:
             raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
-        band = 'S'+args.cln_band
-        if not band in tmp_band:
-            raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
-        cln_indx = tmp_band.index(band)
-        cln_data.append(tmp_data[cln_indx])
+        band_name = 'S'+args.cln_band
+        if not band_name in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(band_name,fnam))
+        iband = tmp_band.index(band_name)
+        band = ds.GetRasterBand(iband+1)
+        cln_data.append(band.ReadAsArray().reshape(tmp_ny,tmp_nx))
         fnams.append(fnam)
+        ds = None
 if len(cln_data) < 1:
     raise IOError('No indices data for process.')
 cln_data = np.array(cln_data) # NTIM,NY,NX
@@ -200,10 +201,10 @@ for fnam in fnams:
     if tmp_trans != src_trans:
         raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
     tmp_indx = []
-    for band in src_band:
-        if not band in tmp_band:
-            raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
-        tmp_indx.append(tmp_band.index(band))
+    for band_name in src_band:
+        if not band_name in tmp_band:
+            raise ValueError('Error in finding {} >>> {}'.format(band_name,fnam))
+        tmp_indx.append(tmp_band.index(band_name))
     src_data.append(tmp_data[tmp_indx])
 if len(src_data) < 1:
     raise IOError('No indices data for process.')
