@@ -50,6 +50,7 @@ parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting i
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
+parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
 parser.add_argument('--ref_rmax',default=REF_RMAX,type=float,help='Maximum distance from reference in m (%(default)s)')
 parser.add_argument('--ref_nmax',default=REF_NMAX,type=int,help='Maximum number of reference (%(default)s)')
 parser.add_argument('--ref_dmax',default=REF_DMAX,type=float,help='Maximum difference from reference in day (%(default)s)')
@@ -184,6 +185,13 @@ src_data = np.array(src_data) # src_data[ndat][nobject][nband]
 cnd = (src_data[:,:,0] < nmin-1.0e-4) | (src_data[:,:,0] > nmax+1.0e-4)
 src_data[:,:,0][cnd] = np.nan
 ndat = len(src_data)
+if args.det_rmin is not None:
+    if ndat < 1:
+        raise ValueError('Error, no input data between {:%Y%m%d} - {:%Y%m%d}'.format(dmin,dmax))
+    elif ndat < 2:
+        args.det_nmin = 1
+    else:
+        args.det_nmin = int(np.ceil((ndat-1)/(tmaxs[-1]-tmaxs[0])*(tmaxs-tmins).mean()*args.det_rmin)+0.1)
 
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)

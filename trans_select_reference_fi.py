@@ -158,7 +158,12 @@ cnd = (src_data[:,:,0] < nmin-1.0e-4) | (src_data[:,:,0] > nmax+1.0e-4)
 src_data[:,:,0][cnd] = np.nan
 ndat = len(src_data)
 if args.det_rmin is not None:
-    args.det_nmin = int(np.ceil(ndat/(tmaxs[-1]-tmaxs[0])*(tmaxs-tmins).mean()*args.det_rmin)+0.1)
+    if ndat < 1:
+        raise ValueError('Error, no input data between {:%Y%m%d} - {:%Y%m%d}'.format(dmin,dmax))
+    elif ndat < 2:
+        args.det_nmin = 1
+    else:
+        args.det_nmin = int(np.ceil((ndat-1)/(tmaxs[-1]-tmaxs[0])*(tmaxs-tmins).mean()*args.det_rmin)+0.1)
 
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
