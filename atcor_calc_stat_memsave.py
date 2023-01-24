@@ -7,8 +7,6 @@ try:
     import gdal
 except Exception:
     from osgeo import gdal
-import shapefile
-from shapely.geometry import shape
 from datetime import datetime
 import numpy as np
 from matplotlib.dates import date2num
