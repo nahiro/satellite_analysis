@@ -189,7 +189,6 @@ for fnam in fnams:
     tmp_shape = (tmp_ny,tmp_nx)
     tmp_prj = ds.GetProjection()
     tmp_trans = ds.GetGeoTransform()
-    tmp_data = ds.ReadAsArray().reshape(tmp_nb,tmp_ny,tmp_nx)
     tmp_band = []
     for iband in range(tmp_nb):
         band = ds.GetRasterBand(iband+1)
@@ -200,12 +199,15 @@ for fnam in fnams:
         raise ValueError('Error, tmp_prj={}, src_prj={}'.format(tmp_prj,src_prj))
     if tmp_trans != src_trans:
         raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
-    tmp_indx = []
+    tmp_data = []
     for band_name in src_band:
         if not band_name in tmp_band:
             raise ValueError('Error in finding {} >>> {}'.format(band_name,fnam))
-        tmp_indx.append(tmp_band.index(band_name))
-    src_data.append(tmp_data[tmp_indx])
+        iband = tmp_band.index(band_name)
+        band = ds.GetRasterBand(iband+1)
+        tmp_data.append(band.ReadAsArray().reshape(tmp_ny,tmp_nx))
+    src_data.append(tmp_data)
+    ds = None
 if len(src_data) < 1:
     raise IOError('No indices data for process.')
 src_data = np.array(src_data) # NTIM,NBAND,NY,NX
