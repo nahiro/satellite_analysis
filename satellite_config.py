@@ -79,8 +79,7 @@ config_defaults.update({
 'main.top_frame_height'               : 275,
 'main.left_frame_width'               : 30,
 'main.right_frame_width'              : 100,
-'main.left_cnv_height'                : 21,
-'main.right_cnv_height'               : 21,
+'main.canvas_height'                  : 21,
 'main.center_btn_width'               : 20,
 #----------- download -----------
 'download.server'                     : 'satreps-nas',
@@ -388,8 +387,7 @@ window_width = config['main'].getint('main.window_width')
 top_frame_height = config['main'].getint('main.top_frame_height')
 left_frame_width = config['main'].getint('main.left_frame_width')
 right_frame_width = config['main'].getint('main.right_frame_width')
-left_cnv_height = config['main'].getint('main.left_cnv_height')
-right_cnv_height = config['main'].getint('main.right_cnv_height')
+canvas_height = config['main'].getint('main.canvas_height')
 center_btn_width = config['main'].getint('main.center_btn_width')
 #----------- subprocess -----------
 pnams = []

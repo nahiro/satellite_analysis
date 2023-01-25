@@ -294,21 +294,11 @@ top_left_frame.pack_propagate(False)
 top_center_frame.pack_propagate(False)
 top_right_frame.pack_propagate(False)
 
-top_center_top_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
-top_center_middle_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
 top_center_bottom_frame = tk.Frame(top_center_frame,width=30,height=10,background=None)
-top_center_top_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
-top_center_middle_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 top_center_bottom_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 
-top_right_top_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
-top_right_middle_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
 top_right_bottom_frame = tk.Frame(top_right_frame,width=30,height=10,background=None)
-top_right_top_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
-top_right_middle_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
-top_right_bottom_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.TOP)
-top_right_top_frame.pack_propagate(False)
-top_right_middle_frame.pack_propagate(False)
+top_right_bottom_frame.pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.BOTH,side=tk.TOP,expand=True)
 
 top_lbl = {}
 top_btn = {}
@@ -327,12 +317,13 @@ browse_img = tk.PhotoImage(file=browse_image)
 for pnam,title in zip(['planting','download','observation','field_data','drone_analysis','s1_data','s1_analysis','s2_data','s2_analysis'],
                       ['Planting Start/End','Data First/Last','Observation Block/Date',
                        'Field Data','Drone Analysis','Sentinel-1 Data','Sentinel-1 Analysis','Sentinel-2 Data','Sentinel-2 Analysis']):
-    top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=25)
+    top_center_bottom_cnv[pnam] = tk.Canvas(top_center_bottom_frame,width=10,height=canvas_height)
     top_center_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
-    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=150,height=25)
+    top_center_bottom_cnv[pnam].pack_propagate(False)
+    top_center_left_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=150,height=canvas_height)
     top_center_left_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.LEFT)
     top_center_left_cnv[pnam].pack_propagate(False)
-    top_center_right_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=10,height=25)
+    top_center_right_cnv[pnam] = tk.Canvas(top_center_bottom_cnv[pnam],width=10,height=canvas_height)
     top_center_right_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,side=tk.LEFT,expand=True)
     top_lbl[pnam] = tk.Label(top_center_left_cnv[pnam],text=title)
     top_lbl[pnam].pack(ipadx=0,ipady=0,padx=0,pady=(3,3),anchor=tk.W,side=tk.LEFT,expand=False)
@@ -396,9 +387,11 @@ for pnam,title in zip(['planting','download','observation','field_data','drone_a
         top_img[pnam] = tk.Button(top_center_right_cnv[pnam],image=browse_img,width=center_btn_width,bg='white',bd=1,command=eval('lambda:ask_folder("{}")'.format(pnam)))
         top_img[pnam].image = browse_img
         top_img[pnam].pack(ipadx=0,ipady=0,padx=(0,1),pady=0,anchor=tk.W,side=tk.LEFT)
-    top_right_bottom_cnv[pnam] = tk.Canvas(top_right_bottom_frame,width=10,height=25)
+    top_right_bottom_cnv[pnam] = tk.Canvas(top_right_bottom_frame,width=10,height=canvas_height)
     top_right_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
-    top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
+    top_right_bottom_cnv[pnam].pack_propagate(False)
+    #top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
+    top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,height=23,command=eval('lambda:set_title("{}")'.format(pnam)))
     top_btn[pnam].pack(padx=(1,0),pady=(0,2.2),side=tk.LEFT)
     top_err[pnam] = ttk.Label(top_right_bottom_cnv[pnam],text='ERROR',foreground='red')
 
@@ -436,11 +429,11 @@ for i,pnam in enumerate(pnams):
     center_chk[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,anchor=tk.W,side=tk.LEFT)
     center_sep[pnam] = ttk.Separator(center_cnv[pnam],orient='horizontal')
     center_sep[pnam].pack(ipadx=0,ipady=0,padx=(0,2),pady=0,fill=tk.X,side=tk.LEFT,expand=True)
-    left_cnv[pnam] = tk.Canvas(left_frame,width=left_frame_width,height=left_cnv_height,background=bgs[i%2])
+    left_cnv[pnam] = tk.Canvas(left_frame,width=left_frame_width,height=canvas_height,background=bgs[i%2])
     left_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,expand=True)
     left_btn[pnam] = ttk.Button(root,text='check_{}'.format(pnam),command=eval('lambda:check_child("{}")'.format(pnam)))
     left_btn[pnam].pack_forget() # hidden
-    right_cnv[pnam] = tk.Canvas(right_frame,width=right_frame_width,height=right_cnv_height,background=bgs[i%2])
+    right_cnv[pnam] = tk.Canvas(right_frame,width=right_frame_width,height=canvas_height,background=bgs[i%2])
     right_cnv[pnam].pack(ipadx=0,ipady=0,padx=(0,20),pady=(0,2),expand=True)
     right_cnv[pnam].pack_propagate(False)
     right_btn[pnam] = tk.Button(right_cnv[pnam],text='Set',width=4,command=eval('lambda:set_child("{}")'.format(pnam)))
