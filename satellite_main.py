@@ -390,8 +390,7 @@ for pnam,title in zip(['planting','download','observation','field_data','drone_a
     top_right_bottom_cnv[pnam] = tk.Canvas(top_right_bottom_frame,width=10,height=canvas_height)
     top_right_bottom_cnv[pnam].pack(ipadx=0,ipady=0,padx=0,pady=0,fill=tk.X,expand=True)
     top_right_bottom_cnv[pnam].pack_propagate(False)
-    #top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
-    top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,height=23,command=eval('lambda:set_title("{}")'.format(pnam)))
+    top_btn[pnam] = tk.Button(top_right_bottom_cnv[pnam],text=btn_pnam.capitalize(),width=4,command=eval('lambda:set_title("{}")'.format(pnam)))
     top_btn[pnam].pack(padx=(1,0),pady=(0,2.2),side=tk.LEFT)
     top_err[pnam] = ttk.Label(top_right_bottom_cnv[pnam],text='ERROR',foreground='red')
 
