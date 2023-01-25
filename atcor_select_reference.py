@@ -75,14 +75,13 @@ src_nb = len(args.ref_band)
 src_shape = None
 src_prj = None
 src_trans = None
-src_data = []
-scl_data = []
 src_band = []
 for band in args.ref_band:
     if not band in S2_BAND:
         raise ValueError('Error, unknown band >>> {}'.format(band))
     src_band.append(S2_BAND[band])
-src_dtim = []
+scl_data = []
+src_data = []
 for year in data_years:
     ystr = '{}'.format(year)
     dnam = os.path.join(args.inpdir,ystr)
@@ -104,7 +103,6 @@ for year in data_years:
         tmp_shape = (tmp_ny,tmp_nx)
         tmp_prj = ds.GetProjection()
         tmp_trans = ds.GetGeoTransform()
-        tmp_data = ds.ReadAsArray().reshape(tmp_nb,tmp_ny,tmp_nx)
         tmp_band = []
         for iband in range(tmp_nb):
             band = ds.GetRasterBand(iband+1)
@@ -123,23 +121,24 @@ for year in data_years:
             src_trans = tmp_trans
         elif tmp_trans != src_trans:
             raise ValueError('Error, tmp_trans={}, src_trans={}'.format(tmp_trans,src_trans))
-        tmp_indx = []
-        for band in src_band:
-            if not band in tmp_band:
-                raise ValueError('Error in finding {} >>> {}'.format(band,fnam))
-            tmp_indx.append(tmp_band.index(band))
         if not SC_BAND in tmp_band:
             raise ValueError('Error in finding {} >>> {}'.format(SC_BAND,fnam))
-        scl_indx = tmp_band.index(SC_BAND)
-        src_data.append(tmp_data[tmp_indx])
-        scl_data.append(tmp_data[scl_indx])
-        src_dtim.append(d)
+        iband = tmp_band.index(SC_BAND)
+        band = ds.GetRasterBand(iband+1)
+        scl_data.append(band.ReadAsArray().reshape(tmp_ny,tmp_nx))
+        tmp_data = []
+        for band_name in src_band:
+            if not band_name in tmp_band:
+                raise ValueError('Error in finding {} >>> {}'.format(band_name,fnam))
+            iband = tmp_band.index(band_name)
+            band = ds.GetRasterBand(iband+1)
+            tmp_data.append(band.ReadAsArray().reshape(tmp_ny,tmp_nx))
+        src_data.append(tmp_data)
+        ds = None
 if len(src_data) < args.nmin:
     raise ValueError('Error, not enough number of data for reference selection (required={}) >>> {}'.format(args.nmin,len(src_data)))
-src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 scl_data = np.array(scl_data) # NTIM,NY,NX
-src_dtim = np.array(src_dtim)
-src_ntim = date2num(src_dtim)
+src_data = np.array(src_data)*1.0e-4 # NTIM,NBAND,NY,NX
 src_indy,src_indx = np.indices(src_shape)
 src_xp = src_trans[0]+(src_indx+0.5)*src_trans[1]+(src_indy+0.5)*src_trans[2]
 src_yp = src_trans[3]+(src_indx+0.5)*src_trans[4]+(src_indy+0.5)*src_trans[5]
