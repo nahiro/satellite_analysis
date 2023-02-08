@@ -2,11 +2,15 @@
 import tifffile
 import xml.etree.ElementTree as ET
 import xmltodict
+from datetime import datetime
 try:
     import gdal
 except Exception:
     from osgeo import gdal
 from argparse import ArgumentParser,RawTextHelpFormatter
+
+# Constants
+D0 = datetime(2022,1,25) # L2A product Baseline 04.00
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
@@ -165,6 +169,30 @@ band = ds.GetRasterBand(1)
 src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 ds = None
+
+# Offset correction
+offset_correction = False
+if args.add_offset:
+    meta = xmltodict.parse(tif_tags['65000'])
+    factor,offsets,bands = get_offset(meta)
+    if offsets is not None:
+        for i in range(len(offsets)):
+            band_name = bands[i]
+            if not band_name in src_band:
+                raise ValueError('Error in finding {} >>> {}'.format(band_name,args.inp_fnam))
+            iband = src_band.index(band_name)
+            src_data[iband] += offsets[i]
+        offset_correction = True
+    if args.date is not None:
+        dtim = datetime.strptime(args.date,'%Y%m%d')
+        if dtim < D0:
+            if offset_correction:
+                sys.stderr.write('Warning, date={}, offset_correction={} >>> {}'.format(args.date,offset_correction,args.inp_fnam))
+                sys.stderr.flush()
+        else:
+            if not offset_correction:
+                raise ValueError('Error, date={}, offset_correction={} >>> {}'.format(args.date,offset_correction,args.inp_fnam))
+src_meta.update({'Offset_Correction':offset_correction})
 
 # Write GeoTIFF
 drv = gdal.GetDriverByName('GTiff')
