@@ -179,7 +179,10 @@ if args.add_offset:
         for i in range(len(offsets)):
             band_name = bands[i]
             if not band_name in src_band:
-                raise ValueError('Error in finding {} >>> {}'.format(band_name,args.inp_fnam))
+                if band_name == 'B10':
+                    continue
+                else:
+                    raise ValueError('Error in finding {} >>> {}'.format(band_name,args.inp_fnam))
             iband = src_band.index(band_name)
             src_data[iband] += offsets[i]
         offset_correction = True
