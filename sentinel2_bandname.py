@@ -37,6 +37,7 @@ if src_nb != len(src_band):
 src_prj = ds.GetProjection()
 src_trans = ds.GetGeoTransform()
 src_meta = ds.GetMetadata()
+src_meta.update(tif_tags)
 src_data = ds.ReadAsArray().reshape((src_nb,src_ny,src_nx))
 band = ds.GetRasterBand(1)
 src_dtype = band.DataType
