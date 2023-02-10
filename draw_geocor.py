@@ -59,6 +59,10 @@ src_xmax = src_xmin+src_xstp*src_shape[1]
 src_ymax = src_trans[3]
 src_ystp = src_trans[5]
 src_ymin = src_ymax+src_ystp*src_shape[0]
+for band in ['b','g','r']:
+    band_name = S2_BAND[band]
+    if not band_name in src_band:
+        raise ValueError('Error in finding {} >>> {}'.format(band_name,args.img_fnam))
 b_indx = src_band.index(S2_BAND['b'])
 g_indx = src_band.index(S2_BAND['g'])
 r_indx = src_band.index(S2_BAND['r'])
