@@ -18,6 +18,7 @@ parser.add_argument('-I','--inp_fnam',default=None,help='Input file name (%(defa
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-d','--date',default=None,help='Data acquisition date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--add_offset',default=False,action='store_true',help='Add offset (%(default)s)')
+parser.add_argument('--replace_no_data',default=False,action='store_true',help='Replace no_data (%(default)s)')
 args = parser.parse_args()
 
 def get_band(metadata):
@@ -223,6 +224,19 @@ if args.add_offset:
             if not offset_correct:
                 raise ValueError('Error, date={}, offset_correct={} >>> {}'.format(args.date,offset_correct,args.inp_fnam))
 src_meta.update({'Offset_Correct':offset_correct})
+
+# Replace no_data
+replace_no_data = False
+if args.replace_no_data:
+    if no_data is None:
+        raise ValueError('Error, no_data={} >>> {}'.format(no_data,args.inp_fnam))
+    for iband in range(src_nb):
+        if not np.isnan(no_data[iband]):
+            cnd = (src_data[iband] == no_data[iband])
+            src_data[iband,cnd] = np.nan
+    src_nodata = np.nan
+    replace_no_data = True
+src_meta.update({'Replace_no_data':replace_no_data})
 
 # Write GeoTIFF
 drv = gdal.GetDriverByName('GTiff')

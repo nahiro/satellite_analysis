@@ -191,6 +191,7 @@ class Geocor(Satellite_Process):
                     command += ' --out_fnam "{}"'.format(gnam)
                     command += ' --date {}'.format(dstr)
                     command += ' --add_offset'
+                    command += ' --replace_no_data'
                     self.run_command(command,message='<<< Append bandname for {} >>>'.format(dstr))
             if os.path.exists(tmp_gnam):
                 os.remove(tmp_gnam)
