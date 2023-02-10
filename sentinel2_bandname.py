@@ -3,6 +3,7 @@ import tifffile
 import xml.etree.ElementTree as ET
 import xmltodict
 from datetime import datetime
+import numpy as np
 try:
     import gdal
 except Exception:
