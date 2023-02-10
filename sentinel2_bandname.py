@@ -50,9 +50,9 @@ def get_band(metadata):
     return src_band,no_data
 
 def get_offset(metadata):
+    bands = None
     factor = None
     offsets = None
-    bands = None
     d = metadata
     while True:
         if (type(d) != dict) or (not 'Dimap_Document' in d.keys()):
@@ -105,14 +105,13 @@ def get_offset(metadata):
         if (type(d3) != dict) or (not 'MDElem' in d3.keys()):
             break
         d3 = d3['MDElem']
-        if type(d3) != list:
+        if type(d3) != list or len(d3) < 1:
             break
         bands = []
         for i in range(len(d3)):
             if (type(d3[i]) == dict) and ('@name' in d3[i]) and (d3[i]['@name'] == 'Spectral_Information') and ('MDATTR' in d3[i]):
                 d4 = d3[i]['MDATTR']
                 if type(d4) != list:
-                    bands = None
                     break
                 band = None
                 for j in range(len(d4)):
@@ -120,13 +119,12 @@ def get_offset(metadata):
                         band = d4[j]['#text']
                         break
                 if band is None:
-                    bands = None
                     break
                 bands.append(band)
             else:
-                bands = None
                 break
-        if bands is None or len(bands) < 1:
+        if len(bands) != len(d3):
+            bands = None
             break
         # Read factor
         d1 = None
@@ -154,20 +152,23 @@ def get_offset(metadata):
         if (type(d2) != dict) or (not 'MDATTR' in d2.keys()):
             break
         d2 = d2['MDATTR']
-        if type(d2) != list:
+        if type(d2) != list or len(d2) < 1:
             break
         offsets = []
         for i in range(len(d2)):
             if (type(d2[i]) == dict) and ('@name' in d2[i]) and (d2[i]['@name'] == 'BOA_ADD_OFFSET') and ('#text' in d2[i]):
                 offsets.append(eval(d2[i]['#text']))
             else:
-                offsets = None
                 break
-        if offsets is None or len(offsets) < 1:
+        if len(offsets) != len(d2):
+            offsets = None
             break
         break
-    if factor is None or offsets is None or bands is None or len(offsets) < 1 or len(bands) != len(offsets):
-        return None,None,None
+    if bands is not None:
+        if offsets is not None:
+            if len(bands) != len(offsets):
+                bands = None
+                offsets = None
     return factor,offsets,bands
 
 # Read BND_NAME
