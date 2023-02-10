@@ -199,7 +199,7 @@ src_nodata = band.GetNoDataValue()
 ds = None
 
 # Offset correction
-offset_correction = False
+offset_correct = False
 if args.add_offset:
     bands,factor,offsets = get_offset(meta)
     if offsets is not None:
@@ -212,17 +212,17 @@ if args.add_offset:
                     raise ValueError('Error in finding {} >>> {}'.format(band_name,args.inp_fnam))
             iband = src_band.index(band_name)
             src_data[iband] += offsets[i]
-        offset_correction = True
+        offset_correct = True
     if args.date is not None:
         dtim = datetime.strptime(args.date,'%Y%m%d')
         if dtim < D0:
-            if offset_correction:
-                sys.stderr.write('Warning, date={}, offset_correction={} >>> {}'.format(args.date,offset_correction,args.inp_fnam))
+            if offset_correct:
+                sys.stderr.write('Warning, date={}, offset_correct={} >>> {}'.format(args.date,offset_correct,args.inp_fnam))
                 sys.stderr.flush()
         else:
-            if not offset_correction:
-                raise ValueError('Error, date={}, offset_correction={} >>> {}'.format(args.date,offset_correction,args.inp_fnam))
-src_meta.update({'Offset_Correction':offset_correction})
+            if not offset_correct:
+                raise ValueError('Error, date={}, offset_correct={} >>> {}'.format(args.date,offset_correct,args.inp_fnam))
+src_meta.update({'Offset_Correct':offset_correct})
 
 # Write GeoTIFF
 drv = gdal.GetDriverByName('GTiff')
