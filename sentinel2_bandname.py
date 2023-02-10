@@ -20,6 +20,35 @@ parser.add_argument('-d','--date',default=None,help='Data acquisition date in th
 parser.add_argument('--add_offset',default=False,action='store_true',help='Add offset (%(default)s)')
 args = parser.parse_args()
 
+def get_band(metadata):
+    src_band = []
+    no_data = []
+    d = metadata
+    while True:
+        if (type(d) != dict) or (not 'Dimap_Document' in d.keys()):
+            break
+        d = d['Dimap_Document']
+        if (type(d) != dict) or (not 'Image_Interpretation' in d.keys()):
+            break
+        d = d['Image_Interpretation']
+        if (type(d) != dict) or (not 'Spectral_Band_Info' in d.keys()):
+            break
+        d = d['Spectral_Band_Info']
+        if type(d) != list:
+            break
+        for i in range(len(d)):
+            if (type(d[i]) == dict) and ('BAND_NAME' in d[i]) and ('NO_DATA_VALUE' in d[i]):
+                src_band.append(d[i]['BAND_NAME'])
+                no_data.append(np.nan if d[i]['NO_DATA_VALUE'].lower() == 'nan' else eval(d[i]['NO_DATA_VALUE']))
+            else:
+                src_band = None
+                no_data = None
+                break
+        break
+    if src_band is None or no_data is None or len(src_band) < 1 or len(src_band) != len(no_data):
+        return None,None
+    return src_band,no_data
+
 def get_offset(metadata):
     factor = None
     offsets = []
@@ -140,18 +169,15 @@ def get_offset(metadata):
     return factor,offsets,bands
 
 # Read BND_NAME
-src_band = []
 tif_tags = {}
 with tifffile.TiffFile(args.inp_fnam) as tif:
     for tag in tif.pages[0].tags.values():
         name,value = tag.name,tag.value
         tif_tags[name] = value
-if '65000' in tif_tags:
-    root = ET.fromstring(tif_tags['65000'])
-    for value in root.iter('BAND_NAME'):
-        src_band.append(value.text)
-else:
+if not '65000' in tif_tags:
     raise ValueError('Error in finding 65000 >>> {}'.format(args.inp_fnam))
+meta = xmltodict.parse(tif_tags['65000'])
+src_band,no_data = get_band(meta)
 
 # Read GeoTIFF
 ds = gdal.Open(args.inp_fnam)
@@ -173,7 +199,6 @@ ds = None
 # Offset correction
 offset_correction = False
 if args.add_offset:
-    meta = xmltodict.parse(tif_tags['65000'])
     factor,offsets,bands = get_offset(meta)
     if offsets is not None:
         for i in range(len(offsets)):
