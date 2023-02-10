@@ -21,8 +21,8 @@ parser.add_argument('--add_offset',default=False,action='store_true',help='Add o
 args = parser.parse_args()
 
 def get_band(metadata):
-    src_band = []
-    no_data = []
+    src_band = None
+    no_data = None
     d = metadata
     while True:
         if (type(d) != dict) or (not 'Dimap_Document' in d.keys()):
@@ -34,19 +34,21 @@ def get_band(metadata):
         if (type(d) != dict) or (not 'Spectral_Band_Info' in d.keys()):
             break
         d = d['Spectral_Band_Info']
-        if type(d) != list:
+        if type(d) != list or len(d) < 1:
             break
+        src_band = []
+        no_data = []
         for i in range(len(d)):
             if (type(d[i]) == dict) and ('BAND_NAME' in d[i]) and ('NO_DATA_VALUE' in d[i]):
                 src_band.append(d[i]['BAND_NAME'])
                 no_data.append(np.nan if d[i]['NO_DATA_VALUE'].lower() == 'nan' else eval(d[i]['NO_DATA_VALUE']))
             else:
-                src_band = None
-                no_data = None
                 break
+        if len(src_band) != len(d) or len(no_data) != len(d):
+            src_band = None
+            no_data = None
+            break
         break
-    if src_band is None or no_data is None or len(src_band) < 1 or len(src_band) != len(no_data):
-        return None,None
     return src_band,no_data
 
 def get_offset(metadata):
@@ -152,7 +154,7 @@ def get_offset(metadata):
         if (type(d2) != dict) or (not 'MDATTR' in d2.keys()):
             break
         d2 = d2['MDATTR']
-        if type(d2) != list or len(d2) < 1:
+        if type(d2) != list or len(d2) != len(d3):
             break
         offsets = []
         for i in range(len(d2)):
@@ -164,12 +166,7 @@ def get_offset(metadata):
             offsets = None
             break
         break
-    if bands is not None:
-        if offsets is not None:
-            if len(bands) != len(offsets):
-                bands = None
-                offsets = None
-    return factor,offsets,bands
+    return bands,factor,offsets
 
 # Read BND_NAME
 tif_tags = {}
@@ -181,6 +178,8 @@ if not '65000' in tif_tags:
     raise ValueError('Error in finding 65000 >>> {}'.format(args.inp_fnam))
 meta = xmltodict.parse(tif_tags['65000'])
 src_band,no_data = get_band(meta)
+if src_band is None:
+    raise ValueError('Error in finding band name >>> {args.inp_fnam}')
 
 # Read GeoTIFF
 ds = gdal.Open(args.inp_fnam)
@@ -202,7 +201,7 @@ ds = None
 # Offset correction
 offset_correction = False
 if args.add_offset:
-    factor,offsets,bands = get_offset(meta)
+    bands,factor,offsets = get_offset(meta)
     if offsets is not None:
         for i in range(len(offsets)):
             band_name = bands[i]
