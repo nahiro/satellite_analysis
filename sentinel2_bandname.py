@@ -18,8 +18,8 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-I','--inp_fnam',default=None,help='Input file name (%(default)s)')
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-d','--date',default=None,help='Data acquisition date in the format YYYYMMDD (%(default)s)')
-parser.add_argument('--add_offset',default=False,action='store_true',help='Add offset (%(default)s)')
 parser.add_argument('--replace_no_data',default=False,action='store_true',help='Replace no_data (%(default)s)')
+parser.add_argument('--add_offset',default=False,action='store_true',help='Add offset (%(default)s)')
 args = parser.parse_args()
 
 def get_band(metadata):
@@ -181,7 +181,7 @@ if not '65000' in tif_tags:
 meta = xmltodict.parse(tif_tags['65000'])
 src_band,no_data = get_band(meta)
 if src_band is None:
-    raise ValueError('Error in finding band name >>> {args.inp_fnam}')
+    raise ValueError('Error in finding band name >>> {}'.format(args.inp_fnam))
 
 # Read GeoTIFF
 ds = gdal.Open(args.inp_fnam)
@@ -200,8 +200,21 @@ src_dtype = band.DataType
 src_nodata = band.GetNoDataValue()
 ds = None
 
-# Offset correction
-offset_correct = False
+# Replace no_data
+replace_no_data = False
+if args.replace_no_data:
+    if no_data is None:
+        raise ValueError('Error, no_data={} >>> {}'.format(no_data,args.inp_fnam))
+    for iband in range(src_nb):
+        if not np.isnan(no_data[iband]):
+            cnd = (src_data[iband] == no_data[iband])
+            src_data[iband,cnd] = np.nan
+    src_nodata = np.nan
+    replace_no_data = True
+src_meta.update({'FlagReplaceNoData':replace_no_data})
+
+# Add offset
+add_offset = False
 if args.add_offset:
     bands,factor,offsets = get_offset(meta)
     if offsets is not None:
@@ -214,30 +227,17 @@ if args.add_offset:
                     raise ValueError('Error in finding {} >>> {}'.format(band_name,args.inp_fnam))
             iband = src_band.index(band_name)
             src_data[iband] += offsets[i]
-        offset_correct = True
+        add_offset = True
     if args.date is not None:
         dtim = datetime.strptime(args.date,'%Y%m%d')
         if dtim < D0:
-            if offset_correct:
-                sys.stderr.write('Warning, date={}, offset_correct={} >>> {}'.format(args.date,offset_correct,args.inp_fnam))
+            if add_offset:
+                sys.stderr.write('Warning, date={}, add_offset={} >>> {}'.format(args.date,add_offset,args.inp_fnam))
                 sys.stderr.flush()
         else:
-            if not offset_correct:
-                raise ValueError('Error, date={}, offset_correct={} >>> {}'.format(args.date,offset_correct,args.inp_fnam))
-src_meta.update({'Offset_Correct':offset_correct})
-
-# Replace no_data
-replace_no_data = False
-if args.replace_no_data:
-    if no_data is None:
-        raise ValueError('Error, no_data={} >>> {}'.format(no_data,args.inp_fnam))
-    for iband in range(src_nb):
-        if not np.isnan(no_data[iband]):
-            cnd = (src_data[iband] == no_data[iband])
-            src_data[iband,cnd] = np.nan
-    src_nodata = np.nan
-    replace_no_data = True
-src_meta.update({'Replace_no_data':replace_no_data})
+            if not add_offset:
+                raise ValueError('Error, date={}, add_offset={} >>> {}'.format(args.date,add_offset,args.inp_fnam))
+src_meta.update({'FlagAddOffset':add_offset})
 
 # Write GeoTIFF
 drv = gdal.GetDriverByName('GTiff')
