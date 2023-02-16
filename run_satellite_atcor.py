@@ -89,6 +89,9 @@ class Atcor(Satellite_Process):
                 else:
                     d2 = datetime(year,1,1)-timedelta(days=1)
                     d1 = d2-timedelta(days=self.values['stat_period'])
+                if d1 <= datetime(2017,1,1):
+                    d1 = datetime(year,1,1)
+                    d2 = d1+timedelta(days=np.abs(self.values['stat_period']))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_select_reference.py'))
                 command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
@@ -191,6 +194,9 @@ class Atcor(Satellite_Process):
                 else:
                     d2 = datetime(year,1,1)-timedelta(days=1)
                     d1 = d2-timedelta(days=self.values['stat_period'])
+                if d1 <= datetime(2017,1,1):
+                    d1 = datetime(year,1,1)
+                    d2 = d1+timedelta(days=np.abs(self.values['stat_period']))
                 command = self.python_path
                 command += ' "{}"'.format(os.path.join(self.scr_dir,'atcor_calc_stat.py'))
                 command += ' --inpdir "{}"'.format(self.values['indices_dir'])
