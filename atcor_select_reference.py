@@ -151,6 +151,8 @@ for iband in range(src_nb):
     cnd &= (np.nanstd(tmp_data,axis=0) < args.rthr)
 inds = np.indices([cnd.size]).reshape(src_shape)
 inds_selected = inds[cnd]
+if len(inds_selected) <= args.n_nearest:
+    raise ValueError('Error, not enough number of pixels for reference selection (required>{}) >>> {}'.format(args.n_nearest,len(inds_selected)))
 xq = src_xp.flatten()[inds_selected]
 yq = src_yp.flatten()[inds_selected]
 
