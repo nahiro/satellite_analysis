@@ -165,4 +165,4 @@ for n in range(nobject):
     inds_array.append(inds_temp)
 leng_array = np.array(leng_array)
 inds_array = np.array(inds_array)
-np.savez(args.out_fnam,object_ids=object_ids,leng=leng_array,inds=inds_array)
+np.savez(args.out_fnam,object_ids=object_ids,leng=leng_array,inds=inds_array,inds_selected=inds_selected)
