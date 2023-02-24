@@ -225,6 +225,10 @@ dst_nodata = np.nan
 dst_meta = {}
 dst_meta['data_tmin'] = '{:%Y%m%d}'.format(d1)
 dst_meta['data_tmax'] = '{:%Y%m%d}'.format(d2)
+dst_meta['cln_band'] = '{}'.format(args.cln_band)
+dst_meta['cthr_avg'] = '{}'.format(args.cthr_avg)
+dst_meta['cthr_std'] = '{}'.format(args.cthr_std)
+dst_meta['cthr_dif'] = '{}'.format(args.cthr_dif)
 for iy in range(src_ny):
     for ix in range(src_nx):
         src_data_tmp = src_data[:,:,iy,ix]
