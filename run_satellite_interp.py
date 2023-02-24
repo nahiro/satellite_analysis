@@ -37,6 +37,8 @@ class Interp(Satellite_Process):
         if self.values['atcor_flag']:
             command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp_atcor.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'atcor'))
+            command += ' --nmax {}'.format(self.values['nmax'])
+            command += ' --rthr {}'.format(self.values['rthr'])
         else:
             command += ' "{}"'.format(os.path.join(self.scr_dir,'sentinel2_interp.py'))
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'parcel'))
@@ -44,6 +46,7 @@ class Interp(Satellite_Process):
         command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
         command += ' --data_tmin {:%Y%m%d}'.format(first_dtim)
         command += ' --data_tmax {:%Y%m%d}'.format(last_dtim)
+        command += ' --tmgn {}'.format(self.values['tmgn'])
         command += ' --tstp 1'
         command += ' --smooth="{}"'.format(self.values['p_smooth'])
         command += ' --ethr {}'.format(self.values['cflag_thr'])
