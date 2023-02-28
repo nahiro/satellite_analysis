@@ -2,21 +2,12 @@
 import os
 import psutil
 import tempfile
-mem_size = int(psutil.virtual_memory().available*0.8e-6)
-dnam = tempfile.gettempdir()
-options = '-Xmx{}m'.format(mem_size) # Save memory for JAVA
-options += ' -Djava.io.tmpdir={}'.format(dnam) # Temporary directory
-os.environ['_JAVA_OPTIONS'] = options
-if os.name == 'nt':
-    os.system('set _JAVA_OPTIONS="{}"'.format(options))
-else:
-    os.system('export _JAVA_OPTIONS="{}"'.format(options))
 import sys
 import re
-from snappy import Product,ProductIO,ProductUtils,GPF,HashMap,WKTReader,jpy
 from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Default values
+TMP_DNAM = tempfile.gettempdir()
 DATDIR = os.curdir
 POLYGON_CIHEA = 'POLYGON((107.201 -6.910,107.367 -6.910,107.367 -6.750,107.201 -6.750,107.201 -6.910))' # Cihea
 POLYGON_BOJONGSOANG = 'POLYGON((107.54 -7.04,107.75 -7.04,107.75 -6.95,107.54 -6.95,107.54 -7.04))' # Bojongsoang
@@ -24,6 +15,7 @@ RESOLUTION = 10 # m
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-T','--tmp_dnam',default=TMP_DNAM,help='Temporary directory (%(default)s)')
 parser.add_argument('-I','--inp_fnam',default=None,help='Input file name (%(default)s)')
 parser.add_argument('-O','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Output data directory (%(default)s)')
@@ -33,6 +25,17 @@ parser.add_argument('-r','--resolution',default=RESOLUTION,type=int,help='Spatia
 parser.add_argument('-G','--geotiff',default=False,action='store_true',help='GeoTiff mode (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 args = parser.parse_args()
+
+mem_size = int(psutil.virtual_memory().available*0.8e-6)
+options = '-Xmx{}m'.format(mem_size) # Save memory for JAVA
+options += ' -Djava.io.tmpdir={}'.format(args.tmp_dnam) # Temporary directory
+os.environ['_JAVA_OPTIONS'] = options
+if os.name == 'nt':
+    os.system('set _JAVA_OPTIONS="{}"'.format(options))
+else:
+    os.system('export _JAVA_OPTIONS="{}"'.format(options))
+from snappy import Product,ProductIO,ProductUtils,GPF,HashMap,WKTReader,jpy
+
 safe_flag = False
 m = re.search('^[^_]+_[^_]+_([^_]+)_.*.zip$',os.path.basename(args.inp_fnam))
 if not m:

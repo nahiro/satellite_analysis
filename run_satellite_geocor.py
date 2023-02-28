@@ -159,7 +159,12 @@ class Geocor(Satellite_Process):
                                     if os.path.basename(rnam) != dnam:
                                         raise ValueError('Error, rnam={}, dnam={}'.format(rnam,dnam))
                                     break
-                            z.extractall(os.path.dirname(fnam))
+                            command = self.values['unzip'].strip()
+                            if command != '':
+                                command += ' "{}"'.format(fnam)
+                                self.run_command(command,message='<<< Unzip for {} >>>'.format(dstr))
+                            else:
+                                z.extractall(os.path.dirname(fnam))
                         unzip_flag = True
                     except Exception as e:
                         sys.stderr.write(str(e)+'\n')
