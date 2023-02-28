@@ -149,6 +149,7 @@ class Geocor(Satellite_Process):
                 if not os.path.isdir(dnam):
                     raise IOError('Error, no such folder >>> {}'.format(dnam))
                 unzip_flag = False
+                use_zip = False
                 rnam = os.path.splitext(fnam)[0]+'.SAFE'
                 if not os.path.exists(rnam):
                     try:
@@ -160,7 +161,12 @@ class Geocor(Satellite_Process):
                                         raise ValueError('Error, rnam={}, dnam={}'.format(rnam,dnam))
                                     break
                             command = self.values['unzip'].strip()
-                            if command != '':
+                            if command.lower() == 'none':
+                                os.makedirs(rnam)
+                                if not os.path.isdir(rnam):
+                                    raise IOError('Error, no such folder >>> {}'.format(rnam))
+                                use_zip = True
+                            elif command != '':
                                 command += ' "{}"'.format(fnam)
                                 self.run_command(command,message='<<< Unzip for {} >>>'.format(dstr))
                             else:
@@ -172,7 +178,11 @@ class Geocor(Satellite_Process):
                         continue
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'sentinel2_subset.py'))
-                command += ' --inp_fnam "{}"'.format(rnam)
+                if use_zip:
+                    command += ' --tmp_dnam "{}"'.format(rnam)
+                    command += ' --inp_fnam "{}"'.format(fnam)
+                else:
+                    command += ' --inp_fnam "{}"'.format(rnam)
                 command += ' --out_fnam "{}"'.format(tmp_gnam)
                 command += ' --polygon "POLYGON(({} {},{} {},{} {},{} {},{} {}))"'.format(self.values['trg_subset'][0],self.values['trg_subset'][2],
                                                                                           self.values['trg_subset'][1],self.values['trg_subset'][2],
