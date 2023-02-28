@@ -102,6 +102,7 @@ config_defaults.update({
 #----------- geocor -----------
 'geocor.l2a_dir'                      : os.path.join(main_s2_data,'L2A'),
 'geocor.search_key'                   : '',
+'geocor.unzip'                        : '',
 'geocor.ref_fnam'                     : ref_fnam,
 'geocor.ref_bands'                    : [5,-1,-1],
 'geocor.ref_factors'                  : [np.nan,np.nan,np.nan],
