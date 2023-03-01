@@ -193,7 +193,11 @@ class Geocor(Satellite_Process):
                 command += ' --geotiff'
                 self.run_command(command,message='<<< Subset for {} >>>'.format(dstr))
                 if unzip_flag:
-                    shutil.rmtree(rnam)
+                    if os.name == 'nt':
+                        modified_path = r'\\?\ '.strip()+rnam # for long file/folder name
+                    else:
+                        modified_path = rnam
+                    shutil.rmtree(modified_path)
                 # Remove cache
                 command = self.python_path
                 command += ' {}'.format(os.path.join(self.scr_dir,'remove_snap_cache.py'))
