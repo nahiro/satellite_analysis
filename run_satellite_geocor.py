@@ -167,6 +167,8 @@ class Geocor(Satellite_Process):
                                     raise IOError('Error, no such folder >>> {}'.format(rnam))
                                 use_zip = True
                             elif command != '':
+                                if '@' in command:
+                                    command = command.replace('@',os.path.dirname(fnam))
                                 command += ' "{}"'.format(fnam)
                                 self.run_command(command,message='<<< Unzip for {} >>>'.format(dstr))
                             else:
