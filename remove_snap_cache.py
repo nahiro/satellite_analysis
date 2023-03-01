@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import tempfile
 from glob import glob
 from datetime import datetime,timedelta
 from subprocess import check_output,PIPE
@@ -13,17 +14,19 @@ if HOME is None:
     HOME = os.environ.get('HOME')
 
 # Default values
+TMP_DNAM = tempfile.gettempdir()
 DT_MAX = 300 # 5 minutes
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
+parser.add_argument('-T','--tmp_dnam',default=TMP_DNAM,help='Temporary directory (%(default)s)')
 parser.add_argument('-m','--dt_max',default=DT_MAX,type=float,help='Max time difference in sec (%(default)s)')
 parser.add_argument('-f','--force',default=False,action='store_true',help='Force to remove (%(default)s)')
 args = parser.parse_args()
 
 tcur = time.time()
-files = glob('/tmp/jffi*')
-files.extend(glob('/tmp/imageio*'))
+files = glob(os.path.join(args.tmp_dnam,'jffi*'))
+files.extend(glob(os.path.join(args.tmp_dnam,'imageio*')))
 files.extend(glob(os.path.join(HOME,'.snap/var/cache/temp/imageio*')))
 
 for f in files:
