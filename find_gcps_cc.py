@@ -38,9 +38,11 @@ parser.add_argument('ref_fnam',default=None,help='Reference image (%(default)s)'
 parser.add_argument('-o','--out_fnam',default=None,help='Output file name (%(default)s)')
 parser.add_argument('-b','--ref_band',default=REF_BAND,type=int,help='Reference band# from 1 (%(default)s)')
 parser.add_argument('-B','--trg_band',default=TRG_BAND,type=int,help='Target band# from 1 (%(default)s)')
+parser.add_argument('--trg_band_name',default=None,help='Target band name (%(default)s)')
 parser.add_argument('--ref_multi_band',default=None,type=int,action='append',help='Reference multi-band number from 1 (%(default)s)')
 parser.add_argument('--ref_multi_ratio',default=None,type=float,action='append',help='Reference multi-band ratio (%(default)s)')
 parser.add_argument('--trg_multi_band',default=None,type=int,action='append',help='Target multi-band number from 1 (%(default)s)')
+parser.add_argument('--trg_multi_band_name',default=None,action='append',help='Target multi-band name (%(default)s)')
 parser.add_argument('--trg_multi_ratio',default=None,type=float,action='append',help='Target multi-band ratio (%(default)s)')
 parser.add_argument('-x','--trg_indx_start',default=None,type=int,help='Target start x index (0)')
 parser.add_argument('-X','--trg_indx_stop',default=None,type=int,help='Target stop x index (target width)')
@@ -149,6 +151,14 @@ if args.trg_multi_band is not None:
     trg_data = 0.0
     for band,ratio in zip(args.trg_multi_band,args.trg_multi_ratio):
         trg_data += ds.GetRasterBand(band).ReadAsArray().astype(np.float64)*ratio
+elif args.trg_band_name is not None:
+    band_names = []
+    for i in range(ds.RasterCount):
+        band_names.append(ds.GetRasterBand(i+1).GetDescription())
+    if not args.trg_band_name in band_names:
+        raise ValueError('Error in finding {} >>> {}'.format(args.trg_band_name,args.trg_fnam))
+    indx = band_names.index(args.trg_band_name)
+    trg_data = ds.GetRasterBand(indx+1).ReadAsArray().astype(np.float64)
 elif args.trg_band < 0:
     trg_data = ds.ReadAsArray().astype(np.float64)
 else:
