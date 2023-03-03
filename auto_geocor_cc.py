@@ -115,11 +115,22 @@ if trg_fnam is not None:
         out_fnam = trg_bnam+'_geocor.tif'
     else:
         out_fnam = args.out_fnam
-    if args.trg_epsg is None:
+    if (args.trg_epsg is None) or (args.resampling2_band_name is not None):
         ds = gdal.Open(trg_fnam)
-        prj = ds.GetProjection()
-        srs = osr.SpatialReference(wkt=prj)
-        args.trg_epsg = srs.GetAttrValue('AUTHORITY',1)
+        if args.trg_epsg is None:
+            prj = ds.GetProjection()
+            srs = osr.SpatialReference(wkt=prj)
+            args.trg_epsg = srs.GetAttrValue('AUTHORITY',1)
+        if args.resampling2_band_name is not None:
+            band_names = []
+            for i in range(ds.RasterCount):
+                band_names.append(ds.GetRasterBand(i+1).GetDescription())
+            args.resampling2_band = []
+            for band_name in args.resampling2_band_name:
+                if not band_name in band_names:
+                    raise ValueError('Error in finding {} >>> {}'.format(band_name,trg_fnam))
+                indx = band_names.index(band_name)
+                args.resampling2_band.append(indx+1)
         ds = None # close dataset
 
 if args.use_gcps is not None:
