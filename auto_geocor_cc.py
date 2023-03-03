@@ -110,12 +110,14 @@ else: # No trg image
 
 if trg_fnam is not None:
     trg_bnam = os.path.splitext(os.path.basename(trg_fnam))[0]
-    tmp_fnam = trg_bnam+'_tmp.tif'
-    tmp_xnam = tmp_fnam+'.aux.xml'
     if args.out_fnam is None:
         out_fnam = trg_bnam+'_geocor.tif'
+        tmp_fnam = trg_bnam+'_tmp.tif'
     else:
         out_fnam = args.out_fnam
+        out_dnam = os.path.dirname(out_fnam)
+        tmp_fnam = os.path.join(out_dnam,trg_bnam+'_tmp.tif')
+    tmp_xnam = tmp_fnam+'.aux.xml'
     if (args.trg_epsg is None) or (args.resampling2_band_name is not None):
         ds = gdal.Open(trg_fnam)
         if args.trg_epsg is None:
@@ -274,10 +276,15 @@ if trg_fnam is not None:
                 args.minimum_gcps = int(args.minimum_ratio*xi.size+0.5)
         command += ' -refine_gcps {} {}'.format(args.refine_gcps,args.minimum_gcps)
     if args.resampling2_band is not None:
-        tmp2_fnam = trg_bnam+'_tmp2.tif'
+        if args.out_fnam is None:
+            tmp2_fnam = trg_bnam+'_tmp2.tif'
+            out1_fnam = trg_bnam+'_geocor1.tif'
+            out2_fnam = trg_bnam+'_geocor2.tif'
+        else:
+            tmp2_fnam = os.path.join(out_dnam,trg_bnam+'_tmp2.tif')
+            out1_fnam = os.path.join(out_dnam,trg_bnam+'_geocor1.tif')
+            out2_fnam = os.path.join(out_dnam,trg_bnam+'_geocor2.tif')
         tmp2_xnam = tmp2_fnam+'.aux.xml'
-        out1_fnam = trg_bnam+'_geocor1.tif'
-        out2_fnam = trg_bnam+'_geocor2.tif'
         command1 = command + ' -r {}'.format(args.resampling)
         command1 += ' '+tmp_fnam
         command1 += ' '+out1_fnam
