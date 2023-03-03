@@ -32,13 +32,17 @@ parser = ArgumentParser(usage='%(prog)s target_georeferenced_image reference_geo
 '       reference_georeferenced_image is not required if the use_gcps option is given.\n'
 '       Both target_georeferenced_image and reference_georeferenced_image are not required if the use_gcps option and the trg_shapefile option are given.\n',
 formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('--scrdir',default=SCRDIR,help='Script directory where find_gcps.py exists (%(default)s)')
+parser.add_argument('--scrdir',default=SCRDIR,help='Script directory where find_gcps_cc.py exists (%(default)s)')
 parser.add_argument('-o','--out_fnam',default=None,help='Output file name (%(default)s)')
-parser.add_argument('-b','--ref_band',default=None,type=int,help='Reference band# (%(default)s)')
-parser.add_argument('-B','--trg_band',default=None,type=int,help='Target band# (%(default)s)')
-parser.add_argument('--ref_multi_band',default=None,type=int,action='append',help='Reference multi-band number (%(default)s)')
+parser.add_argument('-b','--ref_band',default=None,type=int,help='Reference band# from 1 (%(default)s)')
+parser.add_argument('--ref_band_name',default=None,help='Reference band name (%(default)s)')
+parser.add_argument('-B','--trg_band',default=None,type=int,help='Target band# from 1 (%(default)s)')
+parser.add_argument('--trg_band_name',default=None,help='Target band name (%(default)s)')
+parser.add_argument('--ref_multi_band',default=None,type=int,action='append',help='Reference multi-band number from 1 (%(default)s)')
+parser.add_argument('--ref_multi_band_name',default=None,action='append',help='Reference multi-band name (%(default)s)')
 parser.add_argument('--ref_multi_ratio',default=None,type=float,action='append',help='Reference multi-band ratio (%(default)s)')
-parser.add_argument('--trg_multi_band',default=None,type=int,action='append',help='Target multi-band number (%(default)s)')
+parser.add_argument('--trg_multi_band',default=None,type=int,action='append',help='Target multi-band number from 1 (%(default)s)')
+parser.add_argument('--trg_multi_band_name',default=None,action='append',help='Target multi-band name (%(default)s)')
 parser.add_argument('--trg_multi_ratio',default=None,type=float,action='append',help='Target multi-band ratio (%(default)s)')
 parser.add_argument('-x','--trg_indx_start',default=None,type=int,help='Target start x index (0)')
 parser.add_argument('-X','--trg_indx_stop',default=None,type=int,help='Target stop x index (target width)')
@@ -122,23 +126,33 @@ if args.use_gcps is not None:
     fnam = args.use_gcps
 else:
     command = 'python'
-    command += ' '+os.path.join(args.scrdir,'find_gcps.py')
+    command += ' '+os.path.join(args.scrdir,'find_gcps_cc.py')
     command += ' '+trg_fnam
     command += ' '+ref_fnam
     command += ' -v'
     if args.ref_band is not None:
         command += ' --ref_band {}'.format(args.ref_band)
+    if args.ref_band_name is not None:
+        command += ' --ref_band_name {}'.format(args.ref_band_name)
     if args.trg_band is not None:
         command += ' --trg_band {}'.format(args.trg_band)
+    if args.trg_band_name is not None:
+        command += ' --trg_band_name {}'.format(args.trg_band_name)
     if args.ref_multi_band is not None:
         for band in args.ref_multi_band:
             command += ' --ref_multi_band {}'.format(band)
+    if args.ref_multi_band_name is not None:
+        for band in args.ref_multi_band_name:
+            command += ' --ref_multi_band_name {}'.format(band)
     if args.ref_multi_ratio is not None:
         for ratio in args.ref_multi_ratio:
             command += ' --ref_multi_ratio {}'.format(ratio)
     if args.trg_multi_band is not None:
         for band in args.trg_multi_band:
             command += ' --trg_multi_band {}'.format(band)
+    if args.trg_multi_band_name is not None:
+        for band in args.trg_multi_band_name:
+            command += ' --trg_multi_band_name {}'.format(band)
     if args.trg_multi_ratio is not None:
         for ratio in args.trg_multi_ratio:
             command += ' --trg_multi_ratio {}'.format(ratio)
