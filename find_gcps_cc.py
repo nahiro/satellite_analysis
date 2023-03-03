@@ -145,7 +145,20 @@ if args.ref_data_max is not None:
 ds = gdal.Open(args.trg_fnam)
 prj = ds.GetProjection()
 srs = osr.SpatialReference(wkt=prj)
-if args.trg_multi_band is not None:
+
+if args.trg_multi_band_name is not None:
+    if len(args.trg_multi_band_name) != len(args.trg_multi_ratio):
+        raise ValueError('Error, len(args.trg_multi_band_name)={}, len(args.trg_multi_ratio)={}'.format(len(args.trg_multi_band_name),len(args.trg_multi_ratio)))
+    band_names = []
+    for i in range(ds.RasterCount):
+        band_names.append(ds.GetRasterBand(i+1).GetDescription())
+    trg_data = 0.0
+    for band,ratio in zip(args.trg_multi_band_name,args.trg_multi_ratio):
+        if not band in band_names:
+            raise ValueError('Error in finding {} >>> {}'.format(band,args.trg_fnam))
+        indx = band_names.index(band)
+        trg_data += ds.GetRasterBand(indx+1).ReadAsArray().astype(np.float64)*ratio
+elif args.trg_multi_band is not None:
     if len(args.trg_multi_band) != len(args.trg_multi_ratio):
         raise ValueError('Error, len(args.trg_multi_band)={}, len(args.trg_multi_ratio)={}'.format(len(args.trg_multi_band),len(args.trg_multi_ratio)))
     trg_data = 0.0
