@@ -314,14 +314,16 @@ class Geocor(Satellite_Process):
                 trg_bands = []
                 for band in self.values['trg_bands']:
                     band_name = band.strip()
-                    if band_name in S2_BAND:
+                    if len(band_name) < 1:
+                        band_name = '-1'
+                    elif band_name in S2_BAND:
                         band_name = S2_BAND[band_name]
                     trg_bands.append(band_name)
-                if trg_bands[0] == '-': # panchromatic
+                if trg_bands[0][0] == '-': # panchromatic
                     command += ' --trg_band -1'
-                elif trg_bands[1] == '-': # single band
+                elif trg_bands[1][0] == '-': # single band
                     command += ' --trg_band_name "{}"'.format(trg_bands[0])
-                elif trg_bands[2] == '-': # dual band
+                elif trg_bands[2][0] == '-': # dual band
                     command += ' --trg_multi_band_name "{}"'.format(trg_bands[0])
                     command += ' --trg_multi_band_name "{}"'.format(trg_bands[1])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][0]) else self.values['trg_factors'][0])
@@ -398,9 +400,10 @@ class Geocor(Satellite_Process):
                 command += ' --tr {}'.format(self.values['trg_pixel'])
                 if self.values['geocor_order'] != 'Auto':
                     command += ' --npoly {}'.format(orders[self.values['geocor_order']])
-                for band in self.values['trg_flags']:
-                    if band > 0:
-                        command += ' --resampling2_band {}'.format(band)
+                trg_flags = [band.strip() for band in self.values['trg_flags']]
+                for band in trg_flags:
+                    if (len(band) > 0) and (band[0] != '-'):
+                        command += ' --resampling2_band_name {}'.format(band)
                 command += ' --minimum_number {}'.format(self.values['nmin'])
                 command += ' --optfile "{}"'.format(tmp_fnam)
                 try:
