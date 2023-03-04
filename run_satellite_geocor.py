@@ -244,6 +244,7 @@ class Geocor(Satellite_Process):
         subset_dstrs = [subset_dstrs[i] for i in inds]
 
         # Geometric correction
+        S2_BAND = {'b':'B2','g':'B3','r':'B4','e1':'B5','e2':'B6','e3':'B7','n1':'B8','n2':'B8A','s1':'B11','s2':'B12'}
         orders = {'1st':1,'2nd':2,'3rd':3}
         for fnam,dstr in zip(subset_fnams,subset_dstrs):
             d = datetime.strptime(dstr,'%Y%m%d')
@@ -310,19 +311,25 @@ class Geocor(Satellite_Process):
                     command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][0]) else self.values['ref_factors'][0])
                     command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][1]) else self.values['ref_factors'][1])
                     command += ' --ref_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['ref_factors'][2]) else self.values['ref_factors'][2])
-                if self.values['trg_bands'][0] < 0: # panchromatic
+                trg_bands = []
+                for band in self.values['trg_bands']:
+                    band_name = band.strip()
+                    if band_name in S2_BAND:
+                        band_name = S2_BAND[band_name]
+                    trg_bands.append(band_name)
+                if trg_bands[0] == '-': # panchromatic
                     command += ' --trg_band -1'
-                elif self.values['trg_bands'][1] < 0: # single band
-                    command += ' --trg_band {}'.format(self.values['trg_bands'][0])
-                elif self.values['trg_bands'][2] < 0: # dual band
-                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][0])
-                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][1])
+                elif trg_bands[1] == '-': # single band
+                    command += ' --trg_band_name "{}"'.format(trg_bands[0])
+                elif trg_bands[2] == '-': # dual band
+                    command += ' --trg_multi_band_name "{}"'.format(trg_bands[0])
+                    command += ' --trg_multi_band_name "{}"'.format(trg_bands[1])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][0]) else self.values['trg_factors'][0])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][1]) else self.values['trg_factors'][1])
                 else: # triple band
-                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][0])
-                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][1])
-                    command += ' --trg_multi_band {}'.format(self.values['trg_bands'][2])
+                    command += ' --trg_multi_band_name "{}"'.format(trg_bands[0])
+                    command += ' --trg_multi_band_name "{}"'.format(trg_bands[1])
+                    command += ' --trg_multi_band_name "{}"'.format(trg_bands[2])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][0]) else self.values['trg_factors'][0])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][1]) else self.values['trg_factors'][1])
                     command += ' --trg_multi_ratio="{}"'.format(1.0 if np.isnan(self.values['trg_factors'][2]) else self.values['trg_factors'][2])
