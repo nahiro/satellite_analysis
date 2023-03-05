@@ -232,6 +232,7 @@ config_defaults.update({
 'interp.nmax'                         : 5,
 'interp.rthr'                         : 0.7,
 'interp.csv_flag'                     : True,
+'interp.eflag'                        : True,
 'interp.oflag'                        : [False,True],
 'interp.python_path'                  : python_path,
 'interp.scr_dir'                      : scr_dir,
