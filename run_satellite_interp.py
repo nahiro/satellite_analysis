@@ -58,6 +58,8 @@ class Interp(Satellite_Process):
         iflag = self.list_labels['oflag'].index('tentative interp')
         if self.values['oflag'][iflag]:
             command += ' --tentative_overwrite'
+        if self.values['eflag']:
+            command += ' --extrapolate'
         command += ' --fignam "{}"'.format(os.path.join(dnam,'{}_interp.pdf'.format(trg_bnam)))
         command += ' --nfig 10'
         command += ' --debug'
