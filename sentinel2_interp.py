@@ -44,6 +44,7 @@ parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CS
 parser.add_argument('--out_csv',default=False,action='store_true',help='Output CSV (%(default)s)')
 parser.add_argument('--overwrite',default=False,action='store_true',help='Overwrite mode (%(default)s)')
 parser.add_argument('--tentative_overwrite',default=False,action='store_true',help='Overwrite tentative data (%(default)s)')
+parser.add_argument('--extrapolate',default=False,action='store_true',help='Extrapolate mode (%(default)s)')
 parser.add_argument('-t','--ax1_title',default=None,help='Axis1 title for debug (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('--nfig',default=NFIG,type=int,help='Max number of figure for debug (%(default)s)')
@@ -122,9 +123,13 @@ tmin = inp_dtim.min()+timedelta(days=args.tmgn)
 tmax = inp_dtim.max()-timedelta(days=args.tmgn)
 
 # Make output time list
+if args.extrapolate:
+    dmax = d2
+else:
+    dmax = inp_dtim.max()
 out_dtim = []
 d = d1
-while d <= d2:
+while d <= dmax:
     out_dtim.append(d)
     d += timedelta(days=args.tstp)
 out_dtim = np.array(out_dtim)
