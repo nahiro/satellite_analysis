@@ -20,7 +20,7 @@ proc_estimate.pnams.append('pm_fnam')
 proc_estimate.pnams.append('pm_number')
 proc_estimate.pnams.append('y_params')
 proc_estimate.params['gis_fnam'] = 'Polygon File'
-proc_estimate.params['event_fnam'] = 'Event Date File'
+proc_estimate.params['event_fnam'] = 'Growth Stage File'
 proc_estimate.params['data_select'] = 'Data Selection Criteria'
 proc_estimate.params['harvest_value'] = 'Days from Harvesting (day)'
 proc_estimate.params['assess_value'] = 'Days from Assessment (day)'
