@@ -15,6 +15,7 @@ proc_extract.pnams.append('atcor_flag')
 proc_extract.pnams.append('cloud_band')
 proc_extract.pnams.append('cloud_thr')
 proc_extract.pnams.append('event_fnam')
+proc_extract.pnams.append('event_gnam')
 proc_extract.pnams.append('event_dates')
 proc_extract.pnams.append('event_flag')
 proc_extract.params['gis_fnam'] = 'Polygon File'
@@ -28,9 +29,10 @@ proc_extract.params['spec_date'] = 'Specific Date'
 proc_extract.params['atcor_flag'] = 'Atmospheric Correction'
 proc_extract.params['cloud_band'] = 'Band for Cloud Removal'
 proc_extract.params['cloud_thr'] = 'Thres. for Cloud Removal'
-proc_extract.params['event_fnam'] = 'Growth Stage File'
-proc_extract.params['event_dates'] = 'Growth Stage'
-proc_extract.params['event_flag'] = 'Disable Growth Stage File'
+proc_extract.params['event_fnam'] = 'Estimated Growth Stage'
+proc_extract.params['event_gnam'] = 'Provided Growth Stage'
+proc_extract.params['event_dates'] = 'Common Growth Stage'
+proc_extract.params['event_flag'] = 'Use Estimated Growth Stage'
 proc_extract.param_types['gis_fnam'] = 'string'
 proc_extract.param_types['obs_src'] = 'string_select'
 proc_extract.param_types['obs_fnam'] = 'string'
@@ -43,6 +45,7 @@ proc_extract.param_types['atcor_flag'] = 'boolean'
 proc_extract.param_types['cloud_band'] = 'string_select'
 proc_extract.param_types['cloud_thr'] = 'float_list'
 proc_extract.param_types['event_fnam'] = 'string'
+proc_extract.param_types['event_gnam'] = 'string'
 proc_extract.param_types['event_dates'] = 'date_list'
 proc_extract.param_types['event_flag'] = 'boolean'
 proc_extract.param_range['i_sheet'] = (1,100)
@@ -60,8 +63,9 @@ proc_extract.defaults['atcor_flag'] = True
 proc_extract.defaults['cloud_band'] = 'r'
 proc_extract.defaults['cloud_thr'] = [0.35,0.8]
 proc_extract.defaults['event_fnam'] = 'phenology.csv'
+proc_extract.defaults['event_gnam'] = ''
 proc_extract.defaults['event_dates'] = ['','','','','']
-proc_extract.defaults['event_flag'] = False
+proc_extract.defaults['event_flag'] = True
 proc_extract.list_sizes['obs_src'] = 2
 proc_extract.list_sizes['data_select'] = 2
 proc_extract.list_sizes['cloud_band'] = 10
@@ -84,14 +88,17 @@ proc_extract.input_types['atcor_flag'] = 'boolean'
 proc_extract.input_types['cloud_band'] = 'string_select'
 proc_extract.input_types['cloud_thr'] = 'float_list'
 proc_extract.input_types['event_fnam'] = 'ask_file'
+proc_extract.input_types['event_gnam'] = 'ask_file'
 proc_extract.input_types['event_dates'] = 'date_list'
 proc_extract.input_types['event_flag'] = 'boolean'
 proc_extract.flag_check['event_fnam'] = False
+proc_extract.flag_check['event_gnam'] = False
 proc_extract.flag_check['obs_fnam'] = False
 proc_extract.depend_proc['event_fnam'] = ['phenology']
 proc_extract.expected['gis_fnam'] = '*.shp'
 proc_extract.expected['obs_fnam'] = '*.xls'
 proc_extract.expected['event_fnam'] = 'assess.csv'
+proc_extract.expected['event_gnam'] = '*.csv'
 for pnam in proc_extract.pnams:
     proc_extract.values[pnam] = proc_extract.defaults[pnam]
 proc_extract.middle_left_frame_width = 1000
