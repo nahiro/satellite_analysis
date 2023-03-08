@@ -34,6 +34,7 @@ parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,ma
 parser.add_argument('-i','--shp_fnam',default=None,help='Input Shapefile name (%(default)s)')
 parser.add_argument('--buffer',default=None,type=float,help='Buffer distance (%(default)s)')
 parser.add_argument('-f','--obs_fnam',default=OBS_FNAM,help='Observation file name (%(default)s)')
+parser.add_argument('-g','--growth_fnam',default=None,help='Growth stage file name (%(default)s)')
 parser.add_argument('-o','--tobs',default=None,help='Observation date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--plant',default=None,help='Planting date in the format YYYYMMDD (%(default)s)')
 parser.add_argument('--peak',default=None,help='Peak date in the format YYYYMMDD (%(default)s)')
@@ -106,6 +107,24 @@ if args.out_csv is None or args.fignam is None:
     if args.fignam is None:
         args.fignam = bnam+'_extract.pdf'
 
+# Read Shapefile
+r = shapefile.Reader(args.shp_fnam)
+nobject = len(r)
+if args.use_index:
+    object_ids = np.arange(nobject)+1
+else:
+    list_ids = []
+    for rec in r.iterRecords():
+        list_ids.append(rec.OBJECTID)
+    object_ids = np.array(list_ids)
+x_center = []
+y_center = []
+for shp in shape(r.shapes()).geoms:
+    x_center.append(shp.centroid.x)
+    y_center.append(shp.centroid.y)
+x_center = np.array(x_center)
+y_center = np.array(y_center)
+
 # Read observation file
 df = pd.read_csv(args.obs_fnam,comment='#')
 df.columns = df.columns.str.strip()
@@ -140,23 +159,30 @@ for y_param in args.y_param:
         if cnd.sum() > 0:
             Y.loc[cnd,y_param] = np.nan
 
-# Read Shapefile
-r = shapefile.Reader(args.shp_fnam)
-nobject = len(r)
-if args.use_index:
-    object_ids = np.arange(nobject)+1
+# Read growth stage file
+growth_d = {}
+if args.growth_fnam is None:
+    for param in PARAMS:
+        growth_d[param] = None
 else:
-    list_ids = []
-    for rec in r.iterRecords():
-        list_ids.append(rec.OBJECTID)
-    object_ids = np.array(list_ids)
-x_center = []
-y_center = []
-for shp in shape(r.shapes()).geoms:
-    x_center.append(shp.centroid.x)
-    y_center.append(shp.centroid.y)
-x_center = np.array(x_center)
-y_center = np.array(y_center)
+    df = pd.read_csv(args.growth_fnam,dtype=str,comment='#').fillna('')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'PlotPaddy' in columns:
+        raise ValueError('Error in finding PlotPaddy >>> {}'.format(args.growth_fnam))
+    number_plot = df['PlotPaddy'].astype(int).values
+    nplot = len(number_plot)
+    for param in PARAMS:
+        growth_d[param] = {}
+        if not param in columns:
+            value_plot = np.full(nplot,'')
+        else:
+            value_plot = df[param].astype(str).str.strip().values
+        for number,value in zip(number_plot,value_plot):
+            if value == '':
+                growth_d[param][number] = np.nan
+            else:
+                growth_d[param][number] = date2num(datetime.strptime(value,'%Y%m%d'))
 
 # Read phenology CSV
 event_d = {}
@@ -247,6 +273,8 @@ if args.rthr is not None and not np.isnan(args.rthr):
 out_plot = {}
 out_data = {}
 out_event = {}
+for param in PARAMS:
+    out_event[param] = {}
 if args.debug:
     out_inds = {}
     out_weight = {}
@@ -325,14 +353,15 @@ for plot in plots:
                 out_data[plot] = np.sum(inp_data[observe_inds]*weight,axis=0)/np.sum(weight)
             else:
                 out_data[plot] = np.nansum(inp_data[observe_inds]*weight,axis=0)/np.sum(np.int32(cnd)*weight,axis=0)
-    out_event[plot] = {}
     for param in PARAMS:
-        if args_d[param] is not None:
-            out_event[plot][param] = args_d[param]
+        if (growth_d[param] is not None) and (plot in growth_d[param]) and (not np.isnan(growth_d[param][plot])):
+            out_event[param][plot] = growth_d[param][plot]
+        elif args_d[param] is not None:
+            out_event[param][plot] = args_d[param]
         elif event_d[param] is not None:
-            out_event[plot][param] = event_d[param][observe_indx]
+            out_event[param][plot] = event_d[param][observe_indx]
         else:
-            out_event[plot][param] = np.nan
+            out_event[param][plot] = np.nan
     if args.debug:
         out_inds[plot] = observe_inds.copy()
         if observe_inds.size == 1:
@@ -365,7 +394,7 @@ with open(args.out_csv,'w') as fp:
         fp.write('{:>13s}, {:8d}, {:3d}, {:12.4f}, {:13.4f}, {:10s}, {:5.0f}, {:13.1f}'.format(
                  lg[0],object_id,plot,xg.mean(),yg.mean(),pg[0],ag[0],date2num(dt)))
         for param in PARAMS:
-            fp.write(', {:13.1f}'.format(out_event[plot][param]))
+            fp.write(', {:13.1f}'.format(out_event[param][plot]))
         for y_param in args.y_param:
             fp.write(', {:>13.6e}'.format(np.nanmean(Y[y_param].values[cnd])))
         for iband,param in enumerate(params):
