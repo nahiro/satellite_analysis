@@ -178,10 +178,10 @@ class Atcor(Satellite_Process):
                     command += ' --lmin {}'.format(lmin)
                     command += ' --lmax {}'.format(lmax)
                     command += ' --lstp {}'.format(lstp)
-                    command += ' --dmax {}'.format(dmax)
-                    if not np.isnan(athr):
-                        command += ' --athr {}'.format(athr)
+                    if not np.isnan(dmax):
+                        command += ' --dmax {}'.format(dmax)
                         command += ' --fcc'
+                    command += ' --athr {}'.format(athr)
                     self.run_command(command,message='<<< Make studyarea mask >>>')
                 if not os.path.exists(mask_studyarea):
                     raise ValueError('Error, no such file >>> {}'.format(mask_studyarea))
