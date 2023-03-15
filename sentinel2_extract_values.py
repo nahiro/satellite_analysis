@@ -18,6 +18,7 @@ from argparse import ArgumentParser,RawTextHelpFormatter
 
 # Constants
 PARAMS = ['plant_d','peak_d','head_d','assess_d','harvest_d']
+PARAMT = ['plant_t','peak_t','head_t','assess_t','harvest_t']
 OBJECTS = ['BLB','Blast','Borer','Rat','Hopper','Drought']
 EPSILON = 1.0e-6 # a small number
 
@@ -172,17 +173,21 @@ else:
         raise ValueError('Error in finding PlotPaddy >>> {}'.format(args.growth_fnam))
     number_plot = df['PlotPaddy'].astype(int).values
     nplot = len(number_plot)
-    for param in PARAMS:
+    for param,param_t in zip(PARAMS,PARAMT):
         growth_d[param] = {}
-        if not param in columns:
-            value_plot = np.full(nplot,'')
+        if param_t in columns:
+            value_plot = []
+            for v in df[param_t].astype(str).str.strip().values:
+                if v == '':
+                    value_plot.append(np.nan)
+                else:
+                    value_plot.append(date2num(datetime.strptime(v,'%Y%m%d')))
+        elif param in columns:
+            value_plot = df[param].astype(float).values
         else:
-            value_plot = df[param].astype(str).str.strip().values
+            value_plot = np.full(nplot,np.nan)
         for number,value in zip(number_plot,value_plot):
-            if value == '':
-                growth_d[param][number] = np.nan
-            else:
-                growth_d[param][number] = date2num(datetime.strptime(value,'%Y%m%d'))
+            growth_d[param][number] = value
 
 # Read phenology CSV
 event_d = {}
