@@ -180,6 +180,39 @@ if not 'trans_d' in df.columns:
 iband = df.columns.to_list().index('trans_d')
 plant_d = df.iloc[:,iband].astype(float).values # Planting date
 
+# Read planting date CSV
+if args.plant is not None:
+    df = pd.read_csv(args.plant,comment='#')
+    df.columns = df.columns.str.strip()
+    columns = df.columns.to_list()
+    if not 'OBJECTID' in columns:
+        raise ValueError('Error in finding OBJECTID >>> {}'.format(args.plant))
+    iband = columns.index('OBJECTID')
+    plant_ids = df.iloc[:,iband].astype(int)
+    if 'plant_t' in columns:
+        iband = columns.index('plant_t')
+        plant_data = []
+        for v in df.iloc[:,iband].astype(str).str.strip().values: # Heading date
+            if v == '':
+                plant_data.append(np.nan)
+            else:
+                plant_data.append(date2num(datetime.strptime(v,'%Y%m%d')))
+        plant_data = np.array(plant_data)
+    elif 'plant_d' in columns:
+        iband = columns.index('plant_d')
+        plant_data = df.iloc[:,iband].astype(float).values # Heading date
+    else:
+        raise ValueError('Error in finding plant_d/plant_t >>> {}'.format(args.plant))
+    if np.array_equal(plant_ids,object_ids):
+        plant_d = plant_data
+    else:
+        try:
+            list_ids = object_ids.to_list()
+            indx = np.array([list_ids.index(plant_id) for plant_id in plant_ids])
+        except Exception:
+            raise ValueError('Error in finding OBJECTID in {}'.format(args.plant))
+        plant_d[indx] = plant_data
+
 # Read heading date CSV
 if args.head is not None:
     df = pd.read_csv(args.head,comment='#')
