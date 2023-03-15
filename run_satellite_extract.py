@@ -63,6 +63,8 @@ class Extract(Satellite_Process):
         command += ' --obs_fnam "{}"'.format(obs_csv)
         if self.values['event_flag']:
             command += ' --phenology "{}"'.format(self.values['event_fnam'])
+        if self.values['event_gnam'] != '':
+            command += ' --growth_fnam "{}"'.format(self.values['event_gnam'])
         command += ' --tobs {:%Y%m%d}'.format(spec_dtim)
         list_labels = [s.split()[0] for s in self.list_labels['event_dates']]
         idate = list_labels.index('Planting')
