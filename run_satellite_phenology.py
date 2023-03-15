@@ -361,7 +361,9 @@ class Phenology(Satellite_Process):
             command += ' --shp_fnam "{}"'.format(self.values['gis_fnam'])
             command += ' --inpdir "{}"'.format(os.path.join(self.s2_data,'interp'))
             command += ' --tendir "{}"'.format(os.path.join(self.s2_data,'tentative_interp'))
-            command += ' --plant "{}"'.format(planting_csv)
+            command += ' --eplant "{}"'.format(planting_csv)
+            if self.values['trans_fnam'] != '':
+                command += ' --plant "{}"'.format(self.values['trans_fnam'])
             if self.values['head_fnam'] != '':
                 command += ' --head "{}"'.format(self.values['head_fnam'])
             if self.values['harvest_fnam'] != '':

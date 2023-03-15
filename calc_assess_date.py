@@ -44,7 +44,8 @@ parser.add_argument('-I','--inpdir',default=None,help='Input directory (%(defaul
 parser.add_argument('-T','--tendir',default=None,help='Tentative data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
-parser.add_argument('-P','--plant',default=None,help='Planting date CSV name (%(default)s)')
+parser.add_argument('--eplant',default=None,help='Estimated planting date CSV name (%(default)s)')
+parser.add_argument('--plant',default=None,help='Planting date CSV name (%(default)s)')
 parser.add_argument('--head',default=None,help='Heading date CSV name (%(default)s)')
 parser.add_argument('--harvest',default=None,help='Harvesting date CSV name (%(default)s)')
 parser.add_argument('--assess',default=None,help='Assessment date CSV name (%(default)s)')
@@ -68,8 +69,8 @@ parser.add_argument('--inp_csv',default=False,action='store_true',help='Input CS
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.plant is None or not os.path.exists(args.plant):
-    raise IOError('Error, no such file >>> {}'.format(args.plant))
+if args.eplant is None or not os.path.exists(args.eplant):
+    raise IOError('Error, no such file >>> {}'.format(args.eplant))
 tmin = datetime.strptime(args.tmin,'%Y%m%d')
 tmax = datetime.strptime(args.tmax,'%Y%m%d')
 if args.data_tmin is None:
@@ -167,15 +168,15 @@ if args.shp_fnam is not None:
     if not np.array_equal(all_ids,object_ids):
         raise ValueError('Error, different OBJECTID >>> {}'.format(args.shp_fnam))
 
-# Read planting date CSV
-df = pd.read_csv(args.plant,comment='#')
+# Read estimated planting date CSV
+df = pd.read_csv(args.eplant,comment='#')
 df.columns = df.columns.str.strip()
 if df.columns[0].upper() != 'OBJECTID':
-    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.plant))
+    raise ValueError('Error df.columns[0]={} (!= OBJECTID) >>> {}'.format(df.columns[0],args.eplant))
 elif not np.array_equal(df.iloc[:,0].astype(int),object_ids):
-    raise ValueError('Error, different OBJECTID >>> {}'.format(args.plant))
+    raise ValueError('Error, different OBJECTID >>> {}'.format(args.eplant))
 if not 'trans_d' in df.columns:
-    raise ValueError('Error in finding trans_d >>> {}'.format(args.plant))
+    raise ValueError('Error in finding trans_d >>> {}'.format(args.eplant))
 iband = df.columns.to_list().index('trans_d')
 plant_d = df.iloc[:,iband].astype(float).values # Planting date
 
