@@ -88,11 +88,6 @@ def set_title(pnam):
                 modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     # phenology
     proc = 'phenology'
-    proc_pnam = 'trans_fnam'
-    if (not proc_pnam in modules[proc].flag_fix) or (not modules[proc].flag_fix[proc_pnam]):
-        modules[proc].values[proc_pnam] = os.path.join(s1_analysis,'planting','{:%Y%m%d}_{:%Y%m%d}_planting.csv'.format(start_dtim,end_dtim))
-        if modules[proc].center_var is not None:
-            modules[proc].center_var[proc_pnam].set(modules[proc].values[proc_pnam])
     proc_pnam = 'trans_pref'
     if (not proc_pnam in modules[proc].flag_fix) or (not modules[proc].flag_fix[proc_pnam]):
         dt = (end_dtim-start_dtim).total_seconds()

@@ -161,7 +161,10 @@ proc_phenology.flag_check['assess_fnam'] = False
 proc_phenology.expected['gis_fnam'] = '*.shp'
 proc_phenology.expected['mask_paddy'] = '*.tif'
 proc_phenology.expected['mask_parcel'] = '*.tif'
-proc_phenology.expected['trans_fnam'] = 'planting.csv'
+proc_phenology.expected['trans_fnam'] = '*.csv'
+proc_phenology.expected['head_fnam'] = '*.csv'
+proc_phenology.expected['harvest_fnam'] = '*.csv'
+proc_phenology.expected['assess_fnam'] = '*.csv'
 for pnam in proc_phenology.pnams:
     proc_phenology.values[pnam] = proc_phenology.defaults[pnam]
 proc_phenology.select_types['trans_source'] = ['rw','rw']
