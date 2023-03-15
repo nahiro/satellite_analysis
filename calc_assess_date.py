@@ -188,10 +188,20 @@ if args.head is not None:
         raise ValueError('Error in finding OBJECTID >>> {}'.format(args.head))
     iband = columns.index('OBJECTID')
     head_ids = df.iloc[:,iband].astype(int)
-    if not 'head_d' in columns:
-        raise ValueError('Error in finding head_d >>> {}'.format(args.head))
-    iband = columns.index('head_d')
-    head_data = df.iloc[:,iband].astype(float).values # Heading date
+    if 'head_t' in columns:
+        iband = columns.index('head_t')
+        head_data = []
+        for v in df.iloc[:,iband].astype(str).str.strip().values: # Heading date
+            if v == '':
+                head_data.append(np.nan)
+            else:
+                head_data.append(date2num(datetime.strptime(v,'%Y%m%d')))
+        head_data = np.array(head_data)
+    elif 'head_d' in columns:
+        iband = columns.index('head_d')
+        head_data = df.iloc[:,iband].astype(float).values # Heading date
+    else:
+        raise ValueError('Error in finding head_d/head_t >>> {}'.format(args.head))
     if np.array_equal(head_ids,object_ids):
         head_d = head_data
     else:
@@ -212,10 +222,20 @@ if args.harvest is not None:
         raise ValueError('Error in finding OBJECTID >>> {}'.format(args.harvest))
     iband = columns.index('OBJECTID')
     harvest_ids = df.iloc[:,iband].astype(int)
-    if not 'harvest_d' in columns:
-        raise ValueError('Error in finding harvest_d >>> {}'.format(args.harvest))
-    iband = columns.index('harvest_d')
-    harvest_data = df.iloc[:,iband].astype(float).values # Harvesting date
+    if 'harvest_t' in columns:
+        iband = columns.index('harvest_t')
+        harvest_data = []
+        for v in df.iloc[:,iband].astype(str).str.strip().values: # Harvesting date
+            if v == '':
+                harvest_data.append(np.nan)
+            else:
+                harvest_data.append(date2num(datetime.strptime(v,'%Y%m%d')))
+        harvest_data = np.array(harvest_data)
+    elif 'harvest_d' in columns:
+        iband = columns.index('harvest_d')
+        harvest_data = df.iloc[:,iband].astype(float).values # Harvesting date
+    else:
+        raise ValueError('Error in finding harvest_d/harvest_t >>> {}'.format(args.harvest))
     if np.array_equal(harvest_ids,object_ids):
         harvest_d = harvest_data
     else:
@@ -236,10 +256,20 @@ if args.assess is not None:
         raise ValueError('Error in finding OBJECTID >>> {}'.format(args.assess))
     iband = columns.index('OBJECTID')
     assess_ids = df.iloc[:,iband].astype(int)
-    if not 'assess_d' in columns:
-        raise ValueError('Error in finding assess_d >>> {}'.format(args.assess))
-    iband = columns.index('assess_d')
-    assess_data = df.iloc[:,iband].astype(float).values # Assessment date
+    if 'assess_t' in columns:
+        iband = columns.index('assess_t')
+        assess_data = []
+        for v in df.iloc[:,iband].astype(str).str.strip().values: # Assessment date
+            if v == '':
+                assess_data.append(np.nan)
+            else:
+                assess_data.append(date2num(datetime.strptime(v,'%Y%m%d')))
+        assess_data = np.array(assess_data)
+    elif 'assess_d' in columns:
+        iband = columns.index('assess_d')
+        assess_data = df.iloc[:,iband].astype(float).values # Assessment date
+    else:
+        raise ValueError('Error in finding assess_d/assess_t >>> {}'.format(args.assess))
     if np.array_equal(assess_ids,object_ids):
         assess_d = assess_data
     else:
@@ -297,7 +327,7 @@ for iobj,object_id in enumerate(object_ids):
             xp_1 = x_peak
             xp_2 = x_peak
         else:
-            x_mins = x[min_peaks] 
+            x_mins = x[min_peaks]
             cnd = (x_mins < x_peak)
             x_ls = x_mins[cnd] # left
             if x_ls.size < 1:
