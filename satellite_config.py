@@ -255,7 +255,7 @@ config_defaults.update({
 'phenology.trans_thr2'                : [-13.0,np.nan,np.nan,0.0,np.nan],
 'phenology.trans_thr3'                : [4.0,30.0],
 'phenology.trans_thr4'                : [np.nan,np.nan],
-'phenology.trans_thr5'                : [0.02,30.0],
+'phenology.trans_thr5'                : [0.02,30.1],
 'phenology.atc_params'                : [1.0,10.0],
 'phenology.assess_dthrs'              : [120,10,10],
 'phenology.y1_smooth'                 : 0.02,

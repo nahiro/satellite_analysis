@@ -101,6 +101,8 @@ class Phenology(Satellite_Process):
                     command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
                 if not np.isnan(self.values['trans_thr2'][3]):
                     command += ' --post_s_min {}'.format(self.values['trans_thr2'][3])
+                if not np.isnan(self.values['trans_thr5'][1]):
+                    command += ' --ref_dmax {}'.format(self.values['trans_thr5'][1])
                 command += ' --fignam "{}"'.format(planting_pdf)
                 command += ' --fig_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
                 command += ' --use_index'
@@ -274,6 +276,10 @@ class Phenology(Satellite_Process):
                     command += ' --post_avg_min {}'.format(self.values['trans_thr2'][3])
                 if not np.isnan(self.values['trans_thr4'][1]):
                     command += ' --risetime_max {}'.format(self.values['trans_thr4'][1])
+                if not np.isnan(self.values['trans_thr5'][0]):
+                    command += ' --rthr {}'.format(self.values['trans_thr5'][0])
+                if not np.isnan(self.values['trans_thr5'][1]):
+                    command += ' --ref_dmax {}'.format(self.values['trans_thr5'][1])
                 if product == 'preliminary':
                     command += ' --early'
                 self.run_command(command,message='<<< Select planting >>>')
