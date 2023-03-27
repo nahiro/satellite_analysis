@@ -293,7 +293,7 @@ for iy in range(src_ny):
             post_min.append(d[itmp,5])
             post_max.append(d[itmp,6])
             risetime.append(d[itmp,7])
-        tvals_d = np.array(tvals_d,dtype='object')
+        tvals_d = np.array(tvals_d,dtype=object)
         trans_d = np.array(trans_d)
         trans_s = np.array(trans_s)
         trans_n = np.array(trans_n)

@@ -240,7 +240,7 @@ if len(cal_band) > 0:
     for object_id in object_ids:
         cnd = (mask_data == object_id)
         object_inds.append(indp[cnd])
-    object_inds = np.array(object_inds,dtype='object')
+    object_inds = np.array(object_inds,dtype=object)
     tmp_data = np.full((ndat,src_nb),np.nan)
 
     # Calculate mean indices
