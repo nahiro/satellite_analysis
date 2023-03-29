@@ -43,7 +43,7 @@ class Phenology(Satellite_Process):
         else:
             s1_data = os.path.join(self.s1_data,product,version)
 
-        if 'bojongsoang' in self.values['trans_select'].lower():
+        if 'bojongsoang' in self.values['trans_select'].lower(): # Bojongsoang
             # Select reference for planting
             dnam = os.path.join(self.s1_analysis,'planting')
             planting_ref = os.path.join(dnam,'{}_planting_ref.shp'.format(trg_bnam))
@@ -115,7 +115,7 @@ class Phenology(Satellite_Process):
                 self.run_command(command,message='<<< Select planting >>>')
             else:
                 self.print_message('File exists >>> {}'.format(planting_csv),print_time=False)
-        else:
+        else: # Cihea
             # Select reference for planting
             dnam = os.path.join(self.s1_analysis,'planting')
             planting_ref = os.path.join(dnam,'{}_planting_ref.tif'.format(trg_bnam))
