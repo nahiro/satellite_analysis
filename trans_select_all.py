@@ -39,8 +39,11 @@ parser.add_argument('--mask_fnam',default=MASK_FNAM,help='Mask file name (%(defa
 parser.add_argument('--stat_fnam',default=STAT_FNAM,help='Stat file name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('--trans_n_max',default=None,type=float,help='Max |trans_n-trans_d| in day (%(default)s)')
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
+parser.add_argument('--post_min_min',default=None,type=float,help='Min post_min in dB (%(default)s)')
 parser.add_argument('--post_avg_min',default=POST_AVG_MIN,type=float,help='Min post_avg in dB (%(default)s)')
+parser.add_argument('--risetime_max',default=None,type=float,help='Max risetime in day (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
 parser.add_argument('--rthr',default=RTHR,type=float,help='Min reference density (%(default)s)')
@@ -210,8 +213,20 @@ dst_trans = src_trans
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
+if args.trans_n_max is None:
+    dst_meta['trans_n_max'] = '{:.1f}'.format(np.nan)
+else:
+    dst_meta['trans_n_max'] = '{:.1f}'.format(args.trans_n_max)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
+if args.post_min_min is None:
+    dst_meta['post_min_min'] = '{:.1f}'.format(np.nan)
+else:
+    dst_meta['post_min_min'] = '{:.1f}'.format(args.post_min_min)
 dst_meta['post_avg_min'] = '{:.1f}'.format(args.post_avg_min)
+if args.risetime_max is None:
+    dst_meta['risetime_max'] = '{:.1f}'.format(np.nan)
+else:
+    dst_meta['risetime_max'] = '{:.1f}'.format(args.risetime_max)
 dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
 dst_meta['rthr'] = '{}'.format(args.rthr)
 dst_meta['ref_dmax'] = '{}'.format(args.ref_dmax)
@@ -301,13 +316,14 @@ for iy in range(src_ny):
         post_min = np.array(post_min)
         post_max = np.array(post_max)
         risetime = np.array(risetime)
-        #cnd1 = np.abs(trans_n-trans_d) < args.trans_n_max
-        cnd2 = bsc_min < args.bsc_min_max
-        #cnd3 = post_min > args.post_min_min
-        cnd4 = post_avg > args.post_avg_min
-        #cnd5 = risetime < args.risetime_max
-        #cnd = cnd1 & cnd2 & cnd3 & cnd4 & cnd5
-        cnd = cnd2 & cnd4
+        cnd = bsc_min < args.bsc_min_max
+        cnd &= post_avg > args.post_avg_min
+        if args.trans_n_max is not None:
+            cnd &= np.abs(trans_n-trans_d) < args.trans_n_max
+        if args.post_min_min is not None:
+            cnd &= post_min > args.post_min_min
+        if args.risetime_max is not None:
+            cnd &= risetime < args.risetime_max
         ncnd = cnd.sum()
         if ncnd < 1:
             continue
