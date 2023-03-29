@@ -45,76 +45,114 @@ class Phenology(Satellite_Process):
 
         if 'bojongsoang' in self.values['trans_select'].lower(): # Bojongsoang
             dnam = os.path.join(self.s1_analysis,'planting')
-            # Select reference for planting
-            planting_ref = os.path.join(dnam,'{}_planting_ref.shp'.format(trg_bnam))
-            iflag = self.list_labels['oflag'].index('plant')
-            if self.values['oflag'][iflag]:
-                if os.path.exists(planting_ref):
-                    os.remove(planting_ref)
-            if not os.path.exists(planting_ref):
-                if not os.path.exists(dnam):
-                    os.makedirs(dnam)
-                if not os.path.isdir(dnam):
-                    raise IOError('Error, no such folder >>> {}'.format(dnam))
-                # Select
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference_fi.py'))
-                command += ' --datdir "{}"'.format(s1_data)
-                command += ' --out_shp "{}"'.format(planting_ref)
-                command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-                command += ' --tmax {:%Y%m%d}'.format(end_dtim)
-                command += ' --tref {:%Y%m%d}'.format(pref_dtim)
-                if not np.isnan(self.values['trans_thr1'][0]):
-                    command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
-                if not np.isnan(self.values['trans_thr1'][3]):
-                    command += ' --post_s_min {}'.format(self.values['trans_thr1'][3])
-                command += ' --det_rmin 0.5'
-                command += ' --use_index'
-                if product == 'preliminary':
-                    command += ' --early'
-                self.run_command(command,message='<<< Select reference for planting >>>')
+            if 'indicator' in self.values['trans_select'].lower():
+                # Select planting
+                planting_csv = os.path.join(dnam,'{}_planting.csv'.format(trg_bnam))
+                planting_shp = os.path.join(dnam,'{}_planting.shp'.format(trg_bnam))
+                planting_pdf = os.path.join(dnam,'{}_planting.pdf'.format(trg_bnam))
+                if self.values['oflag'][iflag]:
+                    if os.path.exists(planting_csv):
+                        os.remove(planting_csv)
+                    if os.path.exists(planting_shp):
+                        os.remove(planting_shp)
+                    if os.path.exists(planting_pdf):
+                        os.remove(planting_pdf)
+                if not os.path.exists(planting_csv):
+                    # Select
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_indicator_fi.py'))
+                    command += ' --datdir "{}"'.format(s1_data)
+                    command += ' --out_csv "{}"'.format(planting_csv)
+                    command += ' --out_shp "{}"'.format(planting_shp)
+                    command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+                    command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+                    if not np.isnan(self.values['trans_thr2'][0]):
+                        command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
+                    if not np.isnan(self.values['trans_thr2'][3]):
+                        command += ' --post_s_min {}'.format(self.values['trans_thr2'][3])
+                    command += ' --fignam "{}"'.format(planting_pdf)
+                    command += ' --fig_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
+                    command += ' --use_index'
+                    command += ' --add_tmin'
+                    command += ' --add_tmax'
+                    if product == 'preliminary':
+                        command += ' --early'
+                    command += ' --debug'
+                    command += ' --batch'
+                    self.run_command(command,message='<<< Select planting >>>')
+                else:
+                    self.print_message('File exists >>> {}'.format(planting_csv),print_time=False)
             else:
-                self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
+                # Select reference for planting
+                planting_ref = os.path.join(dnam,'{}_planting_ref.shp'.format(trg_bnam))
+                iflag = self.list_labels['oflag'].index('plant')
+                if self.values['oflag'][iflag]:
+                    if os.path.exists(planting_ref):
+                        os.remove(planting_ref)
+                if not os.path.exists(planting_ref):
+                    if not os.path.exists(dnam):
+                        os.makedirs(dnam)
+                    if not os.path.isdir(dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(dnam))
+                    # Select
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_reference_fi.py'))
+                    command += ' --datdir "{}"'.format(s1_data)
+                    command += ' --out_shp "{}"'.format(planting_ref)
+                    command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+                    command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+                    command += ' --tref {:%Y%m%d}'.format(pref_dtim)
+                    if not np.isnan(self.values['trans_thr1'][0]):
+                        command += ' --bsc_min_max {}'.format(self.values['trans_thr1'][0])
+                    if not np.isnan(self.values['trans_thr1'][3]):
+                        command += ' --post_s_min {}'.format(self.values['trans_thr1'][3])
+                    command += ' --det_rmin 0.5'
+                    command += ' --use_index'
+                    if product == 'preliminary':
+                        command += ' --early'
+                    self.run_command(command,message='<<< Select reference for planting >>>')
+                else:
+                    self.print_message('File exists >>> {}'.format(planting_ref),print_time=False)
 
-            # Select planting
-            planting_csv = os.path.join(dnam,'{}_planting.csv'.format(trg_bnam))
-            planting_shp = os.path.join(dnam,'{}_planting.shp'.format(trg_bnam))
-            planting_pdf = os.path.join(dnam,'{}_planting.pdf'.format(trg_bnam))
-            if self.values['oflag'][iflag]:
-                if os.path.exists(planting_csv):
-                    os.remove(planting_csv)
-                if os.path.exists(planting_shp):
-                    os.remove(planting_shp)
-                if os.path.exists(planting_pdf):
-                    os.remove(planting_pdf)
-            if not os.path.exists(planting_csv):
-                # Select
-                command = self.python_path
-                command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all_fi.py'))
-                command += ' --datdir "{}"'.format(s1_data)
-                command += ' --ref_fnam "{}"'.format(planting_ref)
-                command += ' --out_csv "{}"'.format(planting_csv)
-                command += ' --out_shp "{}"'.format(planting_shp)
-                command += ' --tmin {:%Y%m%d}'.format(start_dtim)
-                command += ' --tmax {:%Y%m%d}'.format(end_dtim)
-                if not np.isnan(self.values['trans_thr2'][0]):
-                    command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
-                if not np.isnan(self.values['trans_thr2'][3]):
-                    command += ' --post_s_min {}'.format(self.values['trans_thr2'][3])
-                if not np.isnan(self.values['trans_thr5'][1]):
-                    command += ' --ref_dmax {}'.format(self.values['trans_thr5'][1])
-                command += ' --fignam "{}"'.format(planting_pdf)
-                command += ' --fig_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
-                command += ' --use_index'
-                command += ' --add_tmin'
-                command += ' --add_tmax'
-                if product == 'preliminary':
-                    command += ' --early'
-                command += ' --debug'
-                command += ' --batch'
-                self.run_command(command,message='<<< Select planting >>>')
-            else:
-                self.print_message('File exists >>> {}'.format(planting_csv),print_time=False)
+                # Select planting
+                planting_csv = os.path.join(dnam,'{}_planting.csv'.format(trg_bnam))
+                planting_shp = os.path.join(dnam,'{}_planting.shp'.format(trg_bnam))
+                planting_pdf = os.path.join(dnam,'{}_planting.pdf'.format(trg_bnam))
+                if self.values['oflag'][iflag]:
+                    if os.path.exists(planting_csv):
+                        os.remove(planting_csv)
+                    if os.path.exists(planting_shp):
+                        os.remove(planting_shp)
+                    if os.path.exists(planting_pdf):
+                        os.remove(planting_pdf)
+                if not os.path.exists(planting_csv):
+                    # Select
+                    command = self.python_path
+                    command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_all_fi.py'))
+                    command += ' --datdir "{}"'.format(s1_data)
+                    command += ' --ref_fnam "{}"'.format(planting_ref)
+                    command += ' --out_csv "{}"'.format(planting_csv)
+                    command += ' --out_shp "{}"'.format(planting_shp)
+                    command += ' --tmin {:%Y%m%d}'.format(start_dtim)
+                    command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+                    if not np.isnan(self.values['trans_thr2'][0]):
+                        command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
+                    if not np.isnan(self.values['trans_thr2'][3]):
+                        command += ' --post_s_min {}'.format(self.values['trans_thr2'][3])
+                    if not np.isnan(self.values['trans_thr5'][1]):
+                        command += ' --ref_dmax {}'.format(self.values['trans_thr5'][1])
+                    command += ' --fignam "{}"'.format(planting_pdf)
+                    command += ' --fig_title "Planting Date ({:%Y%m%d} - {:%Y%m%d})"'.format(start_dtim,end_dtim)
+                    command += ' --use_index'
+                    command += ' --add_tmin'
+                    command += ' --add_tmax'
+                    if product == 'preliminary':
+                        command += ' --early'
+                    command += ' --debug'
+                    command += ' --batch'
+                    self.run_command(command,message='<<< Select planting >>>')
+                else:
+                    self.print_message('File exists >>> {}'.format(planting_csv),print_time=False)
         else: # Cihea
             dnam = os.path.join(self.s1_analysis,'planting')
             if 'indicator' in self.values['trans_select'].lower():

@@ -129,7 +129,7 @@ for year in years:
                 object_ids = data['OBJECTID'].to_numpy()
             for param in OUT_PARAMS:
                 if not param in columns:
-                    raise ValueError('Error in finding {} >>> {}'.format(param,args.ref_fnam))
+                    raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
             out_data = data[OUT_PARAMS].copy()
         elif len(data) != nobject:
             raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
