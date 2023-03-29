@@ -24,42 +24,35 @@ PARAM_NAMES = {'trans_d':'Estimated transplanting date (MM/DD)','bsc_min':'Signa
 PARAM_MINS = {'trans_d':np.nan,'bsc_min':-25.0,'post_s':0.0,'fpi':0.0}
 PARAM_MAXS = {'trans_d':np.nan,'bsc_min':-10.0,'post_s':5.0,'fpi':1.0}
 OUT_PARAMS = ['OBJECTID','Shape_Leng','Shape_Area','geometry']
+INDICATORS = ['bsc_min','post_s']
 
 # Default values
 TMIN = '20200216'
 TMAX = '20200730'
 DATDIR = os.path.join(HOME,'Work','SATREPS','Transplanting_date','Bojongsoang','final','v1.0')
+INDICATOR = 'bsc_min'
 BSC_MIN_MAX = -13.0 # dB
 POST_S_MIN = 0.0 # dB
 DET_NMIN = 1
-REF_RMAX = 500.0 # m
-REF_NMAX = 10
-REF_DMAX = 30.1 # day
 OFFSET = 0.0 # day
-REF_NCAN = 1
 INP_NCAN = 1
 
 # Read options
 parser = ArgumentParser(formatter_class=lambda prog:RawTextHelpFormatter(prog,max_help_position=200,width=200))
-parser.add_argument('-R','--ref_fnam',default=None,help='Reference file name (%(default)s)')
 parser.add_argument('-D','--datdir',default=DATDIR,help='Input data directory (%(default)s)')
 parser.add_argument('-O','--out_csv',default=None,help='Output CSV name (%(default)s)')
 parser.add_argument('-o','--out_shp',default=None,help='Output Shapefile name (%(default)s)')
 parser.add_argument('-s','--tmin',default=TMIN,help='Min date of transplanting in the format YYYYMMDD (%(default)s)')
 parser.add_argument('-e','--tmax',default=TMAX,help='Max date of transplanting in the format YYYYMMDD (%(default)s)')
+parser.add_argument('-i','--indicator',default=INDICATOR,help='Indicator for selection (%(default)s)')
 parser.add_argument('--bsc_min_max',default=BSC_MIN_MAX,type=float,help='Max bsc_min in dB (%(default)s)')
 parser.add_argument('--post_s_min',default=POST_S_MIN,type=float,help='Min post_s in dB (%(default)s)')
 parser.add_argument('--det_nmin',default=DET_NMIN,type=int,help='Min number of detections (%(default)s)')
 parser.add_argument('--det_rmin',default=None,type=float,help='Min ratio of detections (%(default)s)')
-parser.add_argument('--ref_rmax',default=REF_RMAX,type=float,help='Maximum distance from reference in m (%(default)s)')
-parser.add_argument('--ref_nmax',default=REF_NMAX,type=int,help='Maximum number of reference (%(default)s)')
-parser.add_argument('--ref_dmax',default=REF_DMAX,type=float,help='Maximum difference from reference in day (%(default)s)')
 parser.add_argument('--offset',default=OFFSET,type=float,help='Transplanting date offset in day (%(default)s)')
-parser.add_argument('--ref_ncan',default=REF_NCAN,type=int,help='Candidate number of reference between 1 and 2, or 0 (%(default)s)')
 parser.add_argument('-N','--inp_ncan',default=INP_NCAN,type=int,help='Candidate number of input between 1 and 3 (%(default)s)')
 parser.add_argument('-F','--fignam',default=None,help='Output figure name for debug (%(default)s)')
 parser.add_argument('-t','--fig_title',default=None,help='Figure title for debug (%(default)s)')
-parser.add_argument('--sort_difference',default=False,action='store_true',help='Sort by difference between candidate and references (%(default)s)')
 parser.add_argument('--use_index',default=False,action='store_true',help='Use index instead of OBJECTID (%(default)s)')
 parser.add_argument('--add_tmin',default=False,action='store_true',help='Add tmin in colorbar (%(default)s)')
 parser.add_argument('--add_tmax',default=False,action='store_true',help='Add tmax in colorbar (%(default)s)')
@@ -67,8 +60,6 @@ parser.add_argument('--early',default=False,action='store_true',help='Early esti
 parser.add_argument('-d','--debug',default=False,action='store_true',help='Debug mode (%(default)s)')
 parser.add_argument('-b','--batch',default=False,action='store_true',help='Batch mode (%(default)s)')
 args = parser.parse_args()
-if args.ref_fnam is None:
-    raise ValueError('Error, args.ref_fnam={}'.format(args.ref_fnam))
 
 def all_close(a,b,rtol=0.01,atol=1.0):
     dif = np.abs(a-b)
@@ -87,41 +78,15 @@ nmin = date2num(dmin)
 nmax = date2num(dmax)
 years = np.arange(dmin.year,dmax.year+2,1)
 
-# Read reference
-data = gpd.read_file(args.ref_fnam)
-columns = data.columns.str.strip()
-for param in OUT_PARAMS:
-    if not param in columns:
-        raise ValueError('Error in finding {} >>> {}'.format(param,args.ref_fnam))
-out_data = data[OUT_PARAMS].copy()
-nobject = len(data)
-if args.use_index:
-    object_ids = np.arange(nobject)+1
-else:
-    object_ids = data['OBJECTID'].to_numpy()
-center_x = np.array(data.centroid.x)
-center_y = np.array(data.centroid.y)
-if args.ref_ncan == 2:
-    ref_data = data['p1_2']
-else:
-    ref_data = np.array(data['trans_d'])
-cnd = (ref_data > nmin-1.0e-4) & (ref_data < nmax+1.0e-4)
-sel_data = ref_data[cnd]
-sel_x = center_x[cnd]
-sel_y = center_y[cnd]
-if args.ref_ncan == 0:
-    ref_data = data['p1_2']
-    cnd = (ref_data > nmin-1.0e-4) & (ref_data < nmax+1.0e-4)
-    sel_data = np.append(sel_data,ref_data[cnd])
-    sel_x = np.append(sel_x,center_x[cnd])
-    sel_y = np.append(sel_y,center_y[cnd])
-
 # Read all
 tmins = []
 tmaxs = []
 dstrs = []
 src_data = []
 params = [param.replace('#','{}'.format(args.inp_ncan)) for param in PARAMS]
+nobject = None
+object_ids = None
+out_data = None
 #nband = len(params)
 for year in years:
     ystr = '{}'.format(year)
@@ -152,14 +117,24 @@ for year in years:
             raise ValueError('Error in file name, dstr={} >>> {}'.format(dstr,fnams[0]))
         #print(dstr)
         data = gpd.read_file(fnams[0])
-        with open(gnams[0],'r') as fp:
-            data_info = json.load(fp)
-        if len(data) != nobject:
-            raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
         columns = data.columns.str.strip()
         for param in params:
             if not param in columns:
                 raise ValueError('Error in finding {} >>> {}'.format(param,fnams[0]))
+        if nobject is None:
+            nobject = len(data)
+            if args.use_index:
+                object_ids = np.arange(nobject)+1
+            else:
+                object_ids = data['OBJECTID'].to_numpy()
+            for param in OUT_PARAMS:
+                if not param in columns:
+                    raise ValueError('Error in finding {} >>> {}'.format(param,args.ref_fnam))
+            out_data = data[OUT_PARAMS].copy()
+        elif len(data) != nobject:
+            raise ValueError('Error, len(data)={}, nobject={} >>> {}'.format(len(data),nobject,fnams[0]))
+        with open(gnams[0],'r') as fp:
+            data_info = json.load(fp)
         #t = datetime.strptime(dstr,'%Y%m%d')
         tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
         tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
@@ -196,14 +171,11 @@ if args.det_rmin is not None:
 dst_meta = {}
 dst_meta['tmin'] = '{:%Y%m%d}'.format(dmin)
 dst_meta['tmax'] = '{:%Y%m%d}'.format(dmax)
+dst_meta['indicator'] = '{}'.format(args.indicator)
 dst_meta['bsc_min_max'] = '{:.1f}'.format(args.bsc_min_max)
 dst_meta['post_s_min'] = '{:.1f}'.format(args.post_s_min)
 dst_meta['det_nmin'] = '{}'.format(args.det_nmin)
-dst_meta['ref_rmax'] = '{}'.format(args.ref_rmax)
-dst_meta['ref_nmax'] = '{}'.format(args.ref_nmax)
-dst_meta['ref_dmax'] = '{}'.format(args.ref_dmax)
 dst_meta['offset'] = '{:.4f}'.format(args.offset)
-dst_meta['sort'] = '{}'.format('difference' if args.sort_difference else 'distance')
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
 
@@ -278,57 +250,11 @@ for iobj in range(nobject):
     fp_offs = fp_offs[cnd]
     post_s = post_s[cnd]
     fpi = fpi[cnd]
-    # Select candidates close to the reference
-    rval2 = np.square(sel_x-center_x[iobj])+np.square(sel_y-center_y[iobj])
-    cnd = (rval2 < np.square(args.ref_rmax))
-    rcnd = np.sqrt(rval2[cnd])
-    indx = np.argsort(rcnd)[:min(args.ref_nmax,rcnd.size)]
-    rval = rcnd[indx] # distance between target and references
-    cnd_data = (sel_data[cnd])[indx] # trans_d of references
-    plot_number = []
-    plot_dval = []
-    plot_rval = []
-    for d in trans_d:
-        dval = np.abs(cnd_data-d) # difference between candidate and references
-        cnd = (dval < args.ref_dmax)
-        dcnd = dval[cnd]
-        rcnd = rval[cnd]
-        plot_number.append(dcnd.size)
-        plot_dval.append(dcnd.sum() if dcnd.size > 0 else np.nan)
-        plot_rval.append(rcnd.sum() if dcnd.size > 0 else np.nan)
-    plot_number = np.array(plot_number)
-    plot_dval = np.array(plot_dval)
-    plot_rval = np.array(plot_rval)
-    cnd = (plot_number > 0)
-    ncnd = cnd.sum()
-    if ncnd < 1:
-        continue
-    trans_d = trans_d[cnd]
-    bsc_min = bsc_min[cnd]
-    fp_offs = fp_offs[cnd]
-    post_s = post_s[cnd]
-    fpi = fpi[cnd]
-    plot_number = plot_number[cnd]
-    plot_dval = plot_dval[cnd]
-    plot_rval = plot_rval[cnd]
     if ncnd > 1:
-        cnd = (plot_number == plot_number.max())
-        ncnd = cnd.sum()
-        if ncnd > 1:
-            trans_d = trans_d[cnd]
-            bsc_min = bsc_min[cnd]
-            fp_offs = fp_offs[cnd]
-            post_s = post_s[cnd]
-            fpi = fpi[cnd]
-            plot_number = plot_number[cnd]
-            plot_dval = plot_dval[cnd]
-            plot_rval = plot_rval[cnd]
-            if args.sort_difference:
-                indx = np.argsort(plot_dval)
-            else:
-                indx = np.argsort(plot_rval)
-        else:
-            indx = np.argsort(plot_number)[::-1]
+        if args.indicator == 'bsc_min':
+            i1,i2 = np.argsort(bsc_min)[:2]
+        elif args.indicator == 'post_s':
+            i1,i2 = np.argsort(post_s)[::-1][:2]
         i1 = indx[0]
         i2 = indx[1]
         dst_data[0,iobj] = trans_d[i1]
