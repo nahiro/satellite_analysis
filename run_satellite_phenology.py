@@ -144,23 +144,32 @@ class Phenology(Satellite_Process):
                         years = np.arange(start_dtim.year,end_dtim.year+2,1)
                         for year in years:
                             ystr = '{}'.format(year)
-                            dnam = os.path.join(s1_data,ystr)
-                            if not os.path.isdir(dnam):
+                            ynam = os.path.join(s1_data,ystr)
+                            if not os.path.isdir(ynam):
                                 continue
-                            for f in sorted(os.listdir(dnam)):
-                                if not re.search('_{}.tif'.format(product),f):
+                            for d in sorted(os.listdir(ynam)):
+                                temp_dnam = os.path.join(ynam,d)
+                                if not os.path.isdir(temp_dnam):
                                     continue
-                                bnam = os.path.basename(f)
-                                fnam = os.path.join(dnam,f)
-                                gnam = os.path.join(dnam,'{}.json'.format(bnam))
-                                if not os.path.exists(gnam):
+                                m = re.search('^('+'\d'*8+')$',d)
+                                if not m:
                                     continue
-                                with open(gnam,'r') as fp:
-                                    data_info = json.load(fp)
-                                tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
-                                tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
-                                if tmin < end_dtim and tmax > start_dtim:
-                                    src_fnam = fnam
+                                for f in sorted(os.listdir(temp_dnam)):
+                                    if not re.search('_{}.tif'.format(product),f):
+                                        continue
+                                    bnam = os.path.basename(f)
+                                    fnam = os.path.join(temp_dnam,f)
+                                    gnam = os.path.join(temp_dnam,'{}.json'.format(bnam))
+                                    if not os.path.exists(gnam):
+                                        continue
+                                    with open(gnam,'r') as fp:
+                                        data_info = json.load(fp)
+                                    tmin = datetime.strptime(data_info['tmin'],'%Y%m%d')
+                                    tmax = datetime.strptime(data_info['tmax'],'%Y%m%d')
+                                    if tmin < end_dtim and tmax > start_dtim:
+                                        src_fnam = fnam
+                                        break
+                                if src_fnam is not None:
                                     break
                             if src_fnam is not None:
                                 break
