@@ -58,6 +58,10 @@ class Phenology(Satellite_Process):
                     if os.path.exists(planting_pdf):
                         os.remove(planting_pdf)
                 if not os.path.exists(planting_csv):
+                    if not os.path.exists(dnam):
+                        os.makedirs(dnam)
+                    if not os.path.isdir(dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(dnam))
                     # Select
                     command = self.python_path
                     command += ' "{}"'.format(os.path.join(self.scr_dir,'trans_select_indicator_fi.py'))
@@ -166,6 +170,10 @@ class Phenology(Satellite_Process):
                     if os.path.exists(planting_sel):
                         os.remove(planting_sel)
                 if not os.path.exists(planting_sel):
+                    if not os.path.exists(dnam):
+                        os.makedirs(dnam)
+                    if not os.path.isdir(dnam):
+                        raise IOError('Error, no such folder >>> {}'.format(dnam))
                     # Make paddy mask
                     if os.path.exists(mask_paddy) and flag_paddy:
                         os.remove(mask_paddy)
