@@ -66,6 +66,10 @@ class Phenology(Satellite_Process):
                     command += ' --out_shp "{}"'.format(planting_shp)
                     command += ' --tmin {:%Y%m%d}'.format(start_dtim)
                     command += ' --tmax {:%Y%m%d}'.format(end_dtim)
+                    if 'min' in self.values['trans_indicator'].lower():
+                        command += ' --indicator bsc_min'
+                    elif 'avg' in self.values['trans_indicator'].lower():
+                        command += ' --indicator post_s'
                     if not np.isnan(self.values['trans_thr2'][0]):
                         command += ' --bsc_min_max {}'.format(self.values['trans_thr2'][0])
                     if not np.isnan(self.values['trans_thr2'][3]):
@@ -233,6 +237,14 @@ class Phenology(Satellite_Process):
                     command += ' --tmin {:%Y%m%d}'.format(start_dtim)
                     command += ' --tmax {:%Y%m%d}'.format(end_dtim)
                     #command += ' --tref {:%Y%m%d}'.format(pref_dtim)
+                    if 'min' in self.values['trans_indicator'].lower():
+                        command += ' --indicator bsc_min'
+                    elif 'sig' in self.values['trans_indicator'].lower():
+                        command += ' --indicator trans_s'
+                    elif 'avg' in self.values['trans_indicator'].lower():
+                        command += ' --indicator post_avg'
+                    elif 'max' in self.values['trans_indicator'].lower():
+                        command += ' --indicator post_max'
                     if not np.isnan(self.values['trans_thr4'][0]):
                         command += ' --trans_n_max {}'.format(self.values['trans_thr4'][0])
                     if not np.isnan(self.values['trans_thr2'][0]):
