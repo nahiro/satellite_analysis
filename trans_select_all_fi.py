@@ -207,7 +207,6 @@ dst_meta['sort'] = '{}'.format('difference' if args.sort_difference else 'distan
 dst_band = [param.replace('_#','').replace('#','') for param in PARAMS]+['p{}_2'.format(i+1) for i in range(len(PARAMS))]
 dst_data = np.full((len(dst_band),nobject),np.nan)
 
-#flag = False
 for iobj in range(nobject):
     #if iobj%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iobj,nobject))
@@ -348,9 +347,6 @@ for iobj in range(nobject):
         dst_data[2,iobj] = fp_offs[0]
         dst_data[3,iobj] = post_s[0]
         dst_data[4,iobj] = fpi[0]
-    #flag = True
-    #if flag:
-    #    break
 for i,param in enumerate(dst_band):
     out_data[param] = dst_data[i]
 

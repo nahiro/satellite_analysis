@@ -211,7 +211,6 @@ dst_data = np.full((dst_nb,dst_ny,dst_nx),np.nan)
 dst_band = ['trans_d','trans_s','trans_n','bsc_min','post_avg','post_min','post_max','risetime','p1_2','p2_2','p3_2','p4_2','p5_2','p6_2','p7_2','p8_2']
 dst_nodata = np.nan
 
-#flag = False
 for iy in range(src_ny):
     #if iy%100 == 0:
     #    sys.stderr.write('{}/{}\n'.format(iy,src_ny))
@@ -360,11 +359,6 @@ for iy in range(src_ny):
             dst_data[5,iy,ix] = post_min[0]
             dst_data[6,iy,ix] = post_max[0]
             dst_data[7,iy,ix] = risetime[0]
-        #flag = True
-        #if flag:
-        #    break
-    #if flag:
-    #    break
 
 drv = gdal.GetDriverByName('GTiff')
 ds = drv.Create(args.dst_fnam,dst_nx,dst_ny,dst_nb,gdal.GDT_Float32)
