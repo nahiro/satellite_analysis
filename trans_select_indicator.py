@@ -325,6 +325,8 @@ for iy in range(src_ny):
                 i1,i2 = np.argsort(post_avg)[::-1][:2]
             elif args.indicator == 'post_max':
                 i1,i2 = np.argsort(post_max)[::-1][:2]
+            else:
+                raise ValueError('Error, unsupported indicator >>> {}'.format(args.indicator))
             dst_data[0,iy,ix] = trans_d[i1]
             dst_data[1,iy,ix] = trans_s[i1]
             dst_data[2,iy,ix] = trans_n[i1]

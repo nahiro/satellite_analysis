@@ -255,8 +255,8 @@ for iobj in range(nobject):
             i1,i2 = np.argsort(bsc_min)[:2]
         elif args.indicator == 'post_s':
             i1,i2 = np.argsort(post_s)[::-1][:2]
-        i1 = indx[0]
-        i2 = indx[1]
+        else:
+            raise ValueError('Error, unsupported indicator >>> {}'.format(args.indicator))
         dst_data[0,iobj] = trans_d[i1]
         dst_data[1,iobj] = bsc_min[i1]
         dst_data[2,iobj] = fp_offs[i1]
